@@ -16,7 +16,7 @@ function App() {
                 <nav className="header-right">
                     <a href="#" className="nav-item">
                         <i className="fas fa-home"></i>
-                        <span>홈</span>
+                        <span>홈 hihi</span>
                     </a>
                     <a href="#" className="nav-item">
                         <i className="fas fa-file-alt"></i>
