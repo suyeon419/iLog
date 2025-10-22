@@ -22,6 +22,7 @@ export default function AppHeader() {
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
+                        marginLeft: '50px',
                     }}
                 >
                     <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ height: '60px' }} />
@@ -29,7 +30,12 @@ export default function AppHeader() {
 
                 <Navbar.Toggle aria-controls="main-navbar" />
                 <Navbar.Collapse id="main-navbar">
-                    <Nav className="mx-auto" variant="tabs" activeKey={location.pathname}>
+                    <Nav
+                        className="ms-auto "
+                        variant="tabs"
+                        activeKey={location.pathname}
+                        style={{ marginBottom: '-4px' }}
+                    >
                         <Nav.Link
                             className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}
                             as={Link}
