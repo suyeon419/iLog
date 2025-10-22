@@ -84,21 +84,11 @@ export default function Note() {
                         ))}
                     </tbody>
                 </Table>
-            </Container>
 
-            <div
-                style={{
-                    position: 'fixed',
-                    bottom: '30px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    zIndex: 100,
-                }}
-            >
-                <Button variant="primary" className="user-btn" onClick={handleAddMeeting}>
+                <Button variant="primary" className="w-100 mt-3" onClick={handleAddMeeting}>
                     회의 추가하기
                 </Button>
-            </div>
+            </Container>
         </>
     );
 }
