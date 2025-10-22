@@ -119,3 +119,11 @@
     box-shadow: none;
     width: 350px;
 }
+
+.noteForm {
+    border: none;
+    border-bottom: none;
+    box-shadow: none;
+    font-size: 2rem;
+    font-weight: bold;
+}

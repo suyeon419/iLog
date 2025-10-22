@@ -62,30 +62,27 @@ export default function NoteCreate() {
                     <Form.Group>
                         <Form.Label visuallyHidden>제목</Form.Label>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <PencilSquare size={30} style={{ marginRight: '10px', color: '#333' }} />
+                            <PencilSquare size={30} style={{ marginRight: '10px' }} />
                             <Form.Control
+                                className="noteForm"
                                 type="text"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 placeholder="제목을 입력하세요"
                                 required
-                                style={{
-                                    border: 'none',
-                                    borderBottom: '2px solid #eee',
-                                    borderRadius: 0,
-                                    boxShadow: 'none',
-                                    fontSize: '2rem',
-                                    fontWeight: 'bold',
-                                    paddingLeft: 0,
-                                    color: '#333',
-                                }}
                             />
                         </div>
+                        <hr className="beigeHr" />
                     </Form.Group>
                 </Col>
                 <Col xs="auto">
                     {/* 6. 저장 중일 때 버튼 비활성화 */}
-                    <Button variant="primary" onClick={handleSave} style={{ fontWeight: 'bold' }} disabled={isSaving}>
+                    <Button
+                        variant="primary mini-btn"
+                        onClick={handleSave}
+                        style={{ fontWeight: 'bold' }}
+                        disabled={isSaving}
+                    >
                         {isSaving ? '저장 중...' : '생성'}
                     </Button>
                 </Col>
