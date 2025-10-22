@@ -12,6 +12,8 @@ import Register from './pages/Register.jsx';
 import Meeting from './pages/Meeting.jsx';
 import JoinMeeting from './pages/JoinMeeting.jsx';
 import CreateMeeting from './pages/CreateMeeting.jsx';
+import Note from './pages/Note.jsx';
+import Settings from './pages/Settings.jsx';
 
 createRoot(document.getElementById('root')).render(
     <React.StrictMode>
@@ -22,9 +24,14 @@ createRoot(document.getElementById('root')).render(
                     <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+
+                    <Route path="/notes" element={<Note />} />
+
                     <Route path="/meeting" element={<JoinMeeting />} />
                     <Route path="/meeting/create" element={<CreateMeeting />} />
                     <Route path="/meeting/:meetingId" element={<Meeting />} />
+
+                    <Route path="/settings" element={<Settings />} />
                 </Route>
             </Routes>
         </BrowserRouter>
