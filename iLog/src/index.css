@@ -28,6 +28,12 @@
     color: #fff !important;
 }
 
+.btn-danger {
+    background-color: #ffa2a2 !important;
+    border-color: #ffa2a2 !important;
+    color: #333 !important;
+}
+
 .user-btn {
     width: 350px;
 }
@@ -58,12 +64,22 @@
 }
 
 .nav-item:hover {
-    color: #c58b3d;
+    color: #b66e03;
 }
 
 .nav-item:hover .nav-icon,
 .nav-item.active:hover {
-    color: #c58b3d;
+    color: #b66e03;
+}
+
+/* 가로선 */
+.brownHr {
+    border-top: 2px solid #b66e03;
+    opacity: 1;
+}
+.beigeHr {
+    border-top: 2px solid #f5f1ec;
+    opacity: 1;
 }
 
 /* 메인 */
@@ -76,6 +92,14 @@
     background: white;
     font-family: 'Pretendard', sans-serif;
 }
+.container-left {
+    display: flex;
+    flex-direction: column;
+    height: 88vh;
+    background: white;
+    font-family: 'Pretendard', sans-serif;
+    padding: 30px;
+}
 
 /* 링크 */
 .link {
@@ -83,7 +107,7 @@
     text-decoration: none;
 }
 .signup-link {
-    color: #a36b2f;
+    color: #b66e03;
     text-decoration: none;
     font-weight: 500;
 }
