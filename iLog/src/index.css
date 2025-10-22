@@ -18,3 +18,37 @@
     background-color: #b66e03 !important;
     color: #fff !important;
 }
+
+/* 헤더용 */
+.nav-item {
+    text-align: center;
+    width: 120px; /* ✅ 탭 너비 일정하게 맞추기 */
+    padding: 10px 0;
+    margin: 0 5px;
+    color: #333;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    border-bottom: 3px solid transparent; /* 밑줄 전환 효과 */
+}
+
+.nav-item .nav-icon {
+    display: block; /* 줄바꿈 */
+    font-size: 1.8rem; /* 아이콘 크기 */
+    margin-bottom: 4px;
+    color: #444;
+}
+
+.nav-item:hover {
+    color: #c58b3d;
+    border-bottom-color: #c58b3d;
+}
+
+.nav-item.active {
+    color: #c58b3d !important;
+    border-bottom-color: #c58b3d;
+}
+
+.nav-item:hover .nav-icon,
+.nav-item.active .nav-icon {
+    color: #c58b3d;
+}

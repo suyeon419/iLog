@@ -1,6 +1,8 @@
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+
 import './index.css';
 
 import App from './App.jsx';
@@ -20,7 +22,7 @@ createRoot(document.getElementById('root')).render(
         <BrowserRouter>
             <Routes>
                 <Route element={<MainLayout />}>
-                    {/* 여기 안에 페이지 넣으면 됩니다 */}
+                    {/* 여기 안에 페이지 넣으쇼 */}
                     <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />

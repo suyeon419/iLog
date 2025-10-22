@@ -29,21 +29,40 @@ export default function AppHeader() {
 
                 <Navbar.Toggle aria-controls="main-navbar" />
                 <Navbar.Collapse id="main-navbar">
-                    <Nav
-                        className="mx-auto"
-                        variant="tabs"
-                        activeKey={location.pathname} // ✅ URL 기반으로 활성화
-                    >
-                        <Nav.Link as={Link} to="/" eventKey="/">
-                            홈
+                    <Nav className="mx-auto" variant="tabs" activeKey={location.pathname}>
+                        <Nav.Link
+                            className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}
+                            as={Link}
+                            to="/"
+                            eventKey="/"
+                        >
+                            <i className="bi bi-house nav-icon"></i>홈
                         </Nav.Link>
-                        <Nav.Link as={Link} to="/notes" eventKey="/notes">
+                        <Nav.Link
+                            className={`nav-item ${location.pathname === '/notes' ? 'active' : ''}`}
+                            as={Link}
+                            to="/notes"
+                            eventKey="/notes"
+                        >
+                            <i className="bi bi-journal-text nav-icon"></i>
                             회의록
                         </Nav.Link>
-                        <Nav.Link as={Link} to="/meeting" eventKey="/meeting">
+                        <Nav.Link
+                            className={`nav-item ${location.pathname === '/meeting' ? 'active' : ''}`}
+                            as={Link}
+                            to="/meeting"
+                            eventKey="/meeting"
+                        >
+                            <i className="bi bi-camera-video nav-icon"></i>
                             화상회의
                         </Nav.Link>
-                        <Nav.Link as={Link} to="/settings" eventKey="/settings">
+                        <Nav.Link
+                            className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`}
+                            as={Link}
+                            to="/settings"
+                            eventKey="/settings"
+                        >
+                            <i className="bi bi-gear nav-icon"></i>
                             설정
                         </Nav.Link>
                     </Nav>
