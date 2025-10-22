@@ -7,7 +7,9 @@ export default function MainLayout() {
     return (
         <>
             <AppHeader />
-            <Outlet />
+            <div style={{ paddingTop: '90px' }}>
+                <Outlet />
+            </div>
             <Footer />
         </>
     );
