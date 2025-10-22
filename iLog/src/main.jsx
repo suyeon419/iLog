@@ -15,6 +15,8 @@ import Meeting from './pages/Meeting.jsx';
 import JoinMeeting from './pages/JoinMeeting.jsx';
 import CreateMeeting from './pages/CreateMeeting.jsx';
 import Note from './pages/Note.jsx';
+import NoteCreate from './pages/NoteCreate.jsx';
+import NoteDetail from './pages/NoteDetail.jsx';
 import Settings from './pages/Settings.jsx';
 
 createRoot(document.getElementById('root')).render(
@@ -28,6 +30,8 @@ createRoot(document.getElementById('root')).render(
                     <Route path="/register" element={<Register />} />
 
                     <Route path="/notes" element={<Note />} />
+                    <Route path="/notes/new" element={<NoteCreate />} />
+                    <Route path="/notes/:id" element={<NoteDetail />} />
 
                     <Route path="/meeting" element={<JoinMeeting />} />
                     <Route path="/meeting/create" element={<CreateMeeting />} />
