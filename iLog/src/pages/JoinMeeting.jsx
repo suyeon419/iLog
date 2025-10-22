@@ -1,5 +1,5 @@
 import React from 'react';
 
 export default function JoinMeeting() {
-    return <div>JoinMeeting 화면</div>;
+    return <div className="container">JoinMeeting 화면</div>;
 }

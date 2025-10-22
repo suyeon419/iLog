@@ -7,6 +7,7 @@
 .btn-primary {
     background-color: #b66e03 !important;
     border-color: #b66e03 !important;
+    color: #fff !important;
 }
 
 .btn-primary:hover {
@@ -30,17 +31,18 @@
 }
 .nav-item {
     text-align: center;
-    width: 120px; /* ✅ 탭 너비 일정하게 맞추기 */
+    width: 120px;
     font-size: 0.95rem;
     transition: all 0.2s ease;
-    border-bottom: 3px solid transparent; /* 밑줄 전환 효과 */
+
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
 }
 
 .nav-item .nav-icon {
     display: block; /* 줄바꿈 */
     font-size: 2rem; /* 아이콘 크기 */
     margin-bottom: 4px;
-    color: #444;
 }
 
 .nav-item:hover {
@@ -50,4 +52,22 @@
 .nav-item:hover .nav-icon,
 .nav-item.active:hover {
     color: #c58b3d;
+}
+
+/* 메인 */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 88vh;
+    background: white;
+    font-family: 'Pretendard', sans-serif;
+}
+
+/* 링크 */
+.signup-link {
+    color: #a36b2f;
+    text-decoration: none;
+    font-weight: 500;
 }
