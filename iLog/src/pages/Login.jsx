@@ -1,5 +1,53 @@
 import React from 'react';
+import { Alert, Button, Form } from 'react-bootstrap';
 
 export default function Login() {
-    return <div className="container">login 화면</div>;
+    const handleSubmit = () => {
+        Alert('로그인');
+    };
+    return (
+        <div className="container">
+            <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ width: '150px' }} /> <br />
+            <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-2">
+                    <Form.Label>이메일</Form.Label>
+                    <Form.Control
+                        className="form"
+                        type="text"
+                        // value={title}
+                        // onChange={(e) => setTitle(e.target.value)}
+                        placeholder="이메일을 입력하세요"
+                        required
+                    />
+                </Form.Group>
+                <Form.Group className="mb-2">
+                    <Form.Label>비밀번호</Form.Label>
+                    <Form.Control
+                        className="form"
+                        type="text"
+                        // value={title}
+                        // onChange={(e) => setTitle(e.target.value)}
+                        placeholder="비밀번호를 입력하세요"
+                        required
+                    />
+                </Form.Group>
+                <p style={{ textAlign: 'center' }}>
+                    <a href="/" className="link">
+                        비밀번호 찾기{' '}
+                    </a>
+                    |
+                    <a href="/" className="link">
+                        {' '}
+                        이메일 찾기{' '}
+                    </a>
+                    |
+                    <a href="/" className="link">
+                        {' '}
+                        회원가입
+                    </a>
+                </p>
+                <Button variant="primary user-btn">계속하기</Button>
+            </Form>
+        </div>
+    );
 }

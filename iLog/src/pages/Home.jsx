@@ -16,7 +16,7 @@ export default function Home() {
             </Button>
             <p>
                 회원이 아니신가요?
-                <a href="/register" className="signup-link">
+                <a href="/register" className="signup-link mx-2">
                     회원가입
                 </a>
             </p>

@@ -1,9 +1,12 @@
 /* 전체 */
 * {
-    color: #333 !important;
+    color: #333;
 }
 
 /* 버튼 스타일 */
+.btn {
+    border-radius: 10px;
+}
 .btn-primary {
     background-color: #b66e03 !important;
     border-color: #b66e03 !important;
@@ -23,6 +26,10 @@
 .btn-outline-primary:hover {
     background-color: #b66e03 !important;
     color: #fff !important;
+}
+
+.user-btn {
+    width: 300px;
 }
 
 /* 헤더용 */
@@ -66,8 +73,19 @@
 }
 
 /* 링크 */
+.link {
+    color: #333;
+    text-decoration: none;
+}
 .signup-link {
     color: #a36b2f;
     text-decoration: none;
     font-weight: 500;
+}
+
+/* 입력 폼 */
+.form {
+    border: 2px solid #333;
+    border-radius: 10px;
+    box-shadow: none;
 }
