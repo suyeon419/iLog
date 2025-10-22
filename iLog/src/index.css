@@ -1,3 +1,8 @@
+/* 전체 */
+* {
+    color: #333 !important;
+}
+
 /* 버튼 스타일 */
 .btn-primary {
     background-color: #b66e03 !important;
@@ -26,7 +31,6 @@
 .nav-item {
     text-align: center;
     width: 120px; /* ✅ 탭 너비 일정하게 맞추기 */
-    color: #333;
     font-size: 0.95rem;
     transition: all 0.2s ease;
     border-bottom: 3px solid transparent; /* 밑줄 전환 효과 */
