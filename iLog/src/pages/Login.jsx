@@ -35,16 +35,16 @@ export default function Login() {
                     />
                 </Form.Group>
                 <p style={{ textAlign: 'center' }} className="mt-3">
-                    <a href="/" className="link">
+                    <a href="/findPw" className="link">
                         비밀번호 찾기{' '}
                     </a>
                     |
-                    <a href="/" className="link">
+                    <a href="/findEmail" className="link">
                         {' '}
                         이메일 찾기{' '}
                     </a>
                     |
-                    <a href="/" className="link">
+                    <a href="/register" className="link">
                         {' '}
                         회원가입
                     </a>

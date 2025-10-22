@@ -18,6 +18,8 @@ import Note from './pages/Note.jsx';
 import NoteCreate from './pages/NoteCreate.jsx';
 import NoteDetail from './pages/NoteDetail.jsx';
 import Settings from './pages/Settings.jsx';
+import FindPw from './pages/FindPw.jsx';
+import FindEmail from './pages/FindEmail.jsx';
 
 createRoot(document.getElementById('root')).render(
     <React.StrictMode>
@@ -28,6 +30,8 @@ createRoot(document.getElementById('root')).render(
                     <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/findPw" element={<FindPw />} />
+                    <Route path="/findEmail" element={<FindEmail />} />
 
                     <Route path="/notes" element={<Note />} />
                     <Route path="/notes/new" element={<NoteCreate />} />
