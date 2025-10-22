@@ -38,8 +38,8 @@ export default function Note() {
 
     return (
         <>
-            <Container fluid className="pt-3 container-left">
-                <h2 style={{ fontWeight: 'bold', color: '#333' }} className="mb-3 text-center">
+            <Container fluid className="container-left">
+                <h2 style={{ fontWeight: 'bold', color: '#333' }} className="mb-3">
                     <PencilSquare style={{ marginRight: '10px' }} />
                     회의록
                 </h2>
