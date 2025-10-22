@@ -56,7 +56,7 @@ export default function NoteCreate() {
     };
 
     return (
-        <Container fluid className="pt-3 container">
+        <Container fluid className="pt-3 container-left">
             <Row className="mb-3 align-items_center">
                 <Col>
                     <Form.Group>
