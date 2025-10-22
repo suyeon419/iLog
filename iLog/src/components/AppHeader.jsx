@@ -5,6 +5,13 @@ import { Link, useLocation } from 'react-router-dom';
 export default function AppHeader() {
     const location = useLocation();
 
+    const isHomeActive = ['/', '/login', '/register'].some((path) => location.pathname.startsWith(path));
+    const isNotesActive = ['/notes'].some((path) => location.pathname.startsWith(path));
+    const isMeetingActive = ['/meeting', '/meeting/create', '/meeting/:meetingId'].some((path) =>
+        location.pathname.startsWith(path)
+    );
+    const isSettingsActive = ['/settings'].some((path) => location.pathname.startsWith(path));
+
     return (
         <Navbar expand="lg" fixed="top" style={{ backgroundColor: '#F5F1EC' }}>
             <Container
@@ -36,16 +43,11 @@ export default function AppHeader() {
                         activeKey={location.pathname}
                         style={{ marginBottom: '-4px' }}
                     >
-                        <Nav.Link
-                            className={`nav-item ${location.pathname === '/' ? 'active' : ''}`}
-                            as={Link}
-                            to="/"
-                            eventKey="/"
-                        >
+                        <Nav.Link className={`nav-item ${isHomeActive ? 'active' : ''}`} as={Link} to="/" eventKey="/">
                             <i className="bi bi-house nav-icon"></i>홈
                         </Nav.Link>
                         <Nav.Link
-                            className={`nav-item ${location.pathname === '/notes' ? 'active' : ''}`}
+                            className={`nav-item ${isNotesActive ? 'active' : ''}`}
                             as={Link}
                             to="/notes"
                             eventKey="/notes"
@@ -54,7 +56,7 @@ export default function AppHeader() {
                             회의록
                         </Nav.Link>
                         <Nav.Link
-                            className={`nav-item ${location.pathname === '/meeting' ? 'active' : ''}`}
+                            className={`nav-item ${isMeetingActive ? 'active' : ''}`}
                             as={Link}
                             to="/meeting"
                             eventKey="/meeting"
@@ -63,7 +65,7 @@ export default function AppHeader() {
                             화상회의
                         </Nav.Link>
                         <Nav.Link
-                            className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`}
+                            className={`nav-item ${isSettingsActive ? 'active' : ''}`}
                             as={Link}
                             to="/settings"
                             eventKey="/settings"

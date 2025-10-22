@@ -1,16 +1,19 @@
 import React from 'react';
 import { Alert, Button, Form } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
-    const handleSubmit = () => {
-        Alert('로그인');
+    const navigate = useNavigate();
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        navigate('/');
     };
     return (
         <div className="container">
             <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ width: '150px' }} /> <br />
             <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-2">
-                    <Form.Label>이메일</Form.Label>
+                    <Form.Label className="mb-0">이메일</Form.Label>
                     <Form.Control
                         className="form"
                         type="text"
@@ -21,7 +24,7 @@ export default function Login() {
                     />
                 </Form.Group>
                 <Form.Group className="mb-2">
-                    <Form.Label>비밀번호</Form.Label>
+                    <Form.Label className="mb-0">비밀번호</Form.Label>
                     <Form.Control
                         className="form"
                         type="text"
@@ -31,7 +34,7 @@ export default function Login() {
                         required
                     />
                 </Form.Group>
-                <p style={{ textAlign: 'center' }}>
+                <p style={{ textAlign: 'center' }} className="mt-3">
                     <a href="/" className="link">
                         비밀번호 찾기{' '}
                     </a>
@@ -46,7 +49,9 @@ export default function Login() {
                         회원가입
                     </a>
                 </p>
-                <Button variant="primary user-btn">계속하기</Button>
+                <Button type="submit" variant="primary user-btn">
+                    로그인
+                </Button>
             </Form>
         </div>
     );
