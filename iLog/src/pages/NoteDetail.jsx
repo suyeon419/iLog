@@ -60,7 +60,7 @@ export default function NoteDetail() {
     }
 
     return (
-        <Container fluid className="pt-3">
+        <Container fluid className="pt-3 container-left">
             {/* 프로젝트 타이틀 */}
             <Row className="mb-3 align-items-center">
                 <Col>
