@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Form } from 'react-bootstrap';
+import { Button, Container, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
 export default function FindEmail() {
@@ -23,7 +23,7 @@ export default function FindEmail() {
     };
 
     return (
-        <div className="container">
+        <Container>
             <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ width: '150px' }} />
             <br />
             <Form onSubmit={handleSubmit}>
@@ -56,6 +56,6 @@ export default function FindEmail() {
                     placeholder="검색을 하시면 이메일이 나옵니다."
                 />
             </Form>
-        </div>
+        </Container>
     );
 }

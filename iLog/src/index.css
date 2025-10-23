@@ -1,10 +1,12 @@
 /* 전체 */
 * {
     color: #333;
-    border-radius: 10px;
 }
 
 /* 버튼 스타일 */
+.btn {
+    border-radius: 10px;
+}
 .btn-primary {
     background-color: #b66e03 !important;
     border-color: #b66e03 !important;
@@ -110,10 +112,16 @@
 }
 
 /* 입력 폼 */
-.form {
+.form-group {
+    margin-bottom: 2px;
+}
+.form-control {
     border: 2px solid #333;
     box-shadow: none;
     width: 350px;
+}
+.form-label {
+    margin-bottom: 0px;
 }
 
 .noteForm {
@@ -125,20 +133,30 @@
 }
 
 /* 미팅용 */
+.card,
 .meetingcard {
+    border-radius: 10px !important;
+    border: 2px solid #333;
+    width: 380px;
+}
+/* .meetingcard {
     width: 380px;
     border: 2px solid #333;
-}
+    border-radius: 10px;
+}*/
 
 .cardHeader {
     background-color: #b66e03;
     border-bottom: 2px solid #333;
     color: #fff;
     padding: 5px;
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
 }
 
 .mini-logo {
     background-color: #fff;
     padding: 3px;
     margin: 0px;
+    border-radius: 10px;
 }

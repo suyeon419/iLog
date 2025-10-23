@@ -65,7 +65,7 @@ export default function NoteDetail() {
             <Row className="mb-3 align-items-center">
                 <Col>
                     <h2 style={{ fontWeight: 'bold', color: '#333', margin: 0 }}>
-                        <PencilSquare style={{ marginRight: '10px' }} />
+                        <i class="bi bi-pen me-3"></i>
                         {/* 7. state의 project.name을 표시 (없으면 "...") */}
                         {project ? project.name : '...'}
                     </h2>

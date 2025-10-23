@@ -1,11 +1,11 @@
 import React from 'react';
-import { Button } from 'react-bootstrap';
+import { Button, Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
     const navigate = useNavigate();
     return (
-        <div className="container">
+        <Container>
             <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ width: '200px' }} /> <br />
             <Button
                 variant="primary"
@@ -20,6 +20,6 @@ export default function Home() {
                     회원가입
                 </a>
             </p>
-        </div>
+        </Container>
     );
 }

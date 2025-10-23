@@ -1,5 +1,6 @@
 import React from 'react';
+import { Container } from 'react-bootstrap';
 
 export default function Meeting() {
-    return <div className="container">Meeting 화면</div>;
+    return <Container>Meeting 화면</Container>;
 }
