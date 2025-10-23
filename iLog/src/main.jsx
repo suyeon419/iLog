@@ -18,6 +18,7 @@ import Note from './pages/Note.jsx';
 import NoteCreate from './pages/NoteCreate.jsx';
 import NoteDetail from './pages/NoteDetail.jsx';
 import NoteMeetingDetail from './pages/NoteMeetingDetail.jsx';
+import NoteMeetingEdit from './pages/NoteMeetingEdit.jsx';
 import Settings from './pages/Settings.jsx';
 import FindPw from './pages/FindPw.jsx';
 import FindEmail from './pages/FindEmail.jsx';
@@ -38,6 +39,7 @@ createRoot(document.getElementById('root')).render(
                     <Route path="/notes/new" element={<NoteCreate />} />
                     <Route path="/notes/:id" element={<NoteDetail />} />
                     <Route path="/notes/meeting/:meetingId" element={<NoteMeetingDetail />} />
+                    <Route path="/notes/meeting/:meetingId/edit" element={<NoteMeetingEdit />} />
 
                     <Route path="/meeting" element={<JoinMeeting />} />
                     <Route path="/meeting/create" element={<CreateMeeting />} />
