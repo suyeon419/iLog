@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Form } from 'react-bootstrap';
+import { Button, Container, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
 export default function FindPw() {
@@ -7,7 +7,7 @@ export default function FindPw() {
         console.log('hi');
     };
     return (
-        <div className="container">
+        <Container>
             <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ width: '150px' }} />
             <br />
             <Form onSubmit={handleSubmit}>
@@ -58,6 +58,6 @@ export default function FindPw() {
                     </div>
                 </Form.Group>
             </Form>
-        </div>
+        </Container>
     );
 }

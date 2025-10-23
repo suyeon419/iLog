@@ -40,7 +40,7 @@ export default function Note() {
         <>
             <Container fluid className="container-left">
                 <h2 style={{ fontWeight: 'bold', color: '#333' }} className="mb-3">
-                    <PencilSquare style={{ marginRight: '10px' }} />
+                    <i class="bi bi-pen me-3"></i>
                     회의록
                 </h2>
 

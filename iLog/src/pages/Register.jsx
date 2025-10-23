@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Button, Form } from 'react-bootstrap';
+import { Alert, Button, Container, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
 export default function Register() {
@@ -9,13 +9,12 @@ export default function Register() {
         navigate('/');
     };
     return (
-        <div className="container">
+        <Container>
             <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ width: '150px' }} /> <br />
             <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-2">
-                    <Form.Label className="mb-0">이메일</Form.Label>
+                <Form.Group>
+                    <Form.Label>이메일</Form.Label>
                     <Form.Control
-                        className="form"
                         type="text"
                         // value={title}
                         // onChange={(e) => setTitle(e.target.value)}
@@ -23,10 +22,9 @@ export default function Register() {
                         required
                     />
                 </Form.Group>
-                <Form.Group className="mb-2">
-                    <Form.Label className="mb-0">이름</Form.Label>
+                <Form.Group>
+                    <Form.Label>이름</Form.Label>
                     <Form.Control
-                        className="form"
                         type="text"
                         // value={title}
                         // onChange={(e) => setTitle(e.target.value)}
@@ -34,10 +32,9 @@ export default function Register() {
                         required
                     />
                 </Form.Group>
-                <Form.Group className="mb-2">
+                <Form.Group>
                     <Form.Label className="mb-0">전화번호</Form.Label>
                     <Form.Control
-                        className="form"
                         type="text"
                         // value={title}
                         // onChange={(e) => setTitle(e.target.value)}
@@ -45,10 +42,9 @@ export default function Register() {
                         required
                     />
                 </Form.Group>
-                <Form.Group className="mb-2">
-                    <Form.Label className="mb-0">비밀번호</Form.Label>
+                <Form.Group>
+                    <Form.Label>비밀번호</Form.Label>
                     <Form.Control
-                        className="form"
                         type="text"
                         // value={title}
                         // onChange={(e) => setTitle(e.target.value)}
@@ -57,9 +53,8 @@ export default function Register() {
                     />
                 </Form.Group>
                 <Form.Group className="mb-3">
-                    <Form.Label className="mb-0">비밀번호 확인</Form.Label>
+                    <Form.Label>비밀번호 확인</Form.Label>
                     <Form.Control
-                        className="form"
                         type="text"
                         // value={title}
                         // onChange={(e) => setTitle(e.target.value)}
@@ -72,6 +67,6 @@ export default function Register() {
                     회원가입
                 </Button>
             </Form>
-        </div>
+        </Container>
     );
 }
