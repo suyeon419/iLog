@@ -23,9 +23,9 @@ export default function Note() {
         const newMeeting = {
             id: newId,
             name: `새 회의 ${meetings.length + 1}`,
-            members: '참가자를 입력하세요',
+            members: '',
             created: today,
-            modified: today,
+            modified: '',
         };
 
         setMeetings([...meetings, newMeeting]);
