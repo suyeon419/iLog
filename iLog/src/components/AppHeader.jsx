@@ -30,7 +30,7 @@ export default function AppHeader() {
                         marginLeft: '50px',
                     }}
                 >
-                    <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ height: '60px' }} />
+                    <img src="/images/iLogLogo.png" alt="iLog Logo" style={{ height: '60px' }} />
                 </Navbar.Brand>
 
                 <Navbar.Toggle aria-controls="main-navbar" />

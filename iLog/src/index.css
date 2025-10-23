@@ -1,12 +1,10 @@
 /* 전체 */
 * {
     color: #333;
+    border-radius: 10px;
 }
 
 /* 버튼 스타일 */
-.btn {
-    border-radius: 10px;
-}
 .btn-primary {
     background-color: #b66e03 !important;
     border-color: #b66e03 !important;
@@ -53,8 +51,7 @@
     font-size: 0.95rem;
     transition: all 0.2s ease;
 
-    border-top-left-radius: 20px !important;
-    border-top-right-radius: 20px !important;
+    border-radius: 20px 20px 0px 0px !important;
 }
 
 .nav-item .nav-icon {
@@ -115,7 +112,6 @@
 /* 입력 폼 */
 .form {
     border: 2px solid #333;
-    border-radius: 10px;
     box-shadow: none;
     width: 350px;
 }
@@ -126,4 +122,23 @@
     box-shadow: none;
     font-size: 2rem;
     font-weight: bold;
+}
+
+/* 미팅용 */
+.meetingcard {
+    width: 380px;
+    border: 2px solid #333;
+}
+
+.cardHeader {
+    background-color: #b66e03;
+    border-bottom: 2px solid #333;
+    color: #fff;
+    padding: 5px;
+}
+
+.mini-logo {
+    background-color: #fff;
+    padding: 3px;
+    margin: 0px;
 }
