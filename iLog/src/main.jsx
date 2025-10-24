@@ -22,6 +22,7 @@ import NoteMeetingEdit from './pages/NoteMeetingEdit.jsx';
 import Settings from './pages/Settings.jsx';
 import FindPw from './pages/FindPw.jsx';
 import FindEmail from './pages/FindEmail.jsx';
+import ChangePw from './pages/ChangePw.jsx';
 
 createRoot(document.getElementById('root')).render(
     <React.StrictMode>
@@ -33,6 +34,7 @@ createRoot(document.getElementById('root')).render(
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/findPw" element={<FindPw />} />
+                    <Route path="/findPw/changePw" element={<ChangePw />} />
                     <Route path="/findEmail" element={<FindEmail />} />
 
                     <Route path="/notes" element={<Note />} />

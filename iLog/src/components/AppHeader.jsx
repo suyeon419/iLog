@@ -5,7 +5,9 @@ import { Link, useLocation } from 'react-router-dom';
 export default function AppHeader() {
     const location = useLocation();
 
-    const isHomeActive = ['/', '/login', '/register', '/findPw', '/findEmail'].includes(location.pathname);
+    const isHomeActive = ['/', '/login', '/register', '/findPw', '/findEmail', '/findPw/changePw'].includes(
+        location.pathname
+    );
     const isNotesActive = ['/notes'].some((path) => location.pathname.startsWith(path));
     const isMeetingActive = ['/meeting'].some((path) => location.pathname.startsWith(path));
     const isSettingsActive = ['/settings'].some((path) => location.pathname.startsWith(path));
