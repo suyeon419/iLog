@@ -4,10 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Container, Button, Row, Col } from 'react-bootstrap';
 import { PencilSquare, People, CalendarCheck, CalendarPlus } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
-// 1. import 이름과 경로 수정
 import NoteAISummary from './NoteAISummary';
 
-// (더미 데이터는 이전과 동일)
 const DUMMY_MEETING_DETAIL = {
     id: 101,
     name: '개발 진행 회의',

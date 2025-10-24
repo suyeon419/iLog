@@ -5,7 +5,6 @@ import { Container, Form, Button, Row, Col } from 'react-bootstrap';
 import { PencilSquare, People, CalendarCheck, CalendarPlus } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
 
-// 1. 더미 데이터 (이전과 동일)
 const DUMMY_MEETING_DETAIL = {
     id: 101,
     name: '개발 진행 회의',

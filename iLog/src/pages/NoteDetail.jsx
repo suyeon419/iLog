@@ -1,11 +1,10 @@
-// NoteDetail.jsx (수정됨)
+// NoteDetail.jsx
 
 import React, { useState, useEffect } from 'react';
 import { Container, Table, Button, Row, Col } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 
-// 1. 이미지(image_e296b1.png) 기반의 더미 데이터
 const DUMMY_MEETINGS = [
     {
         id: 101, // 고유 ID
@@ -93,7 +92,6 @@ export default function NoteDetail() {
             <Row className="mb-3 align-items-center">
                 <Col>
                     <h2 style={{ fontWeight: 'bold', color: '#333', margin: 0 }}>
-
                         <i class="bi bi-pen me-3"></i>
                         {/* 7. state의 project.name을 표시 (없으면 "...") */}
                         {project ? project.name : '...'}
