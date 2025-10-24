@@ -4,12 +4,12 @@ export default function Footer() {
     return (
         <div style={{ backgroundColor: '#F5F1EC' }}>
             <div style={{ marginBottom: '6px', fontWeight: '600', color: '#b66e03' }}>
-                iLog © {new Date().getFullYear()}
+                iLo9 © {new Date().getFullYear()}
             </div>
             <div style={{ color: '#7a7a7a' }}>
                 문의:{' '}
-                <a href="mailto:ilog.help@gmail.com" style={{ color: '#b66e03', textDecoration: 'none' }}>
-                    ilog.help@gmail.com
+                <a href="mailto:ilo9.help@gmail.com" style={{ color: '#b66e03', textDecoration: 'none' }}>
+                    ilo9.help@gmail.com
                 </a>
             </div>
             <div style={{ marginTop: '5px' }}>
