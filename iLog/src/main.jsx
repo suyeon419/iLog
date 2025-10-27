@@ -8,21 +8,21 @@ import './index.css';
 import App from './App.jsx';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import MainLayout from './layout/MainLayout.jsx';
-import Login from './pages/Login.jsx';
-import Home from './pages/Home.jsx';
-import Register from './pages/Register.jsx';
-import Meeting from './pages/Meeting.jsx';
-import JoinMeeting from './pages/JoinMeeting.jsx';
-import CreateMeeting from './pages/CreateMeeting.jsx';
+import Login from './pages/user/Login.jsx';
+import Home from './pages/user/Home.jsx';
+import Register from './pages/user/Register.jsx';
+import Meeting from './pages/meeting/Meeting.jsx';
+import JoinMeeting from './pages/meeting/JoinMeeting.jsx';
+import CreateMeeting from './pages/meeting/CreateMeeting.jsx';
 import Note from './pages/Note.jsx';
 import NoteCreate from './pages/NoteCreate.jsx';
 import NoteDetail from './pages/NoteDetail.jsx';
 import NoteMeetingDetail from './pages/NoteMeetingDetail.jsx';
 import NoteMeetingEdit from './pages/NoteMeetingEdit.jsx';
-import Settings from './pages/Settings.jsx';
-import FindPw from './pages/FindPw.jsx';
-import FindEmail from './pages/FindEmail.jsx';
-import ChangePw from './pages/ChangePw.jsx';
+import Settings from './pages/user/Settings.jsx';
+import FindPw from './pages/user/FindPw.jsx';
+import FindEmail from './pages/user/FindEmail.jsx';
+import ChangePw from './pages/user/ChangePw.jsx';
 
 createRoot(document.getElementById('root')).render(
     <React.StrictMode>
