@@ -7,7 +7,7 @@ export default function CreateMeeting() {
 
     const [meetingURL, setMeetingURL] = useState('자동 주소 입력');
     const [name, setName] = useState('최겸');
-    const [video, setVideo] = useState();
+    const [video, setVideo] = useState(false);
 
     const handlerSubmit = (e) => {
         e.preventDefault();
@@ -54,8 +54,8 @@ export default function CreateMeeting() {
                         <Form.Group className="mt-4">
                             <Form.Check
                                 type="checkbox"
-                                value={video}
-                                onChange={(e) => setVideo(e.target.value)}
+                                checked={video}
+                                onChange={(e) => setVideo(e.target.checked)}
                                 label="내 비디오 끄기"
                             />
                         </Form.Group>
