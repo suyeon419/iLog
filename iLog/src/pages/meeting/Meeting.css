@@ -28,7 +28,7 @@ body {
 /* 앱의 최상위 컨테이너. 화면 전체를 차지하며, jitsi 영역과 summary 영역을 가로로 나눕니다. */
 .app-container {
     display: flex;
-    height: 100vh;
+    height: 88vh;
     width: 100vw;
 }
 
