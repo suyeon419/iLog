@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import './Meeting.css';
+import { Button, Modal, Form, OverlayTrigger, Tooltip, ListGroup, ButtonGroup } from 'react-bootstrap';
 
 // ID를 일관된 문자열 형식으로 변환합니다.
 const normalizeId = (id) => String(id ?? '');
@@ -190,7 +191,12 @@ const Meeting = () => {
     const [isProcessing, setIsProcessing] = useState(false); // 로딩 스피너 (연결 중, 요약 중)
     const [roomName, setRoomName] = useState(''); // 현재 방 이름
     const [userName, setUserName] = useState('최겸'); // 내 이름
-    const [participants, setParticipants] = useState([]); // 모든 참가자 목록 (로컬 포함)
+    const [participants, setParticipants] = useState([
+        { name: '김가현', email: 'rlarkgus_6@naver.com' },
+        { name: '김우혁', email: 'dngur521@gmail.com' },
+        { name: '이수연', email: 'lsyeon030419@kumoh.ac.kr' },
+        { name: '최겸', email: 'gkskdml7419@gmail.com' },
+    ]); // 모든 참가자 목록 (로컬 포함)
 
     const [isAudioMuted, setIsAudioMuted] = useState(false); // 내 마이크 음소거 상태
     const [isVideoMuted, setIsVideoMuted] = useState(false); // 내 카메라 꺼짐 상태
@@ -1476,9 +1482,68 @@ const Meeting = () => {
         });
     };
 
+    // ---- 추가 부분 --------
+    const [showModal, setShowModal] = useState(false);
+    const [showChattingModal, setShowChattingModal] = useState(false);
+
+    const openModal = () => setShowModal(true);
+    const closeModal = () => setShowModal(false);
+
+    const openChatting = () => setShowChattingModal(true);
+    const closeChatting = () => setShowChattingModal(false);
+
     // --- 메인 렌더링 ---
     return (
         <div className="app-container">
+            {/* 참가자 확인 및 링크 복사 모달 */}
+            {showModal && (
+                <Modal show={showModal} onHide={() => setShowModal(false)} centered backdrop="static" keyboard={false}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>회의 참석자</Modal.Title>
+                    </Modal.Header>
+
+                    <Modal.Body>
+                        {/* 🔹 초대 링크 복사 영역 */}
+                        <Form.Group className="mb-3 d-flex align-items-center">
+                            <Form.Control type="text" value="fnfffnf" readOnly />
+                            <OverlayTrigger
+                                placement="top"
+                                overlay={<Tooltip id="tooltip-copy">{showCopiedTooltip ? '복사됨!' : ''}</Tooltip>}
+                            >
+                                <Button
+                                    variant={showCopiedTooltip ? 'success' : 'secondary'}
+                                    onClick={copyInviteLink}
+                                    className="ms-2"
+                                >
+                                    복사
+                                </Button>
+                            </OverlayTrigger>
+                        </Form.Group>
+
+                        {/* 🔹 참가자 목록 */}
+                        <ListGroup variant="flush">
+                            {participants.map((p, i) => (
+                                <ListGroup.Item key={i} className="d-flex align-items-center">
+                                    <div
+                                        className="rounded-circle bg-secondary me-3"
+                                        style={{ width: '36px', height: '36px' }}
+                                    ></div>
+                                    <div className="text-start">
+                                        <div className="fw-semibold">{p.name}</div>
+                                        <div className="text-muted small">{p.email}</div>
+                                    </div>
+                                </ListGroup.Item>
+                            ))}
+                        </ListGroup>
+                    </Modal.Body>
+
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowModal(false)}>
+                            닫기
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            )}
             {/* Jitsi 비디오 및 컨트롤이 포함된 메인 영역 */}
             <div className="jitsi-container">
                 {/* 1. 'idle' 상태: 로비(참가 전) 화면 렌더링 */}
@@ -1534,69 +1599,87 @@ const Meeting = () => {
                                   ))}
                         </div>
                         {/* (회의 중) 하단 컨트롤 버튼 바 */}
-                        <div className="controls-container">
+                        <ButtonGroup>
                             {/* 초대링크 복사 버튼 */}
-                            <button onClick={copyInviteLink} className="control-button">
+                            {/* <button onClick={copyInviteLink} className="control-button">
                                 <div className={`tooltip ${showCopiedTooltip ? 'visible' : ''}`}>복사됨!</div>         
                                 <div>초대링크 복사</div>
-                            </button>
+                            </button> */}
+                            <Button variant="outline-primary" onClick={openModal}>
+                                <div>초대링크 복사</div>
+                            </Button>
+
                             {/* 마이크 토글 버튼 */}
-                            <button onClick={toggleAudio} className={`control-button ${!isAudioMuted ? 'active' : ''}`}>
+                            <Button
+                                key={isAudioMuted ? 'mic-off' : 'mic-on'}
+                                variant={isAudioMuted ? 'primary' : 'outline-primary'}
+                                onClick={toggleAudio}
+                            >
                                 {isAudioMuted ? <div>MIC OFF</div> : <div>MIC ON</div>}
-                            </button>
+                            </Button>
                             {/* 웹캠 토글 버튼 */}
-                            <button onClick={toggleVideo} className={`control-button ${!isVideoMuted ? 'active' : ''}`}>
+                            <Button
+                                key={isVideoMuted ? 'camera-off' : 'camera-on'}
+                                variant={isVideoMuted ? 'primary' : 'outline-primary'}
+                                onClick={toggleVideo}
+                            >
                                 {isVideoMuted ? <div>CAM OFF</div> : <div>CAM ON</div>}
-                            </button>
+                            </Button>
+                            {/* 채팅 버튼 */}
+                            <Button variant="outline-primary" onClick={openChatting}>
+                                채팅
+                            </Button>
                             {/* 잡음제거 토글 버튼 */}
-                            <button
+                            <Button
+                                key={isNoiseSuppressionEnabled ? 'noiseSuppression-off' : 'noiseSuppression-on'}
+                                variant={isNoiseSuppressionEnabled ? 'primary' : 'outline-primary'}
                                 onClick={toggleNoiseSuppression}
-                                className={`control-button ${isNoiseSuppressionEnabled ? 'active' : ''}`}
                             >
                                 {!isNoiseSuppressionEnabled ? <div>잡음제거 OFF</div> : <div>잡음제거 ON</div>}         
-                            </button>
+                            </Button>
                             {/* 화면공유 토글 버튼 */}
-                            <button
+                            <Button
+                                key={isScreenSharing ? 'screenSharing-off' : 'screenSharing-on'}
+                                variant={isScreenSharing ? 'primary' : 'outline-primary'}
                                 onClick={toggleScreenSharing}
-                                className={`control-button ${isScreenSharing ? 'active' : ''}`}
                             >
                                 <svg viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M21 16H3V4h18v12zm-2-10H5v8h14V6zM1 18h22v2H1z" />                         
                                 </svg>
-                            </button>
+                            </Button>
                             {/* 음성녹음(요약) 토글 버튼 */}
-                            <button
-                                onClick={toggleRecording}
-                                className={`control-button record ${isRecording ? 'active' : ''}`}
-                                title={
-                                    isProcessing ? '요약 생성 중...' : isRecording ? '녹음 중지 및 요약' : '녹음 시작'
-                                }
-                                disabled={isProcessing}
-                            >
-                                {isProcessing && !isRecording ? ( // 녹음 중지가 아닌, 순수 요약 처리 중에만 스피너 표시
-                                    <div
-                                        className="spinner"
-                                        style={{
-                                            width: '24px',
-                                            height: '24px',
-                                            borderWidth: '3px',
-                                        }}
-                                    />
-                                ) : (
-                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                                        {isRecording ? (
-                                            <rect x="8" y="8" width="8" height="8" />
-                                        ) : (
-                                            <circle cx="12" cy="12" r="6" />
-                                        )}
-                                    </svg>
-                                )}
-                            </button>
+                            {/* <Button
+                                    onClick={toggleRecording}
+                                    className={`control-button record ${isRecording ? 'active' : ''}`}
+                                    title={
+                                        isProcessing ? '요약 생성 중...' : isRecording ? '녹음 중지 및 요약' : '녹음 시작'
+                                    }
+                                    disabled={isProcessing}
+                                >
+                                    {isProcessing && !isRecording ? ( // 녹음 중지가 아닌, 순수 요약 처리 중에만 스피너 표시
+                                        <div
+                                            className="spinner"
+                                            style={{
+                                                width: '24px',
+                                                height: '24px',
+                                                borderWidth: '3px',
+                                            }}
+                                        />
+                                    ) : (
+                                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                                            {isRecording ? (
+                                                <rect x="8" y="8" width="8" height="8" />
+                                            ) : (
+                                                <circle cx="12" cy="12" r="6" />
+                                            )}
+                                        </svg>
+                                    )}
+                                </Button> */}
                             {/* 회의 나가기 버튼 */}
-                            <button onClick={() => cleanUpConnection()} className="control-button hangup">
+                            <Button variant="danger" onClick={() => cleanUpConnection()}>
                                 <div>END</div>
-                            </button>
-                        </div>
+                            </Button>
+                        </ButtonGroup>
                     </>
                 )}
             </div>
