@@ -2,7 +2,17 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import './Meeting.css';
-import { Button, Modal, Form, OverlayTrigger, Tooltip, ListGroup, ButtonGroup } from 'react-bootstrap';
+import {
+    Button,
+    Modal,
+    Form,
+    OverlayTrigger,
+    Tooltip,
+    ListGroup,
+    ButtonGroup,
+    Offcanvas,
+    InputGroup,
+} from 'react-bootstrap';
 
 // ID를 일관된 문자열 형식으로 변환합니다.
 const normalizeId = (id) => String(id ?? '');
@@ -1485,16 +1495,22 @@ const Meeting = () => {
     // ---- 추가 부분 --------
     const [showModal, setShowModal] = useState(false);
     const [showChattingModal, setShowChattingModal] = useState(false);
+    const [isChatting, setIsChatting] = useState(false);
 
     const openModal = () => setShowModal(true);
-    const closeModal = () => setShowModal(false);
 
-    const openChatting = () => setShowChattingModal(true);
-    const closeChatting = () => setShowChattingModal(false);
+    const openChatting = () => {
+        setShowChattingModal(true);
+        isChatting(true);
+    };
+    const closeChatting = () => {
+        setShowChattingModal(false);
+        isChatting(false);
+    };
 
     // --- 메인 렌더링 ---
     return (
-        <div className="app-container">
+        <div className={`app-container ${showChattingModal ? 'chat-open' : ''}`}>
             {/* 참가자 확인 및 링크 복사 모달 */}
             {showModal && (
                 <Modal show={showModal} onHide={() => setShowModal(false)} centered backdrop="static" keyboard={false}>
@@ -1536,14 +1552,9 @@ const Meeting = () => {
                             ))}
                         </ListGroup>
                     </Modal.Body>
-
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>
-                            닫기
-                        </Button>
-                    </Modal.Footer>
                 </Modal>
             )}
+
             {/* Jitsi 비디오 및 컨트롤이 포함된 메인 영역 */}
             <div className="jitsi-container">
                 {/* 1. 'idle' 상태: 로비(참가 전) 화면 렌더링 */}
@@ -1626,7 +1637,7 @@ const Meeting = () => {
                                 {isVideoMuted ? <div>CAM OFF</div> : <div>CAM ON</div>}
                             </Button>
                             {/* 채팅 버튼 */}
-                            <Button variant="outline-primary" onClick={openChatting}>
+                            <Button variant="outline-primary" onClick={!isChatting ? openChatting : closeChatting}>
                                 채팅
                             </Button>
                             {/* 잡음제거 토글 버튼 */}
@@ -1697,6 +1708,31 @@ const Meeting = () => {
             {/* )} */}
             {/* </div> */}
             {/* </div> */}
+            {showChattingModal && (
+                <div>
+                    <div className="chat-header">
+                        <h5>회의 채팅</h5>
+                        <button
+                            className="btn-close btn-close-white"
+                            onClick={() => setShowChattingModal(false)}
+                        ></button>
+                    </div>
+                    <div className="chat-body">
+                        <div className="chat-message">
+                            <strong>이수연:</strong> 프로젝트 관련해서 얘기해보면 좋겠어요.
+                        </div>
+                        <div className="chat-message">
+                            <strong>김가현:</strong> UI 쪽은 어떤 방향으로 잡을지 의논해야 할 듯!
+                        </div>
+                    </div>
+                    <div className="chat-footer">
+                        <InputGroup>
+                            <Form.Control placeholder="메시지를 입력하세요..." />
+                            <Button variant="primary">전송</Button>
+                        </InputGroup>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
