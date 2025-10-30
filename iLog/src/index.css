@@ -140,9 +140,10 @@ btn-outline-primary:hover i {
 }
 
 /* 미팅용 */
-.card {
+.card-project-card {
     border-radius: 10px !important;
     border: 2px solid #b66e03;
+    width: 250px;
 }
 .meetingcard {
     border-radius: 10px !important;
