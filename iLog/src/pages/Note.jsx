@@ -91,7 +91,7 @@ export default function Note() {
     return (
         <>
             <Container>
-                <h2 style={{ fontWeight: 'bold', color: '#333' }} className="mb-3">
+                <h2 style={{ fontWeight: 'bold', color: '#333' }} className="mb-4">
                     <PencilSquare className="me-3" />
                     회의록
                 </h2>
