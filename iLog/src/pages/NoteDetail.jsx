@@ -1,84 +1,57 @@
-// NoteDetail.jsx
+// NoteMeetingDetail.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Container, Table, Button, Row, Col } from 'react-bootstrap';
+import { Container, Button, Row, Col, Dropdown } from 'react-bootstrap';
+import { PencilSquare, People, CalendarCheck, CalendarPlus, ThreeDotsVertical, Trash } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
+import NoteAISummary from './NoteAISummary';
 
-const DUMMY_MEETINGS = [
-    {
-        id: 101, // 고유 ID
-        name: '개발 진행 회의',
-        members: '김가현 김우혁 이수연 최겸',
-        created: '2025.00.00.',
-        modified: '2025.00.00.',
-    },
-    {
-        id: 102,
-        name: '설계 구체화 회의',
-        members: '김가현 김우혁 이수연 최겸',
-        created: '2025.00.00.',
-        modified: '2025.00.00.',
-    },
-    {
-        id: 103,
-        name: '설계 회의',
-        members: '김가현 김우혁 최겸',
-        created: '2025.00.00.',
-        modified: '2025.00.00.',
-    },
-    {
-        id: 104,
-        name: '아이디어 회의',
-        members: '김가현 김우혁 이수연 최겸',
-        created: '2025.00.00.',
-        modified: '2025.00.00.',
-    },
-];
+const DUMMY_MEETING_DETAIL = {
+    id: 101,
+    name: '개발 진행 회의',
+    members: '김가현 김우혁 이수연 최겸',
+    created: '2025.00.00.',
+    modified: '2025.00.00.',
+    content: `오늘은 백엔드와 프론트엔드를 나누어 각자 개발을 합니다.
+[기능 회의]
+화상회의 AI 회의록 기능은...(이하 생략)`,
+    aiSummaryText: `AI 요약
+■ 개발 분업
+• 프론트엔드: UI 구현 및 사용자 인터랙션
+... (이하 생략) ...`,
+    initialMemos: [
+        { id: 1, person: '이수연', note: '프론트엔드: 공개/비공개 날짜를 캘린더로 할 것' },
+        { id: 2, person: '김가현', note: '비용 관련 이슈로 일단 기본 기능만' },
+    ],
+};
 
-export default function NoteDetail() {
-    const navigate = useNavigate();
-    const { id } = useParams(); // URL에서 현재 ID (e.g., '1')를 가져옴
-
-    const [project, setProject] = useState(null);
-    const [subMeetings, setSubMeetings] = useState([]); // 하위 회의 목록
+export default function NoteMeetingDetail() {
+    const [meeting, setMeeting] = useState(null);
     const [loading, setLoading] = useState(true);
-
-    const fetchProjectDetails = async (projectId) => {
-        setLoading(true);
-        try {
-            // TODO: (1) 프로젝트 자체 정보 가져오기
-            // ...
-            // TODO: (2) 하위 회의록 목록 가져오기
-            // ...
-
-            // --- 지금은 API가 없으므로 임시 표시 ---
-            setProject({ id: id, name: `LCK 팀프로젝트` }); // 임시 제목
-            // 2. setSubMeetings([]) 대신 더미 데이터로 설정
-            setSubMeetings(DUMMY_MEETINGS);
-            // ------------------------------------
-        } catch (error) {
-            console.error('Failed to fetch details:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const [showAiSummary, setShowAiSummary] = useState(false);
+    const { meetingId } = useParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
-        fetchProjectDetails(id);
-    }, [id]);
+        setLoading(true);
+        setMeeting(DUMMY_MEETING_DETAIL);
+        setLoading(false);
+    }, [meetingId]);
 
-    const handleAddSubMeeting = () => {
-        navigate('/notes/new', { state: { parentId: id } });
+    // '수정하기' 버튼 클릭 시, /edit 경로로 이동합니다. (정상)
+    const handleEdit = () => {
+        navigate(`/notes/meeting/${meetingId}/edit`);
     };
 
-    // 3. 하위 회의록 클릭 시 세부 페이지로 이동하는 핸들러
-    const handleRowClick = (meetingId) => {
-        // 새 경로로 이동 (예: /notes/meeting/101)
-        navigate(`/notes/meeting/${meetingId}`);
+    const handleDelete = () => {
+        alert('삭제 기능 구현 필요');
     };
 
-    if (loading) {
+    const handleGoToList = () => {
+        navigate(-1);
+    };
+
+    if (loading || !meeting) {
         return (
             <Container fluid className="pt-3 text-center">
                 <h5>로딩 중...</h5>
@@ -88,65 +61,81 @@ export default function NoteDetail() {
 
     return (
         <Container fluid className="pt-3 container-left">
-            {/* 프로젝트 타이틀 */}
             <Row className="mb-3 align-items-center">
                 <Col>
-                    <h2 style={{ fontWeight: 'bold', color: '#333', margin: 0 }}>
-                        <i class="bi bi-pen me-3"></i>
-                        {/* 7. state의 project.name을 표시 (없으면 "...") */}
-                        {project ? project.name : '...'}
-                    </h2>
+                    <div className="d-flex align-items-center">
+                        <PencilSquare size={30} className="me-2" />
+                        <div className="noteForm py-2">{meeting.name}</div>
+                    </div>
+                    <hr className="beigeHr" />
                 </Col>
-                <Col xs="auto">
-                    <PersonPlus size={24} style={{ cursor: 'pointer', color: '#333' }} />
+
+                <Col xs="auto" className="d-flex align-items-center">
+                    <Button variant="outline-primary" onClick={handleGoToList} className="fw-bold me-1 mini-btn">
+                        목록
+                    </Button>
+
+                    <Dropdown>
+                        <Dropdown.Toggle
+                            variant="link"
+                            id="note-options-dropdown"
+                            className="text-dark text-decoration-none p-0"
+                        >
+                            <ThreeDotsVertical size={24} />
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu style={{ backgroundColor: '#f5f1ec' }}>
+                            <Dropdown.Item onClick={handleEdit}>
+                                <PencilSquare className="me-2" /> 수정하기
+                            </Dropdown.Item>
+
+                            <Dropdown.Divider />
+
+                            <Dropdown.Item onClick={handleDelete}>
+                                <Trash className="me-2" /> 삭제하기
+                            </Dropdown.Item>
+                        </Dropdown.Menu>
+                    </Dropdown>
                 </Col>
             </Row>
 
-            {/* 하위 회의록 목록 테이블 */}
-            <Table style={{ verticalAlign: 'middle', color: '#333' }}>
-                <thead>
-                    <tr>
-                        <th>
-                            <CheckSquare style={{ marginRight: '5px' }} /> 회의 이름
-                        </th>
-                        <th>
-                            <People style={{ marginRight: '5px' }} /> 참가자
-                        </th>
-                        <th>
-                            <CalendarCheck style={{ marginRight: '5px' }} /> 생성일자
-                        </th>
-                        <th>
-                            <CalendarPlus style={{ marginRight: '5px' }} /> 수정일자
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {subMeetings.length === 0 ? (
-                        <tr>
-                            <td colSpan="4" className="text-center p-4">
-                                하위 회의록이 없습니다.
-                            </td>
-                        </tr>
+            <Row className="mb-2 align-items-center text-secondary">
+                <Col md={12}>
+                    <div className="d-flex align-items-center">
+                        <People className="me-2" />
+                        <span className="me-2 fw-bold">참가자</span>
+                        <span>{meeting.members}</span>
+                    </div>
+                </Col>
+            </Row>
+            <Row className="mb-3 align-items-center text-secondary">
+                <Col md={6}>
+                    <div className="d-flex align-items-center">
+                        <CalendarCheck className="me-2" />
+                        <span className="me-2 fw-bold">생성일자</span>
+                        <span>{meeting.created}</span>
+                    </div>
+                </Col>
+                <Col md={6}>
+                    <div className="d-flex align-items-center">
+                        <CalendarPlus className="me-2" />
+                        <span className="me-2 fw-bold">수정일자</span>
+                        <span>{meeting.modified}</span>
+                    </div>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    {!showAiSummary ? (
+                        <pre className="border p-3 rounded text-break">{meeting.content}</pre>
                     ) : (
-                        subMeetings.map((meeting) => (
-                            // 4. <tr>에 onClick과 cursor: pointer 추가
-                            <tr
-                                key={meeting.id}
-                                onClick={() => handleRowClick(meeting.id)}
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <td>{meeting.name}</td>
-                                <td>{meeting.members}</td>
-                                <td>{meeting.created}</td>
-                                <td>{meeting.modified}</td>
-                            </tr>
-                        ))
+                        <NoteAISummary summaryText={meeting.aiSummaryText} initialMemos={meeting.initialMemos} />
                     )}
-                </tbody>
-            </Table>
+                </Col>
+            </Row>
 
-            <Button variant="primary" className="w-100 mt-3" onClick={handleAddSubMeeting}>
-                회의 추가하기
+            <Button variant="primary" className="w-100 mt-3" onClick={() => setShowAiSummary(!showAiSummary)}>
+                {showAiSummary ? '회의록 본문 보기' : 'AI 요약본 보기'}
             </Button>
         </Container>
     );

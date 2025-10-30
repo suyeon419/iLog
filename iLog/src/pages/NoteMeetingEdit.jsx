@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Row, Col } from 'react-bootstrap';
-import { PencilSquare, People, CalendarCheck, CalendarPlus } from 'react-bootstrap-icons';
+import { PencilSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
+import MemberModal from './MemberModal';
 
+// (임시) 상세 페이지의 더미 데이터를 가져왔다고 가정
 const DUMMY_MEETING_DETAIL = {
     id: 101,
     name: '개발 진행 회의',
@@ -19,54 +21,65 @@ const DUMMY_MEETING_DETAIL = {
 export default function NoteMeetingEdit() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [members, setMembers] = useState('');
-    const [createdDate, setCreatedDate] = useState('');
+    const [meetingData, setMeetingData] = useState(null); // 원본 데이터
     const [isSaving, setIsSaving] = useState(false);
+    const [showMemberModal, setShowMemberModal] = useState(false);
 
     const navigate = useNavigate();
-    const { meetingId } = useParams();
+    const { meetingId } = useParams(); // URL에서 meetingId 가져오기
 
-    // 2. 컴포넌트 마운트 시 데이터 불러오기 (이전과 동일)
+    // 1. 컴포넌트 로드 시 기존 회의록 데이터 불러오기
     useEffect(() => {
-        // TODO: API 호출
-        setTitle(DUMMY_MEETING_DETAIL.name);
-        setContent(DUMMY_MEETING_DETAIL.content);
-        setMembers(DUMMY_MEETING_DETAIL.members);
-        setCreatedDate(DUMMY_MEETING_DETAIL.created);
+        // TODO: 실제로는 /api/meetings/${meetingId} GET 요청
+        const fetchedData = DUMMY_MEETING_DETAIL;
+
+        setMeetingData(fetchedData);
+        setTitle(fetchedData.name);
+        setContent(fetchedData.content);
     }, [meetingId]);
 
-    // 3. '완료' 버튼 클릭 시 저장 및 이동 (이전과 동일)
+    // 2. '수정 완료' 버튼 클릭 시
     const handleSave = async () => {
         if (isSaving) return;
         setIsSaving(true);
-        const today = new Date().toISOString().split('T')[0].replace(/-/g, '.') + '.';
+
         const payload = {
             title: title,
             content: content,
-            members: members.split(' '),
-            modified: today,
         };
-        console.log('Saved successfully (simulation)', payload);
 
-        // 요청하신 대로 NoteDetail (목록) 페이지로 돌아가기
-        navigate(-2);
+        try {
+            // TODO: 백엔드 API에 PUT 또는 PATCH 요청
+            console.log('Updated successfully (simulation)', payload);
+
+            // 3. 저장이 성공하면, 한 페이지만 뒤로(NoteMeetingDetail)로 돌아가기
+            navigate(-1); // <-- -2 에서 다시 -1 로 변경!
+        } catch (error) {
+            console.error('Failed to save:', error);
+            setIsSaving(false);
+        }
     };
 
-    const today = new Date().toISOString().split('T')[0].replace(/-/g, '.') + '.';
+    const handleShowMemberModal = () => setShowMemberModal(true);
+    const handleCloseMemberModal = () => setShowMemberModal(false);
 
-    // 4. 레이아웃 style 속성을 모두 className으로 변경
+    if (!meetingData) {
+        return (
+            <Container fluid className="pt-3 container-left">
+                로딩 중...
+            </Container>
+        );
+    }
+
     return (
         <Container fluid className="pt-3 container-left">
-            {/* 5. Bootstrap의 d-flex, align-items-center 사용 */}
             <Row className="mb-3 align-items-center">
                 <Col>
                     <Form.Group>
                         <Form.Label visuallyHidden>제목</Form.Label>
                         <div className="d-flex align-items-center">
-                            {/* 6. Bootstrap의 me-2 (margin-end: 2) 사용 */}
                             <PencilSquare size={30} className="me-2" />
                             <Form.Control
-                                // 7. index.css의 .noteForm 클래스 사용
                                 className="noteForm"
                                 type="text"
                                 value={title}
@@ -79,48 +92,42 @@ export default function NoteMeetingEdit() {
                     </Form.Group>
                 </Col>
                 <Col xs="auto">
-                    {/* 8. Bootstrap의 fw-bold (font-weight: bold) 사용 */}
                     <Button variant="primary mini-btn" onClick={handleSave} className="fw-bold" disabled={isSaving}>
                         {isSaving ? '저장 중...' : '완료'}
                     </Button>
                 </Col>
             </Row>
 
-            {/* 9. Bootstrap의 text-secondary (연한 회색) 사용 */}
             <Row className="mb-2 align-items-center text-secondary">
-                <Col md={12}>
+                <Col>
                     <div className="d-flex align-items-center">
                         <People className="me-2" />
-                        {/* 10. Bootstrap의 me-2, fw-bold 사용 */}
                         <span className="me-2 fw-bold">참가자</span>
-                        <Form.Control
-                            type="text"
-                            value={members}
-                            onChange={(e) => setMembers(e.target.value)}
-                            // 11. .form-control 기본 스타일을 덮어쓰기 위해
-                            // Bootstrap의 border-0, shadow-none, p-0 사용
-                            className="border-0 shadow-none p-0"
-                        />
+                        <span className="me-2">{meetingData.members}</span>
                     </div>
                 </Col>
+                <Col xs="auto">
+                    <PersonPlus size={20} style={{ cursor: 'pointer' }} onClick={handleShowMemberModal} />
+                </Col>
             </Row>
-            {/* 12. Bootstrap의 text-secondary 사용 */}
+
             <Row className="mb-3 align-items-center text-secondary">
                 <Col md={6}>
                     <div className="d-flex align-items-center">
                         <CalendarCheck className="me-2" />
                         <span className="me-2 fw-bold">생성일자</span>
-                        <span>{createdDate}</span>
+                        <span>{meetingData.created}</span>
                     </div>
                 </Col>
                 <Col md={6}>
                     <div className="d-flex align-items-center">
                         <CalendarPlus className="me-2" />
                         <span className="me-2 fw-bold">수정일자</span>
-                        <span>{today}</span>
+                        <span>{new Date().toISOString().split('T')[0].replace(/-/g, '.') + '.'}</span>
                     </div>
                 </Col>
             </Row>
+
             <Row>
                 <Col>
                     <Form.Group>
@@ -130,15 +137,14 @@ export default function NoteMeetingEdit() {
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="회의록을 작성하세요"
-                            // 13. index.css의 .form-control(width: 350px)을 덮어쓰기 위해
-                            // Bootstrap의 w-100 (width: 100%) 사용
-                            className="w-100"
-                            // 최소 높이를 위해 rows 속성 사용
+                            className="w-100 note-content-textarea"
                             rows={15}
                         />
                     </Form.Group>
                 </Col>
             </Row>
+
+            <MemberModal show={showMemberModal} onHide={handleCloseMemberModal} />
         </Container>
     );
 }

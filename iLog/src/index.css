@@ -160,3 +160,40 @@
     margin: 0px;
     border-radius: 10px;
 }
+
+/* --- MemberModal 커스텀 스타일 --- */
+
+/* 모달 배경색 지정 */
+.modal-custom-bg .modal-content {
+    background-color: #f5f1ec;
+}
+
+/* 조원 목록 구분선 색상 지정 */
+.member-list-item {
+    border-bottom: 1px solid #b66e03;
+}
+
+.badge-leader {
+    background-color: #b66e03;
+    color: #fff;
+}
+
+/* --- NoteCreate 텍스트 영역 테두리 --- */
+.note-content-textarea {
+    border-color: #f5f1ec;
+    box-shadow: none;
+}
+
+/* 포커스될 때도 테두리 색 유지 */
+.note-content-textarea:focus {
+    border-color: #f5f1ec;
+    box-shadow: none;
+}
+
+/* --- AI 요약 메모 카드 --- */
+.memo-card {
+    background-color: #f5f1ec !important; /* 1. 카드 배경을 베이지색으로 */
+    border: 2px solid #b66e03 !important; /* 2. 카드 테두리를 갈색으로 */
+    width: 100% !important; /* 3. 고정 너비(380px) 대신 100%로 변경 */
+    box-shadow: none;
+}

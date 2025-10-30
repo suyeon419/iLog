@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Container, Form, Button, Row, Col } from 'react-bootstrap';
 import { PencilSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import { useNavigate, useLocation } from 'react-router-dom';
+import MemberModal from './MemberModal';
 
 export default function NoteCreate() {
     const [title, setTitle] = useState('');
@@ -11,6 +12,8 @@ export default function NoteCreate() {
     const [isSaving, setIsSaving] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
+
+    const [showMemberModal, setShowMemberModal] = useState(false);
 
     const parentId = location.state?.parentId;
     const isNewProject = !parentId;
@@ -40,15 +43,16 @@ export default function NoteCreate() {
         }
     };
 
+    const handleShowMemberModal = () => setShowMemberModal(true);
+    const handleCloseMemberModal = () => setShowMemberModal(false);
+
     return (
         <Container fluid className="pt-3 container-left">
             <Row className="mb-3 align-items-center">
                 <Col>
                     <Form.Group>
                         <Form.Label visuallyHidden>제목</Form.Label>
-                        {/* 1. style을 d-flex, align-items-center 클래스로 대체 */}
                         <div className="d-flex align-items-center">
-                            {/* 2. style을 me-2 클래스로 대체 */}
                             <PencilSquare size={30} className="me-2" />
                             <Form.Control
                                 className="noteForm"
@@ -63,26 +67,25 @@ export default function NoteCreate() {
                     </Form.Group>
                 </Col>
                 <Col xs="auto">
-                    {/* 3. style을 fw-bold 클래스로 대체 */}
                     <Button variant="primary mini-btn" onClick={handleSave} className="fw-bold" disabled={isSaving}>
                         {isSaving ? '저장 중...' : '생성'}
                     </Button>
                 </Col>
             </Row>
 
-            {/* 4. style을 text-secondary (연한 회색) 클래스로 대체 */}
             <Row className="mb-2 align-items-center text-secondary">
-                <Col md={12}>
+                <Col>
                     <div className="d-flex align-items-center">
                         <People className="me-2" />
                         <span className="me-2 fw-bold">참가자</span>
                         <span className="me-2">최겸</span>
-                        {/* 5. style (cursor) 제거, 필요시 Bootstrap 'c-pointer' 등 사용 */}
-                        <PersonPlus size={20} />
                     </div>
                 </Col>
+                <Col xs="auto">
+                    <PersonPlus size={20} style={{ cursor: 'pointer' }} onClick={handleShowMemberModal} />
+                </Col>
             </Row>
-            {/* 6. style을 text-secondary 클래스로 대체 */}
+
             <Row className="mb-3 align-items-center text-secondary">
                 <Col md={6}>
                     <div className="d-flex align-items-center">
@@ -103,20 +106,20 @@ export default function NoteCreate() {
                 <Col>
                     <Form.Group>
                         <Form.Label visuallyHidden>회의록 내용</Form.Label>
-                        {/* 7. 요청하신 style 속성 수정 */}
                         <Form.Control
                             as="textarea"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="회의록을 작성하세요"
-                            // 8. w-100: index.css의 width: 350px를 덮어쓰기 위해 추가
-                            className="w-100"
-                            // 9. rows: min-height: 400px 를 대체
+                            /* 1. 'note-content-textarea' 클래스 추가 */
+                            className="w-100 note-content-textarea"
                             rows={15}
                         />
                     </Form.Group>
                 </Col>
             </Row>
+
+            <MemberModal show={showMemberModal} onHide={handleCloseMemberModal} />
         </Container>
     );
 }
