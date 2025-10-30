@@ -15,21 +15,10 @@ const DUMMY_MEETING_DETAIL = {
     content: `오늘은 백엔드와 프론트엔드를 나누어 각자 개발을 합니다.
 [기능 회의]
 화상회의 AI 회의록 기능은...(이하 생략)`,
-    aiSummaryText: `💻 개발 분업
-프론트엔드: UI 구현 및 사용자 인터랙션
-백엔드: 서버 로직, 데이터 처리 및 기능 제어
-🗓️ 기능 회의 요약
-주제: 화상회의 AI 회의록 기능 개선
-핵심 내용:
-AI 회의록 기능 온·오프 설정 추가
-사용자가 회의 중에 AI 기록 기능을 활성화/비활성화할 수 있도록 구현
-UI 내 명확한 토글 스위치 또는 버튼 제공
-발화자 구분 기능 추가
-AI가 회의 음성을 분석하여 누가 말했는지 식별
-회의록에 화자 이름 또는 프로필 표시
-🎯 개발 목표
-사용자에게 선택권과 명확성 제공
-회의록의 정확도와 신뢰성 향상`,
+    aiSummaryText: `AI 요약
+■ 개발 분업
+• 프론트엔드: UI 구현 및 사용자 인터랙션
+... (이하 생략) ...`,
     initialMemos: [
         { id: 1, person: '이수연', note: '프론트엔드: 공개/비공개 날짜를 캘린더로 할 것' },
         { id: 2, person: '김가현', note: '비용 관련 이슈로 일단 기본 기능만' },
@@ -37,6 +26,7 @@ AI가 회의 음성을 분석하여 누가 말했는지 식별
 };
 
 export default function NoteMeetingDetail() {
+    // 1. 여기에 '='가 빠졌었습니다.
     const [meeting, setMeeting] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showAiSummary, setShowAiSummary] = useState(false);
@@ -99,7 +89,6 @@ export default function NoteMeetingDetail() {
                                 <PencilSquare className="me-2" /> 수정하기
                             </Dropdown.Item>
 
-                            {/* 1. brownHr 클래스 제거 (기본 구분선 사용) */}
                             <Dropdown.Divider />
 
                             <Dropdown.Item onClick={handleDelete}>

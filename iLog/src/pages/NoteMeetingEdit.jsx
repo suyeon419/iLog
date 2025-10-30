@@ -93,7 +93,7 @@ export default function NoteMeetingEdit() {
                 </Col>
                 <Col xs="auto">
                     <Button variant="primary mini-btn" onClick={handleSave} className="fw-bold" disabled={isSaving}>
-                        {isSaving ? '저장 중...' : '완료'}
+                        {isSaving ? '저장 중...' : '수정 완료'}
                     </Button>
                 </Col>
             </Row>
