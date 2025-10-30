@@ -88,19 +88,20 @@ btn-outline-primary:hover i {
 }
 
 /* 메인 */
+
 .container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 88vh;
     background: white;
+    min-height: 88vh;
     font-family: 'Pretendard', sans-serif;
 }
 .container-left {
     display: flex;
     flex-direction: column;
-    height: 88vh;
+    min-height: 88vh;
     background: white;
     font-family: 'Pretendard', sans-serif;
     padding: 30px;
