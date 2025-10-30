@@ -12,6 +12,7 @@ import {
     ButtonGroup,
     Offcanvas,
     InputGroup,
+    Container,
 } from 'react-bootstrap';
 
 // ID를 일관된 문자열 형식으로 변환합니다.
@@ -1508,9 +1509,23 @@ const Meeting = () => {
         isChatting(false);
     };
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+
+        // 페이지 진입 시 스크롤 막기
+        document.body.style.overflow = 'hidden';
+        document.body.style.backgroundColor = '#000';
+
+        // 페이지 벗어날 때 스크롤 다시 가능하게
+        return () => {
+            document.body.style.overflow = 'auto';
+            document.body.style.backgroundColor = '';
+        };
+    }, []);
+
     // --- 메인 렌더링 ---
     return (
-        <div className={`app-container ${showChattingModal ? 'chat-open' : ''}`}>
+        <Container className={`${showChattingModal ? 'chat-open' : ''} container-black`} style={{ overflow: 'hidden' }}>
             {/* 참가자 확인 및 링크 복사 모달 */}
             {showModal && (
                 <Modal show={showModal} onHide={() => setShowModal(false)} centered backdrop="static" keyboard={false}>
@@ -1559,7 +1574,7 @@ const Meeting = () => {
             <div className="jitsi-container">
                 {/* 1. 'idle' 상태: 로비(참가 전) 화면 렌더링 */}
                 {meetingState === 'idle' ? (
-                    <div className="join-container">
+                    <Container className="join-container container-black">
                         회의 준비 중...
                         <div
                             className="spinner"
@@ -1569,10 +1584,10 @@ const Meeting = () => {
                                 borderWidth: '3px',
                             }}
                         />
-                    </div>
+                    </Container>
                 ) : (
                     /* 2. 'active' 상태: 회의 중 화면 렌더링 */
-                    <>
+                    <Container className="container-black">
                         {/* (회의 중) 모든 원격 참가자의 오디오를 재생하는 숨겨진 컨테이너 */}
                         <div style={{ display: 'none' }}>
                             {participants
@@ -1610,130 +1625,62 @@ const Meeting = () => {
                                   ))}
                         </div>
                         {/* (회의 중) 하단 컨트롤 버튼 바 */}
-                        <ButtonGroup>
-                            {/* 초대링크 복사 버튼 */}
-                            {/* <button onClick={copyInviteLink} className="control-button">
-                                <div className={`tooltip ${showCopiedTooltip ? 'visible' : ''}`}>복사됨!</div>         
-                                <div>초대링크 복사</div>
-                            </button> */}
-                            <Button variant="outline-primary" onClick={openModal}>
-                                <div>초대링크 복사</div>
+                        <div className="pb-2 d-flex justify-content-center gap-2">
+                            <Button variant="outline-primary" size="lg" onClick={openModal}>
+                                <i class="bi bi-people"></i>
                             </Button>
 
                             {/* 마이크 토글 버튼 */}
                             <Button
+                                size="lg"
                                 key={isAudioMuted ? 'mic-off' : 'mic-on'}
                                 variant={isAudioMuted ? 'primary' : 'outline-primary'}
                                 onClick={toggleAudio}
                             >
-                                {isAudioMuted ? <div>MIC OFF</div> : <div>MIC ON</div>}
+                                {isAudioMuted ? <i class="bi bi-mic-mute"></i> : <i class="bi bi-mic"></i>}
                             </Button>
                             {/* 웹캠 토글 버튼 */}
                             <Button
+                                size="lg"
                                 key={isVideoMuted ? 'camera-off' : 'camera-on'}
                                 variant={isVideoMuted ? 'primary' : 'outline-primary'}
                                 onClick={toggleVideo}
                             >
-                                {isVideoMuted ? <div>CAM OFF</div> : <div>CAM ON</div>}
+                                {isVideoMuted ? (
+                                    <i class="bi bi-camera-video-off"></i>
+                                ) : (
+                                    <i class="bi bi-camera-video"></i>
+                                )}
                             </Button>
-                            {/* 채팅 버튼 */}
-                            <Button variant="outline-primary" onClick={!isChatting ? openChatting : closeChatting}>
-                                채팅
-                            </Button>
+
                             {/* 잡음제거 토글 버튼 */}
                             <Button
+                                size="lg"
                                 key={isNoiseSuppressionEnabled ? 'noiseSuppression-off' : 'noiseSuppression-on'}
                                 variant={isNoiseSuppressionEnabled ? 'primary' : 'outline-primary'}
                                 onClick={toggleNoiseSuppression}
                             >
-                                {!isNoiseSuppressionEnabled ? <div>잡음제거 OFF</div> : <div>잡음제거 ON</div>}         
+                                <i class="bi bi-soundwave"></i>
                             </Button>
                             {/* 화면공유 토글 버튼 */}
                             <Button
+                                size="lg"
                                 key={isScreenSharing ? 'screenSharing-off' : 'screenSharing-on'}
                                 variant={isScreenSharing ? 'primary' : 'outline-primary'}
                                 onClick={toggleScreenSharing}
                             >
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M21 16H3V4h18v12zm-2-10H5v8h14V6zM1 18h22v2H1z" />                         
-                                </svg>
+                                <i class="bi bi-display"></i>
                             </Button>
-                            {/* 음성녹음(요약) 토글 버튼 */}
-                            {/* <Button
-                                    onClick={toggleRecording}
-                                    className={`control-button record ${isRecording ? 'active' : ''}`}
-                                    title={
-                                        isProcessing ? '요약 생성 중...' : isRecording ? '녹음 중지 및 요약' : '녹음 시작'
-                                    }
-                                    disabled={isProcessing}
-                                >
-                                    {isProcessing && !isRecording ? ( // 녹음 중지가 아닌, 순수 요약 처리 중에만 스피너 표시
-                                        <div
-                                            className="spinner"
-                                            style={{
-                                                width: '24px',
-                                                height: '24px',
-                                                borderWidth: '3px',
-                                            }}
-                                        />
-                                    ) : (
-                                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                                            {isRecording ? (
-                                                <rect x="8" y="8" width="8" height="8" />
-                                            ) : (
-                                                <circle cx="12" cy="12" r="6" />
-                                            )}
-                                        </svg>
-                                    )}
-                                </Button> */}
+
                             {/* 회의 나가기 버튼 */}
-                            <Button variant="danger" onClick={() => cleanUpConnection()}>
-                                <div>END</div>
+                            <Button size="lg" variant="danger" onClick={() => cleanUpConnection()}>
+                                <i class="bi bi-telephone-x-fill"></i>
                             </Button>
-                        </ButtonGroup>
-                    </>
+                        </div>
+                    </Container>
                 )}
             </div>
-            {/* (회의 중) 우측 회의 요약 사이드바 */}
-            {/* <div className="summary-container"> */}
-            {/* <h2>회의 내용</h2> */}
-            {/* <div className="summary-box"> */}
-            {/* 서버에서 받은 요약 텍스트(마크다운)를 렌더링 */}
-            {/* <ReactMarkdown remarkPlugins={[remarkGfm]}>{summaryText}</ReactMarkdown> */}
-            {/* 요약 실패 시 '재시도' 버튼 표시 */}
-            {/* {summaryError && !isProcessing && lastTranscriptId && ( */}
-            {/* <button onClick={handleRetry} className="retry-button" disabled={isProcessing}> */}
-            {/* 재시도 */}
-            {/* </button> */}
-            {/* )} */}
-            {/* </div> */}
-            {/* </div> */}
-            {showChattingModal && (
-                <div>
-                    <div className="chat-header">
-                        <h5>회의 채팅</h5>
-                        <button
-                            className="btn-close btn-close-white"
-                            onClick={() => setShowChattingModal(false)}
-                        ></button>
-                    </div>
-                    <div className="chat-body">
-                        <div className="chat-message">
-                            <strong>이수연:</strong> 프로젝트 관련해서 얘기해보면 좋겠어요.
-                        </div>
-                        <div className="chat-message">
-                            <strong>김가현:</strong> UI 쪽은 어떤 방향으로 잡을지 의논해야 할 듯!
-                        </div>
-                    </div>
-                    <div className="chat-footer">
-                        <InputGroup>
-                            <Form.Control placeholder="메시지를 입력하세요..." />
-                            <Button variant="primary">전송</Button>
-                        </InputGroup>
-                    </div>
-                </div>
-            )}
-        </div>
+        </Container>
     );
 };
 
