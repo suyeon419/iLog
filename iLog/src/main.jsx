@@ -22,6 +22,7 @@ import Settings from './pages/user/Settings.jsx';
 import FindPw from './pages/user/FindPw.jsx';
 import FindEmail from './pages/user/FindEmail.jsx';
 import ChangePw from './pages/user/ChangePw.jsx';
+import EditProfile from './pages/user/EditProfile';
 
 createRoot(document.getElementById('root')).render(
     // <React.StrictMode>
@@ -47,6 +48,7 @@ createRoot(document.getElementById('root')).render(
                 <Route path="/meeting/:meetingId" element={<Meeting />} />
 
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/edit-profile" element={<EditProfile />} />
             </Route>
         </Routes>
     </BrowserRouter>

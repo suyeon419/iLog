@@ -29,7 +29,9 @@ export default function Settings() {
                             <div className="text-muted">gksdml7419@gmail.com</div>
                         </div>
                     </div>
-                    <Button variant="primary">회원 정보 수정</Button>
+                    <Button as={Link} to="/edit-profile" variant="primary">
+                        회원 정보 수정
+                    </Button>
                 </div>
                 <hr className="beigeHr" />
             </section>
