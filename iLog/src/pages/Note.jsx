@@ -107,8 +107,8 @@ export default function Note() {
 
                 <Row>
                     {items.map((item) => (
-                        <Col md={6} lg={4} className="mb-4" key={item.id}>
-                            <Card className="h-100 card-project-card ">
+                        <Col md={6} lg={3} className="mb-4" key={item.id}>
+                            <Card className="h-100 card-project ">
                                 <div className="card-image-container">
                                     {item.imageUrl ? (
                                         <Card.Img top src={item.imageUrl} alt={item.name} />
