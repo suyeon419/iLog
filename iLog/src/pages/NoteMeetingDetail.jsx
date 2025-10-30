@@ -76,11 +76,7 @@ export default function NoteMeetingDetail() {
                     </Button>
 
                     <Dropdown>
-                        <Dropdown.Toggle
-                            variant="link"
-                            id="note-options-dropdown"
-                            className="text-dark text-decoration-none p-0"
-                        >
+                        <Dropdown.Toggle variant="link" className="text-decoration-none dropdown-toggle">
                             <ThreeDotsVertical size={24} />
                         </Dropdown.Toggle>
 

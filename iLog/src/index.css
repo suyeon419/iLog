@@ -204,3 +204,7 @@ btn-outline-primary:hover i {
     width: 100% !important; /* 3. 고정 너비(380px) 대신 100%로 변경 */
     box-shadow: none;
 }
+
+.dropdown-toggle::after {
+    display: none !important;
+}
