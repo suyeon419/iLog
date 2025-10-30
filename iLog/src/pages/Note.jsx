@@ -7,7 +7,7 @@ import './Note.css'; // CSS 파일은 그대로 사용
 
 const initialProject = {
     id: 1,
-    name: 'LCK 팀프로젝트',
+    name: '웹킷 팀프로젝트',
     members: '김가현 김우혁 이수연 최겸',
     created: '2025.00.00.',
     modified: '2025.00.00.',
@@ -93,7 +93,7 @@ export default function Note() {
             <Container>
                 <h2 style={{ fontWeight: 'bold', color: '#333' }} className="mb-4">
                     <PencilSquare className="me-3" />
-                    회의록
+                    프로젝트
                 </h2>
 
                 {/* 11. 숨겨진 파일 입력(file input) */}
@@ -111,7 +111,12 @@ export default function Note() {
                             <Card className="h-100 card-project ">
                                 <div className="card-image-container">
                                     {item.imageUrl ? (
-                                        <Card.Img top src={item.imageUrl} alt={item.name} />
+                                        <Card.Img
+                                            className="card-image-placeholder"
+                                            top
+                                            src={item.imageUrl}
+                                            alt={item.name}
+                                        />
                                     ) : (
                                         <div className="card-image-placeholder">
                                             <span>사진을 추가해 주세요</span>
