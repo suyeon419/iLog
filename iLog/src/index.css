@@ -139,29 +139,28 @@ btn-outline-primary:hover i {
 }
 
 /* 미팅용 */
-.card,
+.card {
+    border-radius: 10px !important;
+    border: 2px solid #b66e03;
+}
 .meetingcard {
     border-radius: 10px !important;
     border: 2px solid #333;
     width: 380px;
+    background-color: #f5f1ec;
 }
-/* .meetingcard {
-    width: 380px;
-    border: 2px solid #333;
-    border-radius: 10px;
-}*/
 
 .cardHeader {
     background-color: #b66e03;
     border-bottom: 2px solid #333;
-    color: #fff;
+    color: #f5f1ec;
     padding: 5px;
     border-top-left-radius: 8px !important;
     border-top-right-radius: 8px !important;
 }
 
 .mini-logo {
-    background-color: #fff;
+    background-color: #f5f1ec;
     padding: 3px;
     margin: 0px;
     border-radius: 10px;
