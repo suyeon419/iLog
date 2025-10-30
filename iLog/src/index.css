@@ -10,22 +10,28 @@
 .btn-primary {
     background-color: #b66e03 !important;
     border-color: #b66e03 !important;
-    color: #fff !important;
+    color: #f5f1ec !important;
+}
+.btn-primary i,
+btn-outline-primary:hover i {
+    color: #f5f1ec !important;
 }
 
 .btn-primary:hover {
-    background-color: #b66e03 !important;
+    background-color: #f5f1ec !important;
     border-color: #b66e03 !important;
+    color: #b66e03 !important;
 }
 
 .btn-outline-primary {
     color: #b66e03 !important;
     border-color: #b66e03 !important;
+    background-color: #f5f1ec;
 }
 
 .btn-outline-primary:hover {
     background-color: #b66e03 !important;
-    color: #fff !important;
+    color: #f5f1ec !important;
 }
 
 .btn-danger {
