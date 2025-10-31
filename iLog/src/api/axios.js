@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: 'https://webkit-ilo9-api.duckdns.org',
 });
 
 // ✅ 요청 인터셉터: 토큰 자동 추가
