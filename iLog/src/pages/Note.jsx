@@ -1,24 +1,65 @@
 // Note.jsx
 
 import React, { useState, useRef } from 'react';
-import { Container, Button, Card, Row, Col } from 'react-bootstrap';
+// Pagination을 import 합니다.
+import { Container, Button, Card, Row, Col, Pagination } from 'react-bootstrap'; // <-- 변경
 import { useNavigate } from 'react-router-dom';
 import { PencilSquare } from 'react-bootstrap-icons';
 
-import './Note.css'; // CSS 파일은 그대로 사용
+import './Note.css';
 
-const initialProject = {
-    id: 1,
-    name: '웹킷 팀프로젝트',
-    members: '김가현 김우혁 이수연 최겸',
-    created: '2025.00.00.',
-    modified: '2025.00.00.',
-    imageUrl: null,
-};
+// 테스트를 위해 데이터를 5개로 늘렸습니다. 1개로 줄이면 페이지네이션이 사라집니다.
+const initialProjects = [
+    {
+        id: 1,
+        name: '웹킷 팀프로젝트',
+        members: '김가현 김우혁 이수연 최겸',
+        created: '2025.00.00.',
+        modified: '2025.00.00.',
+        imageUrl: null,
+    },
+    {
+        id: 2,
+        name: '4-1 창설 프로젝트',
+        members: '김가현 김우혁 이수연 최겸',
+        created: '2025.00.00.',
+        modified: '2025.00.00.',
+        imageUrl: null,
+    },
+    {
+        id: 3,
+        name: '3-2 오픈소스',
+        members: '김가현 김우혁 이수연 최겸',
+        created: '2025.00.00.',
+        modified: '2025.00.00.',
+        imageUrl: null,
+    },
+    {
+        id: 4,
+        name: '3-2 임베디드',
+        members: '김가현 김우혁 이수연 최겸',
+        created: '2025.00.00.',
+        modified: '2025.00.00.',
+        imageUrl: null,
+    },
+    {
+        id: 5,
+        name: 'iLog 회의록',
+        members: '김가현 김우혁 이수연 최겸',
+        created: '2025.00.00.',
+        modified: '2025.00.00.',
+        imageUrl: null,
+    },
+];
 
 export default function Note() {
     const navigate = useNavigate();
-    const [items, setItems] = useState([initialProject]);
+    const [items, setItems] = useState(initialProjects); // <-- 변경
+
+    // --- 페이지네이션 상태 및 로직 ---
+    const [currentPage, setCurrentPage] = useState(1); // <-- 변경: 현재 페이지 상태
+    const ITEMS_PER_PAGE = 4; // <-- 변경: 페이지당 4개씩
+    // -------------------------------
 
     const fileInputRef = useRef(null);
     const [targetItemId, setTargetItemId] = useState(null);
@@ -64,6 +105,7 @@ export default function Note() {
             imageUrl: null,
         };
         setItems([newMeeting, ...items]); // 새 항목을 맨 앞에 추가
+        setCurrentPage(1); // <-- 변경: 새 프로젝트 추가 시 1페이지로 이동
     };
 
     const handleRowClick = (id) => {
@@ -71,9 +113,33 @@ export default function Note() {
     };
     // 여기까지 백엔드 들어오면 필요없음
 
+    // --- 페이지네이션 로직 ---
+    const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+    const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+    const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+    // .slice()를 사용해 현재 페이지에 보여줄 4개의 아이템만 자릅니다.
+    const currentItems = items.slice(indexOfFirstItem, indexOfLastItem); // <-- 변경
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    // 페이지 번호를 렌더링하는 함수
+    const renderPaginationItems = () => {
+        let pageItems = [];
+        for (let number = 1; number <= totalPages; number++) {
+            pageItems.push(
+                <Pagination.Item key={number} active={number === currentPage} onClick={() => handlePageChange(number)}>
+                    {number}
+                </Pagination.Item>
+            );
+        }
+        return pageItems;
+    };
+    // ------------------------
+
     return (
         <>
-            {/* 1. 'fluid' prop 제거 */}
             <Container className="pt-3">
                 <h2 style={{ fontWeight: 'bold', color: '#333' }} className="mb-4">
                     <PencilSquare className="me-3" />
@@ -89,7 +155,7 @@ export default function Note() {
                 />
 
                 <Row className="justify-content-center">
-                    {items.map((item) => (
+                    {currentItems.map((item) => (
                         <Col md="auto" lg="auto" className="mb-4" key={item.id}>
                             <Card className="h-100 card-project">
                                 <div className="card-image-container">
@@ -163,6 +229,25 @@ export default function Note() {
                         </Col>
                     ))}
                 </Row>
+
+                {/* --- 페이지네이션 컴포넌트 추가 --- */}
+                {totalPages > 1 && (
+                    <nav className="mt-3 pagination-nav">
+                        {' '}
+                        {/* <-- 변경 */}
+                        <Pagination className="justify-content-center">
+                            <Pagination.Prev
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            />
+                            {renderPaginationItems()}
+                            <Pagination.Next
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                            />
+                        </Pagination>
+                    </nav>
+                )}
 
                 <Button variant="primary" className="w-100 mt-3" onClick={handleAddMeeting}>
                     프로젝트 추가하기
