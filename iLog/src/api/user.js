@@ -43,12 +43,36 @@ export const registerUser = async (userData) => {
  * 로그인 (비로그인 접근)
  * ========================== */
 export const loginUser = async (data) => {
+    console.group('🧩 [loginUser] 요청 디버그 로그');
+    console.log('📤 요청 데이터:', data);
+
     try {
         const res = await api.post('/auth/login', data, { headers: defaultHeaders });
-        if (res.data?.token) localStorage.setItem('token', res.data.token);
+
+        console.log('✅ 응답 상태 코드:', res.status);
+        console.log('✅ 응답 데이터:', res.data);
+
+        if (res.data?.token) {
+            localStorage.setItem('token', res.data.token);
+            console.log('🔐 토큰 저장 완료:', res.data.token);
+        }
+
+        console.groupEnd();
         return res.data;
     } catch (err) {
         console.error('❌ 로그인 실패:', err);
+
+        if (err.response) {
+            console.error('📦 서버 응답 상태:', err.response.status);
+            console.error('📩 서버 응답 데이터:', err.response.data);
+            console.error('📋 응답 헤더:', err.response.headers);
+        } else if (err.request) {
+            console.error('🌐 요청은 전송됐으나 응답 없음:', err.request);
+        } else {
+            console.error('⚙️ 요청 설정 중 오류:', err.message);
+        }
+
+        console.groupEnd();
         throw err;
     }
 };

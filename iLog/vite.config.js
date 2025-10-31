@@ -1,17 +1,25 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import https from 'https'; // ✅ ESM import로 변경
 
-// https://vite.dev/config/
 export default defineConfig({
     plugins: [react()],
     server: {
         proxy: {
             '/api': {
-                // 프론트에서 '/api'로 시작하는 요청을 대신 전달
                 target: 'https://webkit-ilo9-api.duckdns.org',
                 changeOrigin: true,
                 secure: false,
-                rewrite: (path) => path.replace(/^\/api/, ''), // '/api'를 제거하고 백엔드로 전달
+                agent: new https.Agent({ rejectUnauthorized: false }), // ✅ 수정된 부분
+                rewrite: (path) => path.replace(/^\/api/, ''),
+                configure: (proxy, options) => {
+                    proxy.on('proxyReq', (proxyReq, req) => {
+                        console.log(`[VITE PROXY] ${req.method} ${req.url} -> ${options.target}${req.url}`);
+                    });
+                    proxy.on('error', (err) => {
+                        console.error('[VITE PROXY ERROR]', err?.message);
+                    });
+                },
             },
         },
     },
