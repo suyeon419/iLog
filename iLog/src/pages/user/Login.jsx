@@ -30,10 +30,27 @@ export default function Login() {
             const res = await loginUser(form); // 실제 로그인 API 호출
             console.log('로그인 성공:', res);
 
-            // 로그인 성공 시: 토큰 저장
-            if (res.token) {
-                localStorage.setItem('token', res.token);
+            if (!res) {
+                console.error('❌ [Login] 응답이 없습니다. loginUser 함수에서 return이 누락된 듯합니다.');
+            } else if (!res.accessToken && !res.data?.accessToken) {
+                console.warn('⚠️ [Login] accessToken 필드가 응답에 없습니다. 응답 구조 확인 필요:', res);
+            } else {
+                const token = res.accessToken || res.data.accessToken;
+                if (!token) {
+                    console.warn('⚠️ [Login] accessToken이 undefined입니다. res 구조:', res);
+                } else {
+                    localStorage.setItem('accessToken', token);
+                    console.log('✅ [Login] 토큰이 localStorage에 저장되었습니다:', token);
+                }
             }
+
+            // // 로그인 성공 시: 토큰 저장
+            // if (res.token) {
+            //     ocalStorage.setItem('accessToken', res.accessToken);
+            //     console.log('토큰 저장');
+            // } else {
+            //     console.log('토큰 저장 안됨');
+            // }
 
             // 메인 페이지 이동
             navigate('/');
