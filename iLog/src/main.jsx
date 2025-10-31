@@ -18,15 +18,15 @@ import NoteCreate from './pages/note/NoteCreate.jsx';
 import NoteDetail from './pages/note/NoteDetail.jsx';
 import NoteMeetingDetail from './pages/note/NoteMeetingDetail.jsx';
 import NoteMeetingEdit from './pages/note/NoteMeetingEdit.jsx';
-import Settings from './pages/user/Settings.jsx';
+import Settings from './pages/setting/Settings.jsx';
 import FindPw from './pages/user/FindPw.jsx';
 import FindEmail from './pages/user/FindEmail.jsx';
 import ChangePw from './pages/user/ChangePw.jsx';
-import EditProfile from './pages/user/EditProfile';
-import LoginHistory from './pages/user/LoginHistory.jsx';
-import ConfirmPw from './pages/user/ConfirmPw.jsx';
-import MeetingHistory from './pages/user/MeetingHistory.jsx';
-import NoteHistory from './pages/user/NoteHistory.jsx';
+import EditProfile from './pages/setting/EditProfile.jsx';
+import LoginHistory from './pages/setting/LoginHistory.jsx';
+import ConfirmPw from './pages/setting/ConfirmPw.jsx';
+import MeetingHistory from './pages/setting/MeetingHistory.jsx';
+import NoteHistory from './pages/setting/NoteHistory.jsx';
 
 createRoot(document.getElementById('root')).render(
     // <React.StrictMode>
