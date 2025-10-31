@@ -1,40 +1,36 @@
 // NoteDetail.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Container, Table, Button, Row, Col } from 'react-bootstrap';
+import { Container, Table, Button, Row, Col, Pagination } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import MemberModal from './MemberModal';
 
+// 11개 더미 데이터
 const DUMMY_MEETINGS = [
     {
-        id: 101, // 고유 ID
+        id: 101,
         name: '개발 진행 회의',
         members: '김가현 김우혁 이수연 최겸',
         created: '2025.00.00.',
         modified: '2025.00.00.',
     },
+    { id: 102, name: '설계 구체화 회의', members: '김가현 김우혁', created: '2025.00.00.', modified: '2025.00.00.' },
+    { id: 103, name: '설계 회의', members: '김가현 이수연 최겸', created: '2025.00.00.', modified: '2025.00.00.' },
+    { id: 104, name: '아이디어 회의', members: '김우혁 이수연', created: '2025.00.00.', modified: '2025.00.00.' },
+    { id: 105, name: '5차 회의', members: '최겸', created: '2025.00.00.', modified: '2025.00.00.' },
     {
-        id: 102,
-        name: '설계 구체화 회의',
+        id: 106,
+        name: '6차 회의',
         members: '김가현 김우혁 이수연 최겸',
         created: '2025.00.00.',
         modified: '2025.00.00.',
     },
-    {
-        id: 103,
-        name: '설계 회의',
-        members: '김가현 김우혁 최겸',
-        created: '2025.00.00.',
-        modified: '2025.00.00.',
-    },
-    {
-        id: 104,
-        name: '아이디어 회의',
-        members: '김가현 김우혁 이수연 최겸',
-        created: '2025.00.00.',
-        modified: '2025.00.00.',
-    },
+    { id: 107, name: '7차 회의', members: '김가현', created: '2025.00.00.', modified: '2025.00.00.' },
+    { id: 108, name: '8차 회의', members: '김우혁', created: '2025.00.00.', modified: '2025.00.00.' },
+    { id: 109, name: '9차 회의', members: '이수연', created: '2025.00.00.', modified: '2025.00.00.' },
+    { id: 110, name: '10차 회의', members: '최겸', created: '2025.00.00.', modified: '2025.00.00.' },
+    { id: 111, name: '11차 회의 (테스트)', members: '김가현', created: '2025.00.00.', modified: '2025.00.00.' }, // 11번째 데이터
 ];
 
 export default function NoteDetail() {
@@ -47,18 +43,16 @@ export default function NoteDetail() {
 
     const [showMemberModal, setShowMemberModal] = useState(false);
 
-    const fetchProjectDetails = async (projectId) => {
+    // --- 페이지네이션 상태 및 로직 ---
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10; // 페이지당 10개
+    // -------------------------------
+
+    const fetchProjectDetails = (projectId) => {
         setLoading(true);
         try {
-            // TODO: (1) 프로젝트 자체 정보 가져오기
-            // ...
-            // TODO: (2) 하위 회의록 목록 가져오기
-            // ...
-
-            // --- 지금은 API가 없으므로 임시 표시 ---
-            setProject({ id: id, name: `웹킷 팀프로젝트` }); // 임시 제목
+            setProject({ id: id, name: `웹킷 팀프로젝트` });
             setSubMeetings(DUMMY_MEETINGS);
-            // ------------------------------------
         } catch (error) {
             console.error('Failed to fetch details:', error);
         } finally {
@@ -81,6 +75,31 @@ export default function NoteDetail() {
     const handleShowMemberModal = () => setShowMemberModal(true);
     const handleCloseMemberModal = () => setShowMemberModal(false);
 
+    // --- 페이지네이션 로직 (기존과 동일) ---
+    const totalPages = Math.ceil(subMeetings.length / ITEMS_PER_PAGE);
+    const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+    const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+    const currentMeetings = subMeetings.slice(indexOfFirstItem, indexOfLastItem);
+
+    const handlePageChange = (pageNumber) => {
+        const newPage = Math.max(1, Math.min(pageNumber, totalPages === 0 ? 1 : totalPages));
+        setCurrentPage(newPage);
+    };
+
+    const renderPaginationItems = () => {
+        let pageItems = [];
+        const total = totalPages === 0 ? 1 : totalPages;
+        for (let number = 1; number <= total; number++) {
+            pageItems.push(
+                <Pagination.Item key={number} active={number === currentPage} onClick={() => handlePageChange(number)}>
+                    {number}
+                </Pagination.Item>
+            );
+        }
+        return pageItems;
+    };
+    // ------------------------
+
     if (loading) {
         return (
             <Container fluid className="pt-3 text-center">
@@ -91,71 +110,95 @@ export default function NoteDetail() {
 
     return (
         <Container fluid className="pt-3 container-left">
-            {/* 프로젝트 타이틀 (style -> className으로 변경) */}
-            <Row className="mb-3 align-items-center">
-                <Col>
-                    {/* style을 className="fw-bold m-0"으로 변경 */}
-                    <h2 className="fw-bold m-0">
-                        <i class="bi bi-pen me-3"></i>
-                        {project ? project.name : '...'}
-                    </h2>
-                </Col>
-                <Col xs="auto">
-                    {/* 불필요한 color 속성 제거 */}
-                    <PersonPlus size={24} style={{ cursor: 'pointer' }} onClick={handleShowMemberModal} />
-                </Col>
-            </Row>
+            {/* 1. 콘텐츠 영역 (flex-grow-1) */}
+            <div className="flex-grow-1">
+                {/* [수정] 프로젝트 타이틀 (중앙 정렬) */}
+                <Row className="mb-3 align-items-center">
+                    {/* 1. 왼쪽 공백 (오른쪽 아이콘과 너비를 맞추기 위함) */}
+                    <Col xs="auto" style={{ visibility: 'hidden' }}>
+                        <PersonPlus size={24} />
+                    </Col>
 
-            {/* 하위 회의록 목록 테이블 (style -> className으로 변경) */}
-            <Table className="align-middle">
-                <thead>
-                    <tr>
-                        <th>
-                            {/* style을 className="me-2"로 변경 */}
-                            <CheckSquare className="me-2" /> 회의 이름
-                        </th>
-                        <th>
-                            {/* style을 className="me-2"로 변경 */}
-                            <People className="me-2" /> 참가자
-                        </th>
-                        <th>
-                            {/* style을 className="me-2"로 변경 */}
-                            <CalendarCheck className="me-2" /> 생성일자
-                        </th>
-                        <th>
-                            {/* style을 className="me-2"로K로 변경 */}
-                            <CalendarPlus className="me-2" /> 수정일자
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {subMeetings.length === 0 ? (
+                    {/* 2. 중앙 타이틀 */}
+                    <Col className="text-center">
+                        <h2 className="fw-bold m-0">
+                            <PencilSquare className="me-3" />
+                            {project ? project.name : '...'}
+                        </h2>
+                    </Col>
+
+                    {/* 3. 오른쪽 아이콘 */}
+                    <Col xs="auto">
+                        <PersonPlus size={24} style={{ cursor: 'pointer' }} onClick={handleShowMemberModal} />
+                    </Col>
+                </Row>
+                {/* ------------------------------------- */}
+
+                {/* 하위 회의록 목록 테이블 */}
+                <Table className="align-middle">
+                    <thead>
+                        {/* ... (thead 내용) ... */}
                         <tr>
-                            <td colSpan="4" className="text-center p-4">
-                                하위 회의록이 없습니다.
-                            </td>
+                            <th>
+                                <CheckSquare className="me-2" /> 회의 이름
+                            </th>
+                            <th>
+                                <People className="me-2" /> 참가자
+                            </th>
+                            <th>
+                                <CalendarCheck className="me-2" /> 생성일자
+                            </th>
+                            <th>
+                                <CalendarPlus className="me-2" /> 수정일자
+                            </th>
                         </tr>
-                    ) : (
-                        subMeetings.map((meeting) => (
-                            <tr
-                                key={meeting.id}
-                                onClick={() => handleRowClick(meeting.id)}
-                                // cursor: pointer는 Bootstrap 클래스가 없으므로 유지
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <td>{meeting.name}</td>
-                                <td>{meeting.members}</td>
-                                <td>{meeting.created}</td>
-                                <td>{meeting.modified}</td>
+                    </thead>
+                    <tbody>
+                        {currentMeetings.length === 0 ? (
+                            <tr>
+                                <td colSpan="4" className="text-center p-4">
+                                    하위 회의록이 없습니다.
+                                </td>
                             </tr>
-                        ))
-                    )}
-                </tbody>
-            </Table>
+                        ) : (
+                            currentMeetings.map((meeting) => (
+                                <tr
+                                    key={meeting.id}
+                                    onClick={() => handleRowClick(meeting.id)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <td>{meeting.name}</td>
+                                    <td>{meeting.members}</td>
+                                    <td>{meeting.created}</td>
+                                    <td>{meeting.modified}</td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </Table>
+            </div>
 
-            <Button variant="primary" className="w-100 mt-3" onClick={handleAddSubMeeting}>
-                회의 추가하기
-            </Button>
+            {/* 2. 하단 고정 영역 (페이지네이션 + 버튼) */}
+            <div>
+                <nav className="mt-3 pagination-nav">
+                    {/* ... (Pagination 내용) ... */}
+                    <Pagination className="justify-content-center">
+                        <Pagination.Prev
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        />
+                        {renderPaginationItems()}
+                        <Pagination.Next
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === (totalPages === 0 ? 1 : totalPages)}
+                        />
+                    </Pagination>
+                </nav>
+
+                <Button variant="primary" className="w-100 mt-3" onClick={handleAddSubMeeting}>
+                    회의 추가하기
+                </Button>
+            </div>
 
             <MemberModal show={showMemberModal} onHide={handleCloseMemberModal} />
         </Container>
