@@ -1,8 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { getUserById, loginUser } from '../../api/user';
+import { jwtDecode } from 'jwt-decode';
 
 export default function Settings() {
+    const navigate = useNavigate();
+    const [isLogin, setIsLogin] = useState(false);
+    const [user, setUser] = useState(null);
+
+    const logout = () => {
+        localStorage.removeItem('accessToken');
+        loginUser();
+
+        navigate('/');
+    };
+
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+
+        if (token) {
+            setIsLogin(true);
+
+            try {
+                const decoded = jwtDecode(token);
+                const userId = decoded.id;
+
+                getUserById(userId)
+                    .then((data) => {
+                        setUser(data);
+                    })
+                    .catch((err) => {
+                        console.error('❌ [Setting] 회원 정보 요청 실패:', err);
+                        localStorage.removeItem('accessToken');
+                        setIsLogin(false);
+                    });
+            } catch (err) {
+                console.error('❌ [Setting] JWT 디코딩 실패:', err);
+                localStorage.removeItem('accessToken');
+                setIsLogin(false);
+            }
+        }
+    }, []);
+
     return (
         <div className="container-left">
             {/* 내 프로필 */}
@@ -25,8 +65,8 @@ export default function Settings() {
                             }}
                         />
                         <div>
-                            <div className="h3">최겸</div>
-                            <div className="text-muted">gksdml7419@gmail.com</div>
+                            <div className="h3">{user?.name}</div>
+                            <div className="text-muted">{user?.email}</div>
                         </div>
                     </div>
                     <Button as={Link} to="/edit-profile" variant="primary">
@@ -72,7 +112,9 @@ export default function Settings() {
 
             {/* 하단 버튼 */}
             <div className="d-flex justify-content-center gap-3 mt-4">
-                <Button variant="primary">로그아웃</Button>
+                <Button variant="primary" onClick={logout}>
+                    로그아웃
+                </Button>
                 <Button variant="danger">회원탈퇴</Button>
             </div>
         </div>
