@@ -17,7 +17,8 @@ export default function FindPw() {
     };
     return (
         <Container>
-            <img src="/images/iLogLogo.png" alt="iLog Logo" style={{ width: '150px' }} /> <br />
+            <h2 className="fw-bold text-center my-4">비밀번호 찾기</h2>
+
             <Form onSubmit={handleSubmit}>
                 <Form.Group>
                     <Form.Label>이메일</Form.Label>

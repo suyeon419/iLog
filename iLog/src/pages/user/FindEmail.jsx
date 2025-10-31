@@ -41,8 +41,8 @@ export default function FindEmail() {
 
     return (
         <Container>
-            <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ width: '150px' }} />
-            <br />
+            <h2 className="fw-bold text-center my-4">이메일 찾기</h2>
+
             <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-2">
                     <Form.Label className="mb-0">전화번호</Form.Label>

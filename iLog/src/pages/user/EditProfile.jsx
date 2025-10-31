@@ -1,7 +1,11 @@
+// EditProfile.jsx
+
 import React, { useState, useEffect } from 'react';
 import { Alert, Button, Container, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+// import { registerUser } from '../../api/user'; // [삭제] 백엔드 API 호출 삭제
 
+// [수정] 함수 이름을 Register에서 EditProfile로 변경
 export default function EditProfile() {
     const navigate = useNavigate();
 
@@ -20,26 +24,31 @@ export default function EditProfile() {
         setForm({ ...form, [name]: value });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    // [수정] handleSubmit 함수를 대폭 수정
+    const handleSubmit = (e) => {
+        e.preventDefault(); // 새로고침 방지
         setError('');
-        setSuccess(false);
-        console.log(form);
 
-        try {
-            const res = await registerUser(form); // ✅ API 호출
-            console.log('회원가입 성공:', res);
-
-            setSuccess(true);
-            setTimeout(() => navigate('/login'), 1500); // 1.5초 후 로그인 페이지로 이동
-        } catch (err) {
-            console.error('회원가입 실패:', err);
-            setError(err.response?.data?.message || '회원가입 중 오류가 발생했습니다.');
+        // 1. 모든 필드가 채워졌는지 확인 (HTML 'required' 속성이 이미 하고 있음)
+        // 2. 비밀번호와 비밀번호 확인이 일치하는지 확인 (선택 사항)
+        if (form.password !== form.checkPassword) {
+            setError('비밀번호가 일치하지 않습니다.');
+            return;
         }
+
+        // 3. 백엔드 API 호출 대신, '본인 인증' 페이지로 즉시 이동
+        console.log('폼 제출 (시뮬레이션)', form);
+        navigate('/confirm-password');
     };
+
     return (
-        <Container>
-            <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ width: '150px' }} /> <br />
+        // [수정] index.css의 .container (중앙 정렬) 스타일 적용
+        <Container className="pt-3">
+            <h2 className="fw-bold text-center my-4">회원 정보 수정</h2>
+
+            {/* 에러 메시지 표시 */}
+            {error && <Alert variant="danger">{error}</Alert>}
+
             <Form onSubmit={handleSubmit}>
                 <Form.Group>
                     <Form.Label>이메일</Form.Label>
@@ -50,6 +59,7 @@ export default function EditProfile() {
                         onChange={handleChange}
                         placeholder="이메일을 입력하세요"
                         required
+                        // readOnly // (이메일 수정을 막으려면 이 주석을 해제하세요)
                     />
                 </Form.Group>
                 <Form.Group>
@@ -70,7 +80,7 @@ export default function EditProfile() {
                         name="password"
                         value={form.password}
                         onChange={handleChange}
-                        placeholder="비밀번호를 입력하세요"
+                        placeholder="새 비밀번호를 입력하세요"
                         required
                     />
                 </Form.Group>
@@ -81,13 +91,13 @@ export default function EditProfile() {
                         name="checkPassword"
                         value={form.checkPassword}
                         onChange={handleChange}
-                        placeholder="비밀번호를 한 번 더 입력하세요"
+                        placeholder="새 비밀번호를 한 번 더 입력하세요"
                         required
                     />
                 </Form.Group>
 
-                <Button type="submit" variant="primary user-btn">
-                    수정완료
+                <Button type="submit" variant="primary" className="user-btn">
+                    수정 완료
                 </Button>
             </Form>
         </Container>

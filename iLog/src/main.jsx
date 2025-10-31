@@ -13,16 +13,20 @@ import Register from './pages/user/Register.jsx';
 import Meeting from './pages/meeting/Meeting.jsx';
 import JoinMeeting from './pages/meeting/JoinMeeting.jsx';
 import CreateMeeting from './pages/meeting/CreateMeeting.jsx';
-import Note from './pages/Note.jsx';
-import NoteCreate from './pages/NoteCreate.jsx';
-import NoteDetail from './pages/NoteDetail.jsx';
-import NoteMeetingDetail from './pages/NoteMeetingDetail.jsx';
-import NoteMeetingEdit from './pages/NoteMeetingEdit.jsx';
+import Note from './pages/note/Note.jsx';
+import NoteCreate from './pages/note/NoteCreate.jsx';
+import NoteDetail from './pages/note/NoteDetail.jsx';
+import NoteMeetingDetail from './pages/note/NoteMeetingDetail.jsx';
+import NoteMeetingEdit from './pages/note/NoteMeetingEdit.jsx';
 import Settings from './pages/user/Settings.jsx';
 import FindPw from './pages/user/FindPw.jsx';
 import FindEmail from './pages/user/FindEmail.jsx';
 import ChangePw from './pages/user/ChangePw.jsx';
 import EditProfile from './pages/user/EditProfile';
+import LoginHistory from './pages/user/LoginHistory.jsx';
+import ConfirmPw from './pages/user/ConfirmPw.jsx';
+import MeetingHistory from './pages/user/MeetingHistory.jsx';
+import NoteHistory from './pages/user/NoteHistory.jsx';
 
 createRoot(document.getElementById('root')).render(
     // <React.StrictMode>
@@ -49,6 +53,10 @@ createRoot(document.getElementById('root')).render(
 
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/edit-profile" element={<EditProfile />} />
+                <Route path="/confirm-password" element={<ConfirmPw />} />
+                <Route path="login-history" element={<LoginHistory />} />
+                <Route path="/meeting-history" element={<MeetingHistory />} />
+                <Route path="/note-history" element={<NoteHistory />} />
             </Route>
         </Routes>
     </BrowserRouter>

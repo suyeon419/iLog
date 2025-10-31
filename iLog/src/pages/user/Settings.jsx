@@ -56,15 +56,15 @@ export default function Settings() {
                 <hr className="brownHr" />
                 <ul className="list-unstyled mt-2 ms-3">
                     <li>
-                        <a href="/login-history" className="link" style={{ display: 'block' }}>
+                        <Link to="/note-history" className="link" style={{ display: 'block' }}>
                             회의록
-                        </a>
+                        </Link>
                     </li>
                     <hr className="beigeHr" />
                     <li>
-                        <a href="/login-history" className="link" style={{ display: 'block' }}>
+                        <Link to="/meeting-history" className="link" style={{ display: 'block' }}>
                             화상 회의
-                        </a>
+                        </Link>
                     </li>
                     <hr className="beigeHr" />
                 </ul>

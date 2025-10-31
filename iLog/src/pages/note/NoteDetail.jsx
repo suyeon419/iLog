@@ -6,7 +6,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import MemberModal from './MemberModal';
 
-// 11개 더미 데이터
 const DUMMY_MEETINGS = [
     {
         id: 101,
@@ -28,9 +27,6 @@ const DUMMY_MEETINGS = [
     },
     { id: 107, name: '7차 회의', members: '김가현', created: '2025.00.00.', modified: '2025.00.00.' },
     { id: 108, name: '8차 회의', members: '김우혁', created: '2025.00.00.', modified: '2025.00.00.' },
-    { id: 109, name: '9차 회의', members: '이수연', created: '2025.00.00.', modified: '2025.00.00.' },
-    { id: 110, name: '10차 회의', members: '최겸', created: '2025.00.00.', modified: '2025.00.00.' },
-    { id: 111, name: '11차 회의 (테스트)', members: '김가현', created: '2025.00.00.', modified: '2025.00.00.' }, // 11번째 데이터
 ];
 
 export default function NoteDetail() {
@@ -45,7 +41,7 @@ export default function NoteDetail() {
 
     // --- 페이지네이션 상태 및 로직 ---
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 10; // 페이지당 10개
+    const ITEMS_PER_PAGE = 7;
     // -------------------------------
 
     const fetchProjectDetails = (projectId) => {
@@ -113,7 +109,7 @@ export default function NoteDetail() {
             {/* 1. 콘텐츠 영역 (flex-grow-1) */}
             <div className="flex-grow-1">
                 {/* [수정] 프로젝트 타이틀 (중앙 정렬) */}
-                <Row className="mb-3 align-items-center">
+                <Row className="mb-3 mt-3 align-items-center">
                     {/* 1. 왼쪽 공백 (오른쪽 아이콘과 너비를 맞추기 위함) */}
                     <Col xs="auto" style={{ visibility: 'hidden' }}>
                         <PersonPlus size={24} />

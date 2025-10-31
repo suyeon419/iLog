@@ -131,6 +131,10 @@ btn-outline-primary:hover i {
     margin-bottom: 0px;
 }
 
+.form-modal {
+    width: 400px;
+}
+
 .noteForm {
     border: none;
     border-bottom: none;
@@ -173,11 +177,6 @@ btn-outline-primary:hover i {
 /* 모달 배경색 지정 */
 .modal-custom-bg .modal-content {
     background-color: #f5f1ec;
-}
-
-/* 조원 목록 구분선 색상 지정 */
-.member-list-item {
-    border-bottom: 1px solid #b66e03;
 }
 
 .badge-leader {
