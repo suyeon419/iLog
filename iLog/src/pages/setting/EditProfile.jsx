@@ -25,7 +25,7 @@ export default function EditProfile() {
     };
 
     // [수정] handleSubmit 함수를 대폭 수정
-    // 가현아, 제발 괴롭히지 마..
+    // 수연아, 제발 괴롭히지 마..
     const handleSubmit = (e) => {
         e.preventDefault(); // 새로고침 방지
         setError('');
