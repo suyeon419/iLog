@@ -1,13 +1,40 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Form, Button, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { getUserById } from '../../api/user';
+import { jwtDecode } from 'jwt-decode';
 
 export default function JoinMeeting() {
     const navigate = useNavigate();
 
     const [meetingURL, setMeetingURL] = useState('');
-    const [name, setName] = useState('최겸');
+    const [name, setName] = useState('');
     const [video, setVideo] = useState(false);
+
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode(token); // ✅ 토큰에서 id 추출
+                const userId = decoded.id;
+
+                getUserById(userId)
+                    .then((data) => {
+                        if (data && data.name) {
+                            setName(data.name);
+                        } else if (data?.data?.name) {
+                            setName(data.data.name);
+                        }
+                    })
+                    .catch((err) => {
+                        console.error('❌ [JoinMeeting] 사용자 정보 요청 실패:', err);
+                    });
+            } catch (err) {
+                console.error('❌ [JoinMeeting] JWT 디코딩 실패:', err);
+                localStorage.removeItem('accessToken');
+            }
+        }
+    }, []);
 
     const handlerSubmit = (e) => {
         e.preventDefault();
@@ -48,13 +75,7 @@ export default function JoinMeeting() {
 
                         <Form.Group>
                             <Form.Label>참가자 이름</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                placeholder="이름을 입력하세요"
-                                required
-                            />
+                            <Form.Control type="text" value={name} placeholder="이름을 입력하세요" required />
                         </Form.Group>
 
                         <Form.Group className="mt-4">
