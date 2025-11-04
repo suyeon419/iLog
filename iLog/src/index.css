@@ -3,6 +3,13 @@
     color: #333;
 }
 
+/* 스크롤바 */
+html,
+body {
+    scrollbar-width: thin;
+    scrollbar-color: #b66e03 #fff;
+}
+
 /* 버튼 스타일 */
 .btn {
     border-radius: 10px;
@@ -189,9 +196,13 @@ btn-outline-primary:hover i {
 
 .modal-header {
     background-color: #f5f1ec;
+    border-bottom: none;
+    padding-bottom: 0px;
 }
 .modal-footer {
     background-color: #f5f1ec;
+    border-top: none;
+    padding-top: 0px;
 }
 
 /* 모달 배경색 지정 */

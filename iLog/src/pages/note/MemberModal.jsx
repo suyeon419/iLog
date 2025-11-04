@@ -39,18 +39,18 @@ export default function MemberModal({ show, onHide }) {
                 {/* 1. 초대 링크 (d-flex로 간격 분리) */}
                 <Form.Group className="mb-3">
                     <Form.Label>초대 링크</Form.Label>
-                    <div className="d-flex">
-                        <Form.Control type="text" className="form-modal" value={inviteLink} readOnly />
-                        <Button variant="secondary" onClick={handleCopyLink} className="ms-2">
+                    <div className="d-flex gap-2">
+                        <Form.Control className="form-modal" type="text" value={inviteLink} readOnly />
+                        <Button variant="secondary" onClick={handleCopyLink}>
                             복사
                         </Button>
                     </div>
                 </Form.Group>
 
                 {/* 2. 이메일로 초대 (d-flex로 간격 분리) */}
-                <Form.Group className="mb-4">
+                <Form.Group className="mb-3">
                     <Form.Label>이메일</Form.Label>
-                    <div className="d-flex">
+                    <div className="d-flex gap-2">
                         <Form.Control
                             type="email"
                             className="form-modal"
@@ -59,7 +59,7 @@ export default function MemberModal({ show, onHide }) {
                             onChange={(e) => setEmail(e.target.value)}
                         />
                         {/* [수정] '검색' 버튼을 secondary (회색)로 변경 */}
-                        <Button variant="secondary" onClick={handleSearch} className="ms-2">
+                        <Button variant="secondary" onClick={handleSearch}>
                             검색
                         </Button>
                     </div>
@@ -68,7 +68,7 @@ export default function MemberModal({ show, onHide }) {
                 {/* 3. 조원 목록 (ListGroup 사용) */}
                 <hr className="brownHr my-1" />
 
-                <ListGroup variant="flush">
+                <ListGroup variant="flush" style={{ overflowY: 'auto' }}>
                     {DUMMY_MEMBERS.map((member) => (
                         <>
                             <ListGroup.Item

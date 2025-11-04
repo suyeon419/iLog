@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import './Meeting.css';
 import { Button, Container, Form, ListGroup, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { getUserById } from '../../api/user';
 
 // ******** 중간 요약 전송 간격 (ms 단위) ********
 const SEGMENT_DURATION_MS = 300000; // == 5분
@@ -175,7 +176,7 @@ const Meeting = () => {
 
         script.onload = () => {
             console.log('JitsiMeetJS 로드 완료! window.JitsiMeetJS:', !!window.JitsiMeetJS);
-            handleJoin(); // ✅ 로드 완료 후 실행
+            // handleJoin(); // ✅ 로드 완료 후 실행
         };
 
         script.onerror = () => {
@@ -189,7 +190,7 @@ const Meeting = () => {
     const [meetingState, setMeetingState] = useState('idle'); // idle | active
     const [isProcessing, setIsProcessing] = useState(false); // 로딩 스피너 (JWT, 연결 중)
     const [roomName, setRoomName] = useState('');
-    const [userName, setUserName] = useState('이수연');
+    const [userName, setUserName] = useState('');
     const [participants, setParticipants] = useState([]);
     const [isAudioMuted, setIsAudioMuted] = useState(false);
     const [isVideoMuted, setIsVideoMuted] = useState(false);
@@ -200,6 +201,32 @@ const Meeting = () => {
     const [summaryText, setSummaryText] = useState(''); // 회의 요약 텍스트
     const [recordingStartTime, setRecordingStartTime] = useState(null); // 회의 시작 시간 (ISO string)
     const [selectedParticipantId, setSelectedParticipantId] = useState(null); // 스포트라이트된 참가자
+
+    const [userInfo, setUserInfo] = useState({ name: '', email: '' }); //[sy]user정보 관리 위함
+    const [isUserLoaded, setIsUserLoaded] = useState(false); //[sy] 서버에서 회원정보를 다 받아왔는지 확인하기 위함
+
+    // [sy] user 정보 받아옴
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const data = await getUserById();
+                setUserInfo({ name: data.name, email: data.email });
+                setUserName(data.name);
+                setIsUserLoaded(true); // ✅ 유저 로딩 완료 표시
+                console.log('✅ 서버에서 불러온 유저 정보:', data);
+            } catch (error) {
+                console.error('❌ 유저 정보 조회 실패:', error);
+            }
+        };
+        fetchUserInfo();
+    }, []);
+
+    useEffect(() => {
+        if (isUserLoaded) {
+            console.log('🚀 유저 정보 로딩 완료 → 회의 자동 시작');
+            handleJoin(); // 자동 실행
+        }
+    }, [isUserLoaded]);
 
     // --- 요약 재시도 관련 상태 ---
     const [lastTranscriptId, setLastTranscriptId] = useState(null); // 요약 실패 시 재시도용 ID
@@ -1316,6 +1343,7 @@ const Meeting = () => {
                     id: myId,
                     name: userName,
                     isLocal: true,
+
                     videoTrack: localTracksRef.current.video,
                     audioTrack: localTracksRef.current.audio,
                     videoType: 'camera',
@@ -1733,7 +1761,7 @@ const Meeting = () => {
             const jwtRes = await fetch(`${API_BASE_URL}/jitsi-jwt`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ roomName: currentRoomName, userName: userDisplayName }),
+                body: JSON.stringify({ roomName: currentRoomName, userName: userInfo.name }), //[sy] userDisplayName를 userInfo.name로 바꿈
             });
             if (!jwtRes.ok) throw new Error('Failed to get JWT');
             const { jwt } = await jwtRes.json();
@@ -1846,10 +1874,11 @@ const Meeting = () => {
 
                     // 4.5. 로컬 참가자 정보 설정
                     const myId = normalizeId(conf.myUserId?.() ?? '');
-                    participantInfoRef.current[myId] = userDisplayName;
+                    participantInfoRef.current[myId] = userInfo.name; //[sy] userDisplayName -> userInfo.name
                     const localParticipant = {
                         id: myId,
-                        name: userDisplayName,
+                        name: userInfo.name, // [sy]서버에서 받은 이름 사용
+                        email: userInfo.email, // [sy] 서버에서 받은 이메일 추가
                         isLocal: true,
                         videoTrack: videoTrack,
                         audioTrack: suppressedTrack,
@@ -1870,7 +1899,7 @@ const Meeting = () => {
                     }
 
                     // 4.7. 회의 참가
-                    conf.setDisplayName(userDisplayName);
+                    conf.setDisplayName(userInfo.name); //[sy]userDisplayName
                     await conf.join();
                 } catch (e) {
                     console.error('Conference initialization or join error:', e);
@@ -1913,10 +1942,11 @@ const Meeting = () => {
      */
     const handleJoin = () => {
         console.log('🔧 handleJoin()');
-        if (!userName.trim()) {
-            alert('Please enter your name.');
-            return;
-        }
+        const displayName = userInfo.name?.trim();
+        // if (!userName.trim()) {
+        //     alert('Please enter your name.');
+        //     return;
+        // }
         // 방 이름이 없으면 '새 회의 시작' (방장), 있으면 '회의 참가' (참가자)
         const joiningExistingRoom = !!roomName;
         isHostRef.current = !joiningExistingRoom;
@@ -1977,7 +2007,9 @@ const Meeting = () => {
             {/* 종료 모달 */}
             <Modal show={showSummaryModal} onHide={() => setShowSummaryModal(false)} centered>
                 <Modal.Header closeButton>
-                    <Modal.Title>AI 회의 요약</Modal.Title>
+                    <Modal.Title>
+                        <i className="bi bi-robot me-1 fs-2"></i> <strong>AI 회의 요약</strong>
+                    </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form.Group className="mb-3">
@@ -2015,7 +2047,7 @@ const Meeting = () => {
                         <Modal.Title>회의 참석자</Modal.Title>
                     </Modal.Header>
 
-                    <Modal.Body>
+                    <Modal.Body style={{ borderBottomLeftRadius: '10px', borderBottomRightRadius: '10px' }}>
                         {/* 🔹 초대 링크 복사 영역 */}
                         <Form.Group className="mb-3 d-flex align-items-center">
                             <Form.Control className="form-modal" type="text" value={inviteLink} readOnly />
