@@ -43,7 +43,6 @@ export default function Settings() {
 
     return (
         <div className="container-left">
-            {/* 내 프로필 */}
             <section className="profile-section">
                 <h2>
                     <i className="bi bi-person"></i> 내 프로필
@@ -67,9 +66,6 @@ export default function Settings() {
                             <div className="text-muted">{user?.email}</div>
                         </div>
                     </div>
-                    {/* --- [수정] ---
-                        버튼의 목적지를 /edit-profile에서 /confirm-password로 변경합니다.
-                    */}
                     <Button as={Link} to="/confirm-password" variant="primary">
                         회원 정보 수정
                     </Button>
