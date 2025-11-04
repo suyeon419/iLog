@@ -126,3 +126,30 @@ export const getUserById = async (id) => {
         throw err;
     }
 };
+/* ==========================
+ * 회원 정보 수정 (로그인 필요)
+ * ========================== */
+export const updateUserInfo = async (userData) => {
+    // userData는 { name: '..', password: '..' }
+    console.log('📤 회원정보 수정 요청 (원본 JS):', userData);
+
+    // [중요] JS Object -> FormData로 변환 (이 로직은 좋습니다)
+    const formData = new FormData();
+    formData.append('name', userData.name);
+    if (userData.password) {
+        formData.append('newPassword', userData.password);
+        formData.append('checkPassword', userData.password);
+    }
+
+    try {
+        // [수정] 헤더 제거.
+        // formData 객체이므로 axios가 'multipart/form-data' 헤더 자동 생성
+        // 인터셉터가 'Authorization' 헤더 자동 첨부
+        const res = await api.patch('/members', formData);
+        console.log('✅ 회원정보 수정 성공:', res.data);
+        return res.data;
+    } catch (err) {
+        console.error('❌ 회원정보 수정 실패:', err);
+        throw err;
+    }
+};

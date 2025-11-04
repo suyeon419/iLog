@@ -1,3 +1,5 @@
+// Settings.jsx
+
 import React, { useEffect, useState } from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
@@ -12,20 +14,16 @@ export default function Settings() {
     const logout = () => {
         localStorage.removeItem('accessToken');
         loginUser();
-
         navigate('/');
     };
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
-
         if (token) {
             setIsLogin(true);
-
             try {
                 const decoded = jwtDecode(token);
                 const userId = decoded.id;
-
                 getUserById(userId)
                     .then((data) => {
                         setUser(data);
@@ -69,14 +67,16 @@ export default function Settings() {
                             <div className="text-muted">{user?.email}</div>
                         </div>
                     </div>
-                    <Button as={Link} to="/edit-profile" variant="primary">
+                    {/* --- [수정] ---
+                        버튼의 목적지를 /edit-profile에서 /confirm-password로 변경합니다.
+                    */}
+                    <Button as={Link} to="/confirm-password" variant="primary">
                         회원 정보 수정
                     </Button>
                 </div>
                 <hr className="beigeHr" />
             </section>
 
-            {/* 내 계정 관리 */}
             <section>
                 <h2>🔐 내 계정 관리</h2>
                 <hr className="brownHr" />
@@ -90,7 +90,6 @@ export default function Settings() {
                 <hr className="beigeHr" />
             </section>
 
-            {/* 내 활동 */}
             <section>
                 <h2>📘 내 활동</h2>
                 <hr className="brownHr" />
@@ -110,7 +109,6 @@ export default function Settings() {
                 </ul>
             </section>
 
-            {/* 하단 버튼 */}
             <div className="d-flex justify-content-center gap-3 mt-4">
                 <Button variant="primary" onClick={logout}>
                     로그아웃
