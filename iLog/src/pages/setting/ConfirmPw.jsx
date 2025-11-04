@@ -49,9 +49,7 @@ export default function ConfirmPw() {
     return (
         <Container className="pt-3">
             <h2 className="fw-bold text-center my-4">본인 인증</h2>
-            <p className="text-center text-muted">
-                정보를 안전하게 수정하기 위해 현재 비밀번호를 한 번 더 입력해 주세요.
-            </p>
+            <p className="text-center text-muted">정보를 안전하게 수정하기 위해 현재 비밀번호를 입력해 주세요.</p>
 
             {error && <Alert variant="danger">{error}</Alert>}
 

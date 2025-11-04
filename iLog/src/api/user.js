@@ -156,16 +156,44 @@ export const getLoginHistory = async () => {
 export const updateUserInfo = async (data) => {
     console.log('📤 회원 정보 수정 요청 전송:', data);
     try {
-        // 기본 헤더(multipart/form-data)와 인증 헤더를 함께 사용합니다.
         const headers = { ...defaultHeaders, ...getAuthHeader() };
 
-        // 회원 정보 수정은 보통 PATCH /members 엔드포인트를 사용합니다.
         const res = await api.patch('/members', data, { headers });
 
         console.log('✅ 회원 정보 수정 성공:', res.data);
         return res.data;
     } catch (err) {
         console.error('❌ 회원 정보 수정 실패:', err);
+        throw err;
+    }
+};
+
+/* ==========================
+ * 화상회의 이력 조회 (로그인 필요)
+ * ========================== */
+export const getMeetingHistory = async () => {
+    console.log('📤 화상회의 이력 요청');
+    try {
+        const headers = { ...getAuthHeader() };
+
+        const res = await api.get('/logs/meeting', { headers });
+
+        console.log('✅ 화상회의 이력 조회 성공:', res.data);
+
+        return res.data.logs;
+    } catch (err) {
+        console.error('❌ 화상회의 이력 조회 실패:', err);
+        throw err;
+    }
+};
+
+export const getUserInfo = async () => {
+    try {
+        const headers = getAuthHeader();
+        const res = await api.get('/members', { headers }); // /members/me 또는 /users/me 같은 엔드포인트
+        return res.data;
+    } catch (err) {
+        console.error('사용자 정보 불러오기 실패:', err);
         throw err;
     }
 };
