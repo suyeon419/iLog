@@ -46,7 +46,7 @@ export const loginUser = async (data) => {
     console.group('🧩 [loginUser] 요청 디버그 로그');
     console.log('📤 요청 데이터:', data);
     try {
-        const res = await api.post('/auth/login', data, { headers: defaultHeaders });
+        const res = await api.post('/auth/login', data, { headers: { 'Content-Type': 'application/json' } });
         console.log('✅ 응답 상태 코드:', res.status);
         console.log('✅ 응답 데이터:', res.data);
         if (res.data?.token) localStorage.setItem('token', res.data.token);

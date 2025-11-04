@@ -36,6 +36,10 @@ export default function JoinMeeting() {
         }
     }, []);
 
+    useEffect(() => {
+        console.log('[TRACE] 부모 렌더링됨');
+    });
+
     const handlerSubmit = (e) => {
         e.preventDefault();
 
