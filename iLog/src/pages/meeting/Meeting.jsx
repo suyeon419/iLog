@@ -1983,27 +1983,27 @@ const Meeting = () => {
                     <Form.Group className="mb-3">
                         <Form.Label>제목</Form.Label>
                         <div className="d-flex gap-2">
-                            <Form.Control type="text" placeholder="제목을 입력하세요" />
-                            <Button variant="outline-secondary">검색</Button>
+                            <Form.Control className="form-modal" type="text" placeholder="제목을 입력하세요" />
+                            <Button variant="secondary">검색</Button>
                         </div>
                     </Form.Group>
 
                     <Form.Group className="mb-3">
                         <Form.Label>회의록 위치</Form.Label>
                         <div className="d-flex gap-2">
-                            <Form.Control type="text" placeholder="저장 위치를 입력하세요" />
-                            <Button variant="outline-secondary">검색</Button>
+                            <Form.Control className="form-modal" type="text" placeholder="저장 위치를 입력하세요" />
+                            <Button variant="secondary">검색</Button>
                         </div>
                     </Form.Group>
 
-                    <div className="summary-box">
+                    <div className="summary-box" style={{ height: '30vh', overflowY: 'auto' }}>
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {summaryText || '요약을 불러오는 중입니다...'}
                         </ReactMarkdown>
                     </div>
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="warning" onClick={() => (window.location.href = '/')}>
+                <Modal.Footer className="d-flex justify-content-center">
+                    <Button className="w-75" variant="primary" onClick={() => (window.location.href = '/')}>
                         메인으로
                     </Button>
                 </Modal.Footer>
@@ -2018,7 +2018,7 @@ const Meeting = () => {
                     <Modal.Body>
                         {/* 🔹 초대 링크 복사 영역 */}
                         <Form.Group className="mb-3 d-flex align-items-center">
-                            <Form.Control type="text" value={inviteLink} readOnly />
+                            <Form.Control className="form-modal" type="text" value={inviteLink} readOnly />
                             <OverlayTrigger
                                 placement="top"
                                 overlay={

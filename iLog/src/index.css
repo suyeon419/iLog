@@ -174,10 +174,30 @@ btn-outline-primary:hover i {
 
 /* --- MemberModal 커스텀 스타일 --- */
 
-/* 모달 배경색 지정 */
-.modal-custom-bg .modal-content {
+.modal-body {
+    height: 50vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column; /* 내부 요소를 세로로 배치 */
+    align-items: flex-start; /* stretch 대신 위쪽 정렬 */
     background-color: #f5f1ec;
 }
+
+.modal-body > * {
+    width: 100%;
+}
+
+.modal-header {
+    background-color: #f5f1ec;
+}
+.modal-footer {
+    background-color: #f5f1ec;
+}
+
+/* 모달 배경색 지정 */
+/* .modal-custom-bg .modal-content {
+    background-color: #f5f1ec;
+} */
 
 .badge-leader {
     background-color: #b66e03 !important;
