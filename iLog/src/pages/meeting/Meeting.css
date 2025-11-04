@@ -238,3 +238,13 @@
     object-fit: contain; /* 비율을 유지하면서 컨테이너에 맞춤 */
     border-radius: 8px;
 }
+
+.summary-box {
+    max-height: 300px; /* 원하는 높이로 조절 */
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fafafa;
+    width: 100%;
+}
