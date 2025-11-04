@@ -2,7 +2,7 @@ import api from './axios';
 
 // ✅ 공통 헤더 (모든 요청에 적용)
 const defaultHeaders = {
-    'Content-Type': 'application/json',
+    'Content-Type': 'multipart/form-data',
 };
 
 // ✅ 토큰 가져오기 헬퍼
