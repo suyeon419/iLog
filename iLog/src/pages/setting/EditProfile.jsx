@@ -70,16 +70,18 @@ export default function EditProfile() {
             return;
         }
 
-        const dataToUpdate = {
-            name: form.name,
-        };
+        const formData = new FormData();
+
+        formData.append('name', form.name);
+
         if (form.password) {
-            dataToUpdate.password = form.password;
+            formData.append('newPassword', form.password);
+            formData.append('checkPassword', form.checkPassword);
         }
 
         try {
-            console.log('Step: 회원 정보 수정 시도...', dataToUpdate);
-            await updateUserInfo(dataToUpdate);
+            console.log('Step: 회원 정보 수정 시도...', formData); // formData는 콘솔에 바로 안 보일 수 있습니다.
+            await updateUserInfo(formData); // dataToUpdate 대신 formData를 전달
             console.log('✅ 회원 정보 수정 성공');
 
             alert('회원 정보가 성공적으로 수정되었습니다.');

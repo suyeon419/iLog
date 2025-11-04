@@ -81,8 +81,7 @@ export default function LoginHistory() {
             return (
                 <tr>
                     <td colSpan="1" className="text-center p-5">
-                        <Spinner animation="border" size="sm" />
-                        <span className="ms-2">로그인 이력을 불러오는 중...</span>
+                        <Spinner animation="border" />
                     </td>
                 </tr>
             );
