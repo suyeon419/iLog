@@ -28,6 +28,7 @@
 
 .container-black {
     background-color: #000 !important;
+    height: 88vh;
 }
 
 @keyframes spin {
@@ -37,6 +38,10 @@
     100% {
         transform: rotate(360deg);
     }
+}
+.btn-icon {
+    font-size: 2.5em;
+    aspect-ratio: 1 / 1;
 }
 
 /* --------------------------------- */
