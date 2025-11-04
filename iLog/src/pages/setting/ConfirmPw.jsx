@@ -19,17 +19,13 @@ export default function ConfirmPw() {
         console.log('Step 1: 현재 비밀번호 검증 시도. 전송할 비밀번호:', currentPassword);
 
         try {
-            // --- [수정] ---
-            // 1. JSON이 아닌 FormData 객체를 생성합니다. (multipart/form-data)
-            const formData = new FormData();
+            const credentials = {
+                password: currentPassword,
+            };
 
-            // 2. 소문자 'password' 키로 FormData에 추가합니다.
-            formData.append('password', currentPassword);
-            // ----------------
+            console.log('Step 2: 백엔드로 이 JSON 객체를 전송합니다.', credentials);
 
-            console.log('Step 2: 백엔드로 이 FormData 객체를 전송합니다.');
-            // (참고: 브라우저 콘솔에서 formData 객체는 비어있는 것처럼 보일 수 있으나 정상입니다)
-            await verifyPassword(formData);
+            await verifyPassword(credentials);
 
             console.log('✅ 현재 비밀번호 검증 성공');
             navigate('/edit-profile');
