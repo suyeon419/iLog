@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Container, Form } from 'react-bootstrap';
+import { Alert, Button, Container, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { verifyUserForPasswordReset } from '../../api/user';
 
@@ -8,6 +8,8 @@ export default function FindPw() {
 
     const [email, setEmail] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
+
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,7 +23,8 @@ export default function FindPw() {
             // 성공 시 다음 단계로 이동
             navigate('/findPw/changePw', { state: { resetToken: res.resetToken } });
         } catch (err) {
-            alert('이메일과 전화번호가 일치하지 않습니다.');
+            const msg = err.response?.data?.message || '회원인증 오류가 발생했습니다.';
+            setError(msg);
         }
     };
 
@@ -43,7 +46,7 @@ export default function FindPw() {
     return (
         <Container>
             <h2 className="fw-bold text-center my-4">비밀번호 찾기</h2>
-
+            {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleSubmit}>
                 <Form.Group>
                     <Form.Label>이메일</Form.Label>

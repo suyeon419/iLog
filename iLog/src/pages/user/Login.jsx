@@ -44,19 +44,12 @@ export default function Login() {
                 }
             }
 
-            // // 로그인 성공 시: 토큰 저장
-            // if (res.token) {
-            //     ocalStorage.setItem('accessToken', res.accessToken);
-            //     console.log('토큰 저장');
-            // } else {
-            //     console.log('토큰 저장 안됨');
-            // }
-
             // 메인 페이지 이동
             navigate('/');
         } catch (err) {
             console.error('로그인 실패:', err);
-            setError(err.response?.data?.message || '로그인 중 오류가 발생했습니다.');
+            const msg = err.response?.data?.message || '로그인 중 오류가 발생했습니다.';
+            setError(msg);
         } finally {
             setLoading(false);
         }
@@ -65,6 +58,7 @@ export default function Login() {
     return (
         <Container>
             <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ width: '150px' }} /> <br />
+            {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleSubmit}>
                 <Form.Group>
                     <Form.Label>이메일</Form.Label>

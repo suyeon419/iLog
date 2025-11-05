@@ -36,7 +36,8 @@ export default function Register() {
             setTimeout(() => navigate('/login'), 1500); // 1.5초 후 로그인 페이지로 이동
         } catch (err) {
             console.error('회원가입 실패:', err);
-            setError(err.response?.data?.message || '회원가입 중 오류가 발생했습니다.');
+            const msg = err.response?.data?.message || '회원가입 중 오류가 발생했습니다.';
+            setError(msg);
         }
     };
 
@@ -58,6 +59,7 @@ export default function Register() {
     return (
         <Container>
             <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ width: '150px' }} /> <br />
+            {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleSubmit}>
                 <Form.Group>
                     <Form.Label>이메일</Form.Label>

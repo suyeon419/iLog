@@ -273,3 +273,17 @@ btn-outline-primary:hover i {
     background-color: transparent;
     color: #ccc; /* 연한 회색으로 */
 }
+
+/* Alert */
+.alert-danger {
+    width: 350px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px auto;
+    font-size: 14px;
+    padding: 10px;
+    color: #333;
+    border: none;
+}

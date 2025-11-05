@@ -33,12 +33,14 @@ export default function ChangePw() {
             navigate('/login');
         } catch (err) {
             console.error('❌ 비밀번호 변경 실패:', err);
-            setError('비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
+            const msg = err.response?.data?.message || '비밀번호 변경 중 오류가 발생했습니다.';
+            setError(msg);
         }
     };
     return (
         <Container>
-            <img src="/images/iLogLogo.png" alt="iLog Logo" style={{ width: '150px' }} /> <br />
+            <h2 className="fw-bold text-center my-4">비밀번호 변경</h2>
+            {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleSubmit}>
                 <Form.Group>
                     <Form.Label>비밀번호</Form.Label>

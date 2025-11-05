@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Container, Form } from 'react-bootstrap';
+import { Alert, Button, Container, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { findEmail } from '../../api/user';
 
@@ -33,7 +33,8 @@ export default function FindEmail() {
             }
         } catch (err) {
             console.error('이메일 조회 실패:', err);
-            setError(err.response?.data?.message || '이메일 조회 중 오류가 발생했습니다.');
+            const msg = err.response?.data?.message || '이메일 찾기 중 오류가 발생했습니다.';
+            setError(msg);
         } finally {
             setLoading(false);
         }
@@ -57,6 +58,7 @@ export default function FindEmail() {
     return (
         <Container>
             <h2 className="fw-bold text-center my-4">이메일 찾기</h2>
+            {error && <Alert variant="danger">{error}</Alert>}
 
             <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-2">
