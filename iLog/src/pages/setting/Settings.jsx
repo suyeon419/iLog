@@ -56,6 +56,7 @@ export default function Settings() {
                 getUserById(userId)
                     .then(async (data) => {
                         setUser(data);
+                        // --------이미지 불러오는 거-------------
                         if (data.profileImage) {
                             try {
                                 const res = await axios.get(`${SERVER_BASE_URL}${data.profileImage}`, {
@@ -68,6 +69,7 @@ export default function Settings() {
                                 console.error('❌ 이미지 불러오기 실패:', err);
                             }
                         }
+                        //--------------------
                     })
                     .catch((err) => {
                         console.error('❌ [Setting] 회원 정보 요청 실패:', err);
