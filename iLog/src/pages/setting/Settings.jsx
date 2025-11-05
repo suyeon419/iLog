@@ -12,6 +12,8 @@ export default function Settings() {
     const [isLogin, setIsLogin] = useState(false);
     const [user, setUser] = useState(null);
 
+    const [profileImageUrl, setProfileImageUrl] = useState('');
+
     const logout = () => {
         localStorage.removeItem('accessToken');
         loginUser();
@@ -54,7 +56,6 @@ export default function Settings() {
                 getUserById(userId)
                     .then(async (data) => {
                         setUser(data);
-
                         if (data.profileImage) {
                             try {
                                 const res = await axios.get(`${SERVER_BASE_URL}${data.profileImage}`, {
@@ -63,26 +64,8 @@ export default function Settings() {
                                 });
                                 const blobUrl = URL.createObjectURL(res.data);
                                 setProfileImageUrl(blobUrl);
-                            } catch (error) {
-                                console.error('❌ [Profile Image] 불러오기 실패 상세 로그 ↓↓↓');
-
-                                if (error.response) {
-                                    console.error('🧩 상태 코드:', error.response.status);
-                                    console.error('🧾 응답 헤더:', error.response.headers);
-                                    console.error('📄 응답 데이터 타입:', error.response.data?.type);
-                                    console.error(
-                                        '📦 응답 데이터 내용 (문자열로 변환):',
-                                        await error.response.data.text?.()
-                                    );
-                                    console.error('🔗 요청 URL:', error.config?.url);
-                                    console.error('🧠 요청 헤더:', error.config?.headers);
-                                } else if (error.request) {
-                                    console.error('⚠️ 요청은 보냈지만 응답이 없음:', error.request);
-                                } else {
-                                    console.error('🚨 요청 설정 중 오류:', error.message);
-                                }
-
-                                console.error('📍 전체 에러 객체:', error);
+                            } catch (err) {
+                                console.error('❌ 이미지 불러오기 실패:', err);
                             }
                         }
                     })
@@ -113,12 +96,13 @@ export default function Settings() {
                 <div className="d-flex align-items-center justify-content-between mt-3">
                     <div className="d-flex align-items-center gap-3">
                         <img
+                            src={profileImageUrl || './images/profile.png'}
                             // src를 동적으로 변경합니다.
-                            src={
-                                user && user.profileImage
-                                    ? `${SERVER_BASE_URL}${user.profileImage}` // 서버에 이미지가 있으면
-                                    : './images/profile.png' // 없으면 기본 이미지
-                            }
+                            // src={
+                            //     user && user.profileImage
+                            //         ? `${SERVER_BASE_URL}${user.profileImage}` // 서버에 이미지가 있으면
+                            //         : './images/profile.png' // 없으면 기본 이미지
+                            // }
                             alt="프로필 이미지"
                             style={{
                                 width: '100px',
