@@ -39,6 +39,22 @@ export default function Register() {
             setError(err.response?.data?.message || '회원가입 중 오류가 발생했습니다.');
         }
     };
+
+    const handlePhoneChange = (e) => {
+        let value = e.target.value.replace(/[^0-9]/g, ''); // 숫자만 남기기
+
+        // 010-1234-5678 형식 자동 변환
+        if (value.length < 4) {
+            value = value;
+        } else if (value.length < 8) {
+            value = `${value.slice(0, 3)}-${value.slice(3)}`;
+        } else {
+            value = `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7, 11)}`;
+        }
+
+        setForm({ ...form, phoneNum: value });
+    };
+
     return (
         <Container>
             <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ width: '150px' }} /> <br />
@@ -46,7 +62,7 @@ export default function Register() {
                 <Form.Group>
                     <Form.Label>이메일</Form.Label>
                     <Form.Control
-                        type="text"
+                        type="email"
                         name="email"
                         value={form.email}
                         onChange={handleChange}
@@ -68,11 +84,12 @@ export default function Register() {
                 <Form.Group>
                     <Form.Label className="mb-0">전화번호</Form.Label>
                     <Form.Control
-                        type="text"
+                        type="tel"
                         name="phoneNum"
                         value={form.phoneNum}
-                        onChange={handleChange}
+                        onChange={handlePhoneChange}
                         placeholder="전화번호를 입력하세요"
+                        maxLength={13}
                         required
                     />
                 </Form.Group>

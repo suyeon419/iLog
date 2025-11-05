@@ -6,7 +6,7 @@ export default function AppHeader() {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const isLoggedIn = !!localStorage.getItem('token');
+    const isLoggedIn = !!localStorage.getItem('accessToken');
 
     useEffect(() => {
         const publicPaths = ['/', '/login', '/register', '/findPw', '/findEmail', '/findPw/changePw'];

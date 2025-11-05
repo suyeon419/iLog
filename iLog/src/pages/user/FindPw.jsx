@@ -24,6 +24,22 @@ export default function FindPw() {
             alert('이메일과 전화번호가 일치하지 않습니다.');
         }
     };
+
+    const handlePhoneChange = (e) => {
+        let value = e.target.value.replace(/[^0-9]/g, ''); // 숫자만 남기기
+
+        // 010-1234-5678 형식 자동 변환
+        if (value.length < 4) {
+            value = value;
+        } else if (value.length < 8) {
+            value = `${value.slice(0, 3)}-${value.slice(3)}`;
+        } else {
+            value = `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7, 11)}`;
+        }
+
+        setPhoneNumber(value);
+    };
+
     return (
         <Container>
             <h2 className="fw-bold text-center my-4">비밀번호 찾기</h2>
@@ -42,9 +58,9 @@ export default function FindPw() {
                 <Form.Group className="mb-4">
                     <Form.Label>전화번호</Form.Label>
                     <Form.Control
-                        type="text"
+                        type="tel"
                         value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        onChange={handlePhoneChange}
                         placeholder="전화번호를 입력하세요"
                         required
                     />
