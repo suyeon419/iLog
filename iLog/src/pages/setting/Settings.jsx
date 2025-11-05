@@ -3,6 +3,7 @@ import { Button, Container, Row, Col } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { deleteUser, getUserById, loginUser } from '../../api/user';
 import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
 
 const SERVER_BASE_URL = 'https://webkit-ilo9-api.duckdns.org'; // (임시 예시 주소
 
@@ -51,8 +52,39 @@ export default function Settings() {
                 const userId = decoded.id;
                 console.log('🧩 추출된 사용자 ID:', userId);
                 getUserById(userId)
-                    .then((data) => {
+                    .then(async (data) => {
                         setUser(data);
+
+                        if (data.profileImage) {
+                            try {
+                                const res = await axios.get(`${SERVER_BASE_URL}${data.profileImage}`, {
+                                    headers: { Authorization: `Bearer ${token}` },
+                                    responseType: 'blob',
+                                });
+                                const blobUrl = URL.createObjectURL(res.data);
+                                setProfileImageUrl(blobUrl);
+                            } catch (error) {
+                                console.error('❌ [Profile Image] 불러오기 실패 상세 로그 ↓↓↓');
+
+                                if (error.response) {
+                                    console.error('🧩 상태 코드:', error.response.status);
+                                    console.error('🧾 응답 헤더:', error.response.headers);
+                                    console.error('📄 응답 데이터 타입:', error.response.data?.type);
+                                    console.error(
+                                        '📦 응답 데이터 내용 (문자열로 변환):',
+                                        await error.response.data.text?.()
+                                    );
+                                    console.error('🔗 요청 URL:', error.config?.url);
+                                    console.error('🧠 요청 헤더:', error.config?.headers);
+                                } else if (error.request) {
+                                    console.error('⚠️ 요청은 보냈지만 응답이 없음:', error.request);
+                                } else {
+                                    console.error('🚨 요청 설정 중 오류:', error.message);
+                                }
+
+                                console.error('📍 전체 에러 객체:', error);
+                            }
+                        }
                     })
                     .catch((err) => {
                         console.error('❌ [Setting] 회원 정보 요청 실패:', err);
