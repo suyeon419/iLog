@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { getUserById, loginUser } from '../../api/user';
-import { jwtDecode } from 'jwt-decode';
+
+const SERVER_BASE_URL = 'https://webkit-ilo9-api.duckdns.org';
 
 export default function Settings() {
     const navigate = useNavigate();
@@ -21,25 +22,31 @@ export default function Settings() {
         const token = localStorage.getItem('accessToken');
         if (token) {
             setIsLogin(true);
-            try {
-                const decoded = jwtDecode(token);
-                const userId = decoded.id;
-                getUserById(userId)
-                    .then((data) => {
+            getUserById()
+                .then((data) => {
+                    // ⭐️ [Debug 1] API에서 실제로 어떤 데이터를 받았는지 확인
+                    console.log('✅ [Setting Debug 1] API 응답 원본 데이터:', data);
+
+                    if (data) {
                         setUser(data);
-                    })
-                    .catch((err) => {
-                        console.error('❌ [Setting] 회원 정보 요청 실패:', err);
-                        localStorage.removeItem('accessToken');
-                        setIsLogin(false);
-                    });
-            } catch (err) {
-                console.error('❌ [Setting] JWT 디코딩 실패:', err);
-                localStorage.removeItem('accessToken');
-                setIsLogin(false);
-            }
+                    } else {
+                        console.warn('⚠️ [Setting] 회원 정보 조회는 성공했으나 데이터가 비어있습니다.');
+                    }
+                })
+                .catch((err) => {
+                    console.error('❌ [Setting] 회원 정보 요청 실패:', err);
+                    localStorage.removeItem('accessToken');
+                    setIsLogin(false);
+                });
+        } else {
+            setIsLogin(false);
+            console.log('🔌 [Setting] 토큰이 없어 로그인 상태가 아닙니다.');
         }
     }, []);
+
+    // ⭐️ [Debug 2] 렌더링 직전에 user 상태와 profileImage 경로 확인
+    console.log('✅ [Setting Debug 2] 렌더링 시 user 상태:', user);
+    console.log('✅ [Setting Debug 3] user.profileImage 값:', user?.profileImage);
 
     return (
         <div className="container-left">
@@ -51,7 +58,12 @@ export default function Settings() {
                 <div className="d-flex align-items-center justify-content-between mt-3">
                     <div className="d-flex align-items-center gap-3">
                         <img
-                            src="./images/profile.png"
+                            // src를 동적으로 변경합니다.
+                            src={
+                                user && user.profileImage
+                                    ? `${SERVER_BASE_URL}${user.profileImage}` // 서버에 이미지가 있으면
+                                    : './images/profile.png' // 없으면 기본 이미지
+                            }
                             alt="프로필 이미지"
                             style={{
                                 width: '100px',
@@ -72,6 +84,8 @@ export default function Settings() {
                 </div>
                 <hr className="beigeHr" />
             </section>
+
+            {/* ... (이하 나머지 코드는 동일) ... */}
 
             <section>
                 <h2>🔐 내 계정 관리</h2>

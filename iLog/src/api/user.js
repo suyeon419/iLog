@@ -156,9 +156,11 @@ export const getLoginHistory = async () => {
 export const updateUserInfo = async (data) => {
     console.log('📤 회원 정보 수정 요청 전송:', data);
     try {
-        const headers = { ...defaultHeaders, ...getAuthHeader() };
+        // ⭐️ [수정] defaultHeaders를 제거하고, 인증 헤더만 보냅니다.
+        const headers = { ...getAuthHeader() };
 
-        const res = await api.patch('/members', data, { headers });
+        // ⭐️ [수정] headers 객체를 headers 키에 할당합니다.
+        const res = await api.patch('/members', data, { headers: headers });
 
         console.log('✅ 회원 정보 수정 성공:', res.data);
         return res.data;
@@ -183,17 +185,6 @@ export const getMeetingHistory = async () => {
         return res.data.logs;
     } catch (err) {
         console.error('❌ 화상회의 이력 조회 실패:', err);
-        throw err;
-    }
-};
-
-export const getUserInfo = async () => {
-    try {
-        const headers = getAuthHeader();
-        const res = await api.get('/members', { headers }); // /members/me 또는 /users/me 같은 엔드포인트
-        return res.data;
-    } catch (err) {
-        console.error('사용자 정보 불러오기 실패:', err);
         throw err;
     }
 };
