@@ -44,16 +44,23 @@ export default function JoinMeeting() {
         console.log('[TRACE] 부모 렌더링됨');
     });
 
-    const handlerSubmit = (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
 
-        console.log('meeting: ', meetingURL);
-        console.log('name: ', name);
-        console.log('video: ', video);
+        let url = meetingURL.trim();
 
-        navigate('/meeting/:meetingId');
+        // 입력된 주소가 http:// 또는 https:// 로 시작하지 않으면 자동으로 추가
+        if (!/^https?:\/\//i.test(url)) {
+            url = 'https://' + url;
+        }
+
+        console.log('🌐 회의 참가 URL:', url);
+        console.log('👤 참가자 이름:', name);
+        console.log('🎥 비디오 끄기:', video);
+
+        // ✅ 실제로 해당 URL로 이동
+        window.location.href = url;
     };
-
     if (isLoading) {
         return (
             <Container
@@ -81,7 +88,7 @@ export default function JoinMeeting() {
                         회의 참가
                     </h3>
 
-                    <Form onSubmit={handlerSubmit}>
+                    <Form onSubmit={handleSubmit}>
                         <Form.Group>
                             <Form.Label>회의 주소</Form.Label>
                             <Form.Control
