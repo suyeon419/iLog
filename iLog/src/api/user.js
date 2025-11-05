@@ -87,6 +87,37 @@ export const findEmail = async (data) => {
 };
 
 /* ==========================
+ * 비밀번호 찾기 1차 인증 (토큰 필요)
+ * ========================== */
+export const verifyUserForPasswordReset = async (data) => {
+    try {
+        const headers = {
+            'Content-Type': 'application/json',
+            ...getAuthHeader(),
+        };
+
+        console.log('📤 비밀번호 찾기 1차 인증 요청:', data);
+
+        const res = await api.post('/members/password/verify', data, { headers });
+
+        console.log('✅ 비밀번호 찾기 1차 인증 성공:', res.data);
+        return res.data;
+    } catch (err) {
+        if (err.response) {
+            console.error('❌ 비밀번호 찾기 인증 실패:', {
+                status: err.response.status,
+                data: err.response.data,
+            });
+        } else if (err.request) {
+            console.error('🚫 서버 응답 없음:', err.request);
+        } else {
+            console.error('⚙️ 요청 설정 오류:', err.message);
+        }
+        throw err;
+    }
+};
+
+/* ==========================
  * 비밀번호 검증 (로그인 필요)
  * ========================== */
 export const verifyPassword = async (data) => {
@@ -110,10 +141,27 @@ export const verifyPassword = async (data) => {
  * ========================== */
 export const resetPassword = async (data) => {
     try {
-        const res = await api.patch('/auth/reset-password', data, { headers: defaultHeaders });
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+
+        console.log('📤 비밀번호 재설정 요청:', data);
+
+        const res = await api.patch('/members/password/reset', data, { headers });
+
+        console.log('✅ 비밀번호 재설정 성공');
         return res.data;
     } catch (err) {
-        console.error('❌ 비밀번호 재설정 실패:', err);
+        if (err.response) {
+            console.error('❌ 비밀번호 재설정 실패:', {
+                status: err.response.status,
+                data: err.response.data,
+            });
+        } else if (err.request) {
+            console.error('🚫 서버 응답 없음:', err.request);
+        } else {
+            console.error('⚙️ 요청 설정 오류:', err.message);
+        }
         throw err;
     }
 };
@@ -194,6 +242,37 @@ export const getUserInfo = async () => {
         return res.data;
     } catch (err) {
         console.error('사용자 정보 불러오기 실패:', err);
+        throw err;
+    }
+};
+
+/* ==========================
+ * 회원 삭제 (회원 탈퇴)
+ * ========================== */
+export const deleteUser = async (memberId) => {
+    try {
+        const headers = {
+            'Content-Type': 'application/json',
+            ...getAuthHeader(),
+        };
+
+        console.log(`📤 회원 삭제 요청: /members/${memberId}`);
+
+        const res = await api.delete(`/members/${memberId}`, { headers });
+
+        console.log('✅ 회원 삭제 성공');
+        return res.data;
+    } catch (err) {
+        if (err.response) {
+            console.error('❌ 회원 삭제 실패:', {
+                status: err.response.status,
+                data: err.response.data,
+            });
+        } else if (err.request) {
+            console.error('🚫 서버 응답 없음:', err.request);
+        } else {
+            console.error('⚙️ 요청 설정 오류:', err.message);
+        }
         throw err;
     }
 };

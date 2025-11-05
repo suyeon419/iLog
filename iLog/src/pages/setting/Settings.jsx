@@ -1,9 +1,7 @@
-// Settings.jsx
-
 import React, { useEffect, useState } from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import { getUserById, loginUser } from '../../api/user';
+import { deleteUser, getUserById, loginUser } from '../../api/user';
 import { jwtDecode } from 'jwt-decode';
 
 export default function Settings() {
@@ -17,13 +15,39 @@ export default function Settings() {
         navigate('/');
     };
 
+    const handleDeleteAccount = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+
+            const decoded = jwtDecode(token);
+            console.log('🔍 decoded token (전체):', JSON.stringify(decoded, null, 2));
+
+            const userId = decoded.id;
+            console.log('🧩 추출된 사용자 ID:', userId);
+
+            await deleteUser(userId); // ✅ 여기서 decoded.id 직접 전달
+            alert('회원 탈퇴가 완료되었습니다.');
+            localStorage.removeItem('accessToken');
+            navigate('/');
+        } catch (error) {
+            console.error('❌ 회원 탈퇴 실패:', error);
+            alert('회원 탈퇴 중 오류가 발생했습니다.');
+        }
+    };
+
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
         if (token) {
             setIsLogin(true);
             try {
                 const decoded = jwtDecode(token);
+                console.log('🔍 decoded token (전체):', JSON.stringify(decoded, null, 2)); // ✅ 전체 구조 확인
                 const userId = decoded.id;
+                console.log('🧩 추출된 사용자 ID:', userId);
                 getUserById(userId)
                     .then((data) => {
                         setUser(data);
@@ -109,7 +133,9 @@ export default function Settings() {
                 <Button variant="primary" onClick={logout}>
                     로그아웃
                 </Button>
-                <Button variant="danger">회원탈퇴</Button>
+                <Button variant="danger" onClick={handleDeleteAccount}>
+                    회원탈퇴
+                </Button>
             </div>
         </div>
     );
