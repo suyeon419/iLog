@@ -226,8 +226,6 @@ export const updateUserInfo = async (data) => {
 export const getMeetingHistory = async () => {
     console.log('📤 화상회의 이력 요청');
     try {
-        const headers = { ...getAuthHeader() };
-
         const res = await api.get('/logs/meeting', { headers });
 
         console.log('✅ 화상회의 이력 조회 성공:', res.data);
@@ -242,7 +240,7 @@ export const getMeetingHistory = async () => {
 export const getUserInfo = async () => {
     try {
         const headers = getAuthHeader();
-        const res = await api.get('/members', { headers }); // /members/me 또는 /users/me 같은 엔드포인트
+        const res = await api.get('/members', { headers });
         return res.data;
     } catch (err) {
         console.error('사용자 정보 불러오기 실패:', err);
@@ -255,15 +253,11 @@ export const getUserInfo = async () => {
  */
 export const getNoteHistory = async () => {
     try {
-        // [주의] 엔드포인트 URL('/notes/history')는 실제 백엔드 API 경로로 수정해야 합니다.
-        const response = await api.get('/notes/history');
+        const response = await api.get('/logs/minutes');
 
-        // 백엔드가 반환하는 데이터 구조에 따라 .data.result, .data.list 등
-        // 실제 이력 배열을 반환하도록 수정이 필요할 수 있습니다.
-        return response.data;
+        return response.data.logs;
     } catch (error) {
         console.error('❌ 회의록 이력 로드 실패:', error);
-        // 에러를 상위로 전파하여 컴포넌트의 catch 블록에서 처리하도록 합니다.
         throw error;
     }
 };
