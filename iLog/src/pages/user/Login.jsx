@@ -69,7 +69,7 @@ export default function Login() {
                 <Form.Group>
                     <Form.Label>이메일</Form.Label>
                     <Form.Control
-                        type="text"
+                        type="email"
                         name="email"
                         value={form.email}
                         onChange={handleChange}
