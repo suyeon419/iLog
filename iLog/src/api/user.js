@@ -76,9 +76,16 @@ export const logoutUser = async () => {
 /* ==========================
  * 이메일 찾기 (비로그인 접근)
  * ========================== */
-export const findEmail = async (data) => {
+export const findEmail = async (phoneNum) => {
     try {
-        const res = await api.post('/auth/find-email', data, { headers: defaultHeaders });
+        const token = localStorage.getItem('token'); // ✅ 토큰 가져오기
+        const headers = {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }), // ✅ 토큰 추가
+        };
+
+        const res = await api.post('/members/find-email', { phoneNum }, { headers });
+
         return res.data;
     } catch (err) {
         console.error('❌ 이메일 찾기 실패:', err);

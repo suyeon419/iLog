@@ -1,9 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export default function AppHeader() {
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const isLoggedIn = !!localStorage.getItem('token');
+
+    useEffect(() => {
+        const publicPaths = ['/', '/login', '/register', '/findPw', '/findEmail', '/findPw/changePw'];
+        if (!isLoggedIn && !publicPaths.includes(location.pathname)) {
+            navigate('/'); // 홈으로 이동
+
+            alert('로그인이 필요합니다.');
+        }
+    }, [isLoggedIn, location.pathname, navigate]);
 
     const isHomeActive = ['/', '/login', '/register', '/findPw', '/findEmail', '/findPw/changePw'].includes(
         location.pathname
