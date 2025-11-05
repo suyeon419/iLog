@@ -102,7 +102,7 @@ export default function JoinMeeting() {
 
                         <Form.Group>
                             <Form.Label>참가자 이름</Form.Label>
-                            <Form.Control type="text" value={name} placeholder="이름을 입력하세요" required />
+                            <Form.Control type="text" value={name} placeholder="이름을 입력하세요" readOnly required />
                         </Form.Group>
 
                         <Form.Group className="mt-4">
