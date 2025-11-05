@@ -204,16 +204,18 @@ export const getLoginHistory = async () => {
 export const updateUserInfo = async (data) => {
     console.log('📤 회원 정보 수정 요청 전송:', data);
     try {
-        // ⭐️ [수정] defaultHeaders를 제거하고, 인증 헤더만 보냅니다.
-        const headers = { ...getAuthHeader() };
+        const headers = {
+            ...defaultHeaders,
+            ...getAuthHeader(),
+        };
 
-        // ⭐️ [수정] headers 객체를 headers 키에 할당합니다.
         const res = await api.patch('/members', data, { headers: headers });
 
         console.log('✅ 회원 정보 수정 성공:', res.data);
         return res.data;
     } catch (err) {
         console.error('❌ 회원 정보 수정 실패:', err);
+
         throw err;
     }
 };
@@ -245,6 +247,24 @@ export const getUserInfo = async () => {
     } catch (err) {
         console.error('사용자 정보 불러오기 실패:', err);
         throw err;
+    }
+};
+
+/**
+ * (신규) 회의록 이력 조회 API
+ */
+export const getNoteHistory = async () => {
+    try {
+        // [주의] 엔드포인트 URL('/notes/history')는 실제 백엔드 API 경로로 수정해야 합니다.
+        const response = await api.get('/notes/history');
+
+        // 백엔드가 반환하는 데이터 구조에 따라 .data.result, .data.list 등
+        // 실제 이력 배열을 반환하도록 수정이 필요할 수 있습니다.
+        return response.data;
+    } catch (error) {
+        console.error('❌ 회의록 이력 로드 실패:', error);
+        // 에러를 상위로 전파하여 컴포넌트의 catch 블록에서 처리하도록 합니다.
+        throw error;
     }
 };
 

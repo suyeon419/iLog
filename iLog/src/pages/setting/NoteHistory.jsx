@@ -1,16 +1,19 @@
 // NoteHistory.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Container, Table, Pagination, Row, Col } from 'react-bootstrap';
+// [수정] Alert 추가
+import { Container, Table, Pagination, Row, Col, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus } from 'react-bootstrap-icons';
+// [수정] API 함수 임포트
+import { getNoteHistory } from '../../api/user'; // [수정] getNoteHistory 임포트
 
 export default function NoteHistory() {
     const navigate = useNavigate();
 
-    // Note: 회의록 클릭 시 상세 페이지로 이동
+    // Note: 회의록 클릭 시 상세 페이지로 이동 (기존 로직 유지)
     const handleRowClick = (meetingId) => {
-        // TODO: 회의록 상세 페이지 경로로 수정
+        // TODO: 회의록 상세 페이지 경로로 수정 (기존 TODO 유지)
         navigate(`/notes/meeting/${meetingId}`);
         // console.log('Clicked meeting:', meetingId);
     };
@@ -20,8 +23,33 @@ export default function NoteHistory() {
     const [subMeetings, setSubMeetings] = useState([]); // 빈 배열로 초기화
     const ITEMS_PER_PAGE = 7;
 
+    // [수정] 로딩 및 오류 상태 추가
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    // [수정] 백엔드 연동 useEffect
     useEffect(() => {
-        // TODO: 여기서 백엔드 API를 호출하여 setSubMeetings로 데이터를 설정합니다.
+        const fetchHistory = async () => {
+            try {
+                setLoading(true);
+                setError('');
+                console.log('[NoteHistory] 회의록 이력 로드 시작...');
+
+                // 1. API 호출
+                const data = await getNoteHistory();
+
+                // 2. State 설정
+                setSubMeetings(data);
+                console.log('[NoteHistory] 데이터 로드 성공:', data);
+            } catch (err) {
+                console.error('❌ [NoteHistory] 데이터 로드 실패:', err);
+                setError('데이터를 불러오는 데 실패했습니다.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHistory();
     }, []); // 페이지 로드 시 1회 실행
 
     const totalPages = Math.ceil(subMeetings.length / ITEMS_PER_PAGE);
@@ -53,7 +81,6 @@ export default function NoteHistory() {
         <Container fluid className="pt-3 container-left">
             {/* 1. 콘텐츠 영역 (flex-grow-1) */}
             <div className="flex-grow-1">
-                {/* [수정] 제목 변경 */}
                 <Row className="mb-3 mt-3 align-items-center">
                     <Col>
                         <h2 className="fw-bold m-0">
@@ -62,6 +89,9 @@ export default function NoteHistory() {
                         </h2>
                     </Col>
                 </Row>
+
+                {/* [수정] 에러 발생 시 Alert 표시 */}
+                {error && <Alert variant="danger">{error}</Alert>}
 
                 {/* 회의록 이력 테이블 */}
                 <Table className="align-middle">
@@ -82,8 +112,14 @@ export default function NoteHistory() {
                         </tr>
                     </thead>
                     <tbody>
-                        {/* 데이터가 없으면 "이력이 없습니다"가 표시됨 */}
-                        {currentMeetings.length === 0 ? (
+                        {/* [수정] 로딩, 데이터 없음, 데이터 있음 3가지 상태 처리 */}
+                        {loading ? (
+                            <tr>
+                                <td colSpan="4" className="text-center p-4">
+                                    데이터를 불러오는 중입니다...
+                                </td>
+                            </tr>
+                        ) : currentMeetings.length === 0 ? (
                             <tr>
                                 <td colSpan="4" className="text-center p-4">
                                     회의록 이력이 없습니다.
@@ -92,10 +128,11 @@ export default function NoteHistory() {
                         ) : (
                             currentMeetings.map((meeting) => (
                                 <tr
-                                    key={meeting.id}
+                                    key={meeting.id} // API 응답에 id가 있다고 가정
                                     onClick={() => handleRowClick(meeting.id)}
                                     style={{ cursor: 'pointer' }}
                                 >
+                                    {/* API 응답 객체의 key 이름에 맞게 수정 필요 */}
                                     <td>{meeting.name}</td>
                                     <td>{meeting.members}</td>
                                     <td>{meeting.created}</td>
