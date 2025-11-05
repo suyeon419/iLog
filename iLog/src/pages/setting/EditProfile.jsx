@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Alert, Button, Container, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { getUserById, updateUserInfo } from '../../api/user';
+import axios from 'axios';
 
 const SERVER_BASE_URL = 'https://webkit-ilo9-api.duckdns.org'; // (임시 예시 주소)
 
@@ -24,20 +25,34 @@ export default function EditProfile() {
 
     // ⭐️ [2] 이미지 파일과 미리보기 URL을 위한 상태 추가
     const [profileImageFile, setProfileImageFile] = useState(null);
-    const [imagePreview, setImagePreview] = useState(null); // 이미지 미리보기 URL
+    const [profileImageUrl, setProfileImageUrl] = useState(''); // 이미지 미리보기 URL
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
         if (token) {
             setIsLogin(true);
             getUserById()
-                .then((data) => {
+                .then(async (data) => {
                     console.log('✅ [EditProfile] 회원 정보 조회 성공:', data);
                     if (data) {
                         setUser(data);
                     } else {
                         console.warn('⚠️ [EditProfile] 회원 정보 조회는 성공했으나 데이터가 비어있습니다.');
                     }
+                    // --------이미지 불러오는 거-------------
+                    if (data.profileImage) {
+                        try {
+                            const res = await axios.get(`${SERVER_BASE_URL}${data.profileImage}`, {
+                                headers: { Authorization: `Bearer ${token}` },
+                                responseType: 'blob',
+                            });
+                            const blobUrl = URL.createObjectURL(res.data);
+                            setProfileImageUrl(blobUrl);
+                        } catch (err) {
+                            console.error('❌ 이미지 불러오기 실패:', err);
+                        }
+                    }
+                    //--------------------
                 })
                 .catch((err) => {
                     console.error('❌ [EditProfile] 회원 정보 요청 실패:', err);
@@ -57,11 +72,6 @@ export default function EditProfile() {
                 email: user.email,
                 name: user.name,
             }));
-
-            // ⭐️ [3] 사용자 정보 로드 시, 기존 프로필 이미지를 미리보기로 설정
-            if (user.profileImage) {
-                setImagePreview(`${SERVER_BASE_URL}${user.profileImage}`);
-            }
         }
     }, [user]);
 
@@ -75,7 +85,7 @@ export default function EditProfile() {
         const file = e.target.files[0];
         if (file) {
             setProfileImageFile(file); // 실제 파일 객체 저장
-            setImagePreview(URL.createObjectURL(file)); // 미리보기용 임시 URL 생성
+            setProfileImageUrl(URL.createObjectURL(file)); // 미리보기용 임시 URL 생성
         }
     };
 
@@ -127,7 +137,7 @@ export default function EditProfile() {
             {/* ⭐️ [6] 프로필 이미지 미리보기 영역 추가 */}
             <div className="text-center mb-4">
                 <img
-                    src={imagePreview || './images/profile.png'} // 미리보기가 있거나, 없으면 기본 이미지
+                    src={profileImageUrl || './images/profile.png'} // 미리보기가 있거나, 없으면 기본 이미지
                     alt="프로필 미리보기"
                     style={{
                         width: '150px',

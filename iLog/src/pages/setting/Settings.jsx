@@ -3,7 +3,7 @@ import { Button, Container, Row, Col } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { deleteUser, getUserById, loginUser } from '../../api/user';
 import { jwtDecode } from 'jwt-decode';
-import axios from 'axios';
+import axios from 'axios'; //이미지 불러올라면 임포트 해주세열
 
 const SERVER_BASE_URL = 'https://webkit-ilo9-api.duckdns.org'; // (임시 예시 주소
 
