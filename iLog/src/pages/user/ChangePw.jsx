@@ -43,7 +43,7 @@ export default function ChangePw() {
                 <Form.Group>
                     <Form.Label>비밀번호</Form.Label>
                     <Form.Control
-                        type="text"
+                        type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="비밀번호를 입력하세요"
@@ -53,7 +53,7 @@ export default function ChangePw() {
                 <Form.Group className="mb-4">
                     <Form.Label>비밀번호 확인</Form.Label>
                     <Form.Control
-                        type="text"
+                        type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="비밀번호를 한 번 더 입력하세요"
