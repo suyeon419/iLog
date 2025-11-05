@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { deleteUser, getUserById, loginUser } from '../../api/user';
 import { jwtDecode } from 'jwt-decode';
 
+const SERVER_BASE_URL = 'https://webkit-ilo9-api.duckdns.org'; // (임시 예시 주소
+
 export default function Settings() {
     const navigate = useNavigate();
     const [isLogin, setIsLogin] = useState(false);
