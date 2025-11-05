@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Form, Button, Card } from 'react-bootstrap';
+import { Container, Form, Button, Card, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { getUserById } from '../../api/user';
 import { jwtDecode } from 'jwt-decode';
@@ -10,6 +10,7 @@ export default function JoinMeeting() {
     const [meetingURL, setMeetingURL] = useState('');
     const [name, setName] = useState('');
     const [video, setVideo] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
@@ -28,6 +29,9 @@ export default function JoinMeeting() {
                     })
                     .catch((err) => {
                         console.error('❌ [JoinMeeting] 사용자 정보 요청 실패:', err);
+                    })
+                    .finally(() => {
+                        setIsLoading(false);
                     });
             } catch (err) {
                 console.error('❌ [JoinMeeting] JWT 디코딩 실패:', err);
@@ -49,6 +53,18 @@ export default function JoinMeeting() {
 
         navigate('/meeting/:meetingId');
     };
+
+    if (isLoading) {
+        return (
+            <Container
+                className="d-flex flex-column justify-content-center align-items-center"
+                style={{ height: '100vh' }}
+            >
+                <Spinner animation="border" variant="primary" />
+                <p className="mt-3">회원 정보를 불러오는 중입니다...</p>
+            </Container>
+        );
+    }
     return (
         <Container>
             <Card className="meetingcard">

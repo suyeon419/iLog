@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Container } from 'react-bootstrap';
+import { Button, Container, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { getUserById } from '../../api/user';
 import { jwtDecode } from 'jwt-decode';
@@ -9,19 +9,14 @@ export default function Home() {
 
     const [isLogin, setIsLogin] = useState(false);
     const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
 
         if (token) {
             console.log('✅ [Home] 토큰이 localStorage에 존재합니다:', token);
-        } else {
-            console.warn('⚠️ [Home] 토큰이 없습니다. 비로그인 상태입니다.');
-        }
-
-        if (token) {
             setIsLogin(true);
-            console.log('🔐 [Home] 토큰 감지됨 → 회원 정보 조회 중...');
 
             try {
                 const decoded = jwtDecode(token);
@@ -37,14 +32,32 @@ export default function Home() {
                         console.error('❌ [Home] 회원 정보 요청 실패:', err);
                         localStorage.removeItem('accessToken');
                         setIsLogin(false);
+                    })
+                    .finally(() => {
+                        setIsLoading(false);
                     });
             } catch (err) {
                 console.error('❌ [Home] JWT 디코딩 실패:', err);
                 localStorage.removeItem('accessToken');
                 setIsLogin(false);
             }
+        } else {
+            console.warn('⚠️ [Home] 토큰이 없습니다. 비로그인 상태입니다.');
+            setIsLoading(false);
         }
     }, []);
+
+    if (isLoading) {
+        return (
+            <Container
+                className="d-flex flex-column justify-content-center align-items-center"
+                style={{ height: '100vh' }}
+            >
+                <Spinner animation="border" variant="primary" />
+                <p className="mt-3">회원 정보를 불러오는 중입니다...</p>
+            </Container>
+        );
+    }
 
     return (
         <Container>

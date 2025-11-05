@@ -287,3 +287,10 @@ btn-outline-primary:hover i {
     color: #333;
     border: none;
 }
+
+/* spinner */
+.spinner-border {
+    color: #b66e03 !important; /* 기본 border 색상 */
+    border-color: #b66e03 !important;
+    border-right-color: transparent !important; /* 회전 시 투명 부분 */
+}

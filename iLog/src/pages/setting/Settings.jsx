@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Container, Row, Col } from 'react-bootstrap';
+import { Button, Container, Row, Col, Spinner } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { deleteUser, getUserById, loginUser } from '../../api/user';
 import { jwtDecode } from 'jwt-decode';
@@ -13,6 +13,8 @@ export default function Settings() {
     const [user, setUser] = useState(null);
 
     const [profileImageUrl, setProfileImageUrl] = useState('');
+
+    const [isLoading, setIsLoading] = useState(true);
 
     const logout = () => {
         localStorage.removeItem('accessToken');
@@ -48,6 +50,7 @@ export default function Settings() {
         const token = localStorage.getItem('accessToken');
         if (token) {
             setIsLogin(true);
+
             try {
                 const decoded = jwtDecode(token);
                 console.log('🔍 decoded token (전체):', JSON.stringify(decoded, null, 2)); // ✅ 전체 구조 확인
@@ -75,6 +78,9 @@ export default function Settings() {
                         console.error('❌ [Setting] 회원 정보 요청 실패:', err);
                         localStorage.removeItem('accessToken');
                         setIsLogin(false);
+                    })
+                    .finally(() => {
+                        setIsLoading(false);
                     });
             } catch (err) {
                 console.error('JWT 실패', err);
@@ -87,6 +93,18 @@ export default function Settings() {
     // ⭐️ [Debug 2] 렌더링 직전에 user 상태와 profileImage 경로 확인
     console.log('✅ [Setting Debug 2] 렌더링 시 user 상태:', user);
     console.log('✅ [Setting Debug 3] user.profileImage 값:', user?.profileImage);
+
+    if (isLoading) {
+        return (
+            <Container
+                className="d-flex flex-column justify-content-center align-items-center"
+                style={{ height: '100vh' }}
+            >
+                <Spinner animation="border" variant="primary" />
+                <p className="mt-3">회원 정보를 불러오는 중입니다...</p>
+            </Container>
+        );
+    }
 
     return (
         <div className="container-left">
