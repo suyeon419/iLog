@@ -5,6 +5,7 @@ import api from './axios';
 // [수정] Content-Type 제거. Axios가 FormData를 감지하고 자동으로 설정하도록 합니다.
 const defaultHeaders = {
     // 'Content-Type': 'multipart/form-data', // <-- ❌ 이 줄을 삭제했습니다.
+    'Content-Type': 'application/json',
 };
 
 // ✅ 토큰 가져오기 헬퍼

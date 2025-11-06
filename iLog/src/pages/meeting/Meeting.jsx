@@ -5,6 +5,7 @@ import './Meeting.css';
 import { Button, Container, Form, ListGroup, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { getUserById } from '../../api/user';
 import { useLocation } from 'react-router-dom';
+import api from '../../api/axios';
 import { createNote } from '../../api/note';
 
 // ******** 중간 요약 전송 간격 (ms 단위) ********
@@ -2037,6 +2038,87 @@ const Meeting = () => {
         setShowSummaryModal(true); // 종료 후 모달 표시
     };
 
+    const [noteTitle, setNoteTitle] = useState('');
+    const [locationQuery, setLocationQuery] = useState('');
+    const [folderResults, setFolderResults] = useState([]); // 검색 결과
+    const [selectedFolder, setSelectedFolder] = useState(null);
+    const [isCreatingNote, setIsCreatingNote] = useState(false);
+
+    // 주소(저장 위치) 검색
+    const handleSearchFolder = async () => {
+        try {
+            // user.js 패턴과 동일: token을 직접 Authorization에 실어 보냄:contentReference[oaicite:2]{index=2}
+            const token = localStorage.getItem('token');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(token && { Authorization: `Bearer ${token}` }),
+            };
+
+            // ※ 백엔드에 검색 엔드포인트가 없으면, 숫자 입력 폴백만 사용됨
+            if (!locationQuery.trim()) {
+                setFolderResults([]);
+                setSelectedFolder(null);
+                return;
+            }
+
+            // 폴더 검색 엔드포인트 예시: /folders/search?q=...
+            // 없다면 try/catch에서 폴백으로 처리됨
+            const res = await api.get('/folders/search', {
+                params: { q: locationQuery.trim() },
+                headers,
+            });
+            const rows = res.data?.folders || [];
+            setFolderResults(rows);
+            setSelectedFolder(null);
+        } catch (e) {
+            console.warn('폴더 검색 엔드포인트가 없거나 실패했어요. 숫자 입력 시 폴더ID로 폴백합니다.', e);
+            setFolderResults([]);
+            setSelectedFolder(null);
+        }
+    };
+
+    // 결과 선택
+    const handleSelectFolder = (folder) => {
+        setSelectedFolder(folder);
+    };
+
+    // “메인으로” 클릭 시 회의록 생성 후 이동
+    const handleCreateNoteThenGoHome = async () => {
+        if (!noteTitle.trim()) {
+            alert('제목을 입력하세요.');
+            return;
+        }
+        if (!summaryText || !summaryText.trim()) {
+            alert('요약이 아직 비어있어요. 잠시 후 다시 시도해주세요.');
+            return;
+        }
+
+        // 선택된 폴더가 없다면, locationQuery가 숫자면 그걸 폴더ID로 사용 (폴백)
+        let folderId = selectedFolder?.id;
+        if (!folderId && /^\d+$/.test(locationQuery.trim())) {
+            folderId = Number(locationQuery.trim());
+        }
+        if (!folderId) {
+            alert('저장 위치(폴더)를 선택하거나 폴더 ID를 숫자로 입력하세요.');
+            return;
+        }
+
+        setIsCreatingNote(true);
+        try {
+            await createNote(folderId, {
+                title: noteTitle.trim(),
+                content: summaryText, // 모달에 보이는 최종 요약
+                status: 'MEETING',
+            });
+            window.location.href = '/';
+        } catch (err) {
+            console.error('회의록 생성 실패:', err);
+            alert('회의록 저장에 실패했습니다. 잠시 후 다시 시도하세요.');
+        } finally {
+            setIsCreatingNote(false);
+        }
+    };
+
     // --- 메인 렌더링 ---
     return (
         <Container className={`container-black`} style={{ overflow: 'hidden' }}>
@@ -2051,7 +2133,13 @@ const Meeting = () => {
                     <Form.Group className="mb-3">
                         <Form.Label>제목</Form.Label>
                         <div className="d-flex gap-2">
-                            <Form.Control className="form-modal" type="text" placeholder="제목을 입력하세요" />
+                            <Form.Control
+                                className="form-modal"
+                                type="text"
+                                placeholder="제목을 입력하세요"
+                                value={noteTitle}
+                                onChange={(e) => setNoteTitle(e.target.value)}
+                            />
                             <Button variant="secondary">검색</Button>
                         </div>
                     </Form.Group>
@@ -2059,8 +2147,46 @@ const Meeting = () => {
                     <Form.Group className="mb-3">
                         <Form.Label>회의록 위치</Form.Label>
                         <div className="d-flex gap-2">
-                            <Form.Control className="form-modal" type="text" placeholder="저장 위치를 입력하세요" />
-                            <Button variant="secondary">검색</Button>
+                            <Form.Control
+                                className="form-modal"
+                                type="text"
+                                placeholder="폴더 경로 또는 ID를 입력하세요"
+                                value={locationQuery}
+                                onChange={(e) => setLocationQuery(e.target.value)}
+                            />
+                            <Button variant="secondary" onClick={handleSearchFolder}>
+                                검색
+                            </Button>
+                        </div>
+                        {/* 검색 결과 표시 (선택 리스트) */}
+                        {folderResults.length > 0 && (
+                            <ListGroup className="mt-2" style={{ maxHeight: 160, overflowY: 'auto' }}>
+                                {folderResults.map((f) => (
+                                    <ListGroup.Item
+                                        key={f.id}
+                                        action
+                                        active={selectedFolder?.id === f.id}
+                                        onClick={() => handleSelectFolder(f)}
+                                    >
+                                        <div className="d-flex justify-content-between align-items-center">
+                                            <span>{f.name || `폴더 #${f.id}`}</span>
+                                            <small className="text-muted">ID: {f.id}</small>
+                                        </div>
+                                        {f.path && <div className="text-muted small">{f.path}</div>}
+                                    </ListGroup.Item>
+                                ))}
+                            </ListGroup>
+                        )}
+                        {/* 선택 상태 표시 / 폴백 안내 */}
+                        <div className="mt-2 small text-muted">
+                            {selectedFolder ? (
+                                <>
+                                    선택된 폴더: <strong>{selectedFolder.name || `#${selectedFolder.id}`}</strong> (ID:{' '}
+                                    {selectedFolder.id})
+                                </>
+                            ) : (
+                                '검색이 없거나 실패하면 폴더 ID(숫자)를 직접 입력할 수 있어요.'
+                            )}
                         </div>
                     </Form.Group>
 
@@ -2071,7 +2197,12 @@ const Meeting = () => {
                     </div>
                 </Modal.Body>
                 <Modal.Footer className="d-flex justify-content-center">
-                    <Button className="w-75" variant="primary" onClick={() => (window.location.href = '/')}>
+                    <Button
+                        className="w-75"
+                        variant="primary"
+                        onClick={handleCreateNoteThenGoHome}
+                        disabled={isCreatingNote}
+                    >
                         메인으로
                     </Button>
                 </Modal.Footer>

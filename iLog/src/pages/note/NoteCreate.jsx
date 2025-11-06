@@ -7,7 +7,7 @@ import { PencilSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'r
 import { useNavigate, useLocation } from 'react-router-dom';
 import MemberModal from './MemberModal';
 // [수정] API 함수 임포트
-import { createMeetingNote } from '../../api/note'; // 경로 확인
+import { createNote } from '../../api/note';
 
 export default function NoteCreate() {
     const [title, setTitle] = useState('');
@@ -53,7 +53,7 @@ export default function NoteCreate() {
         try {
             // [수정] API 호출
             console.log(`[NoteCreate] API 호출: POST /folders/${parentId}/minutes`);
-            const data = await createMeetingNote(parentId, payload);
+            const data = await createNote(parentId, payload);
 
             console.log('[NoteCreate] 저장 성공:', data);
 
