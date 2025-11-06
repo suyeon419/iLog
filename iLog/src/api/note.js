@@ -45,19 +45,14 @@ export const createProject = async (parentId, projectName) => {
 
 /**
  * 3. 프로젝트 이미지 업로드 (수정)
- * (Postman 힌트 적용: folderName과 folderImage를 함께 전송)
  */
 export const updateProjectImage = async (id, name, file) => {
-    const formData = new FormData();
-    formData.append('folderName', name);
-    formData.append('folderImage', file);
+    const formData = new FormData(); // 👈 "택배 상자" 생성
+    formData.append('folderImage', file); // 👈 상자에 "파일" 담기
 
-    // ✅ 해결: API 명세에 맞게 'patch'로 변경합니다.
-    const response = await api.patch(`/folders/${id}`, formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
-    });
+    // 'api'가 formData를 감지하고 자동으로 Content-Type: multipart/form-data 헤더를 설정
+    const response = await api.patch(`/folders/${id}`, formData);
+
     return response.data;
 };
 

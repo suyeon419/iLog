@@ -13,6 +13,7 @@ import {
     deleteProject,
     updateProjectName, // 이름 수정 API 임포트
 } from '../../api/note';
+import api from '../../api/axios'; // 👈 [수정] api 인스턴스 임포트
 
 import './Note.css';
 
@@ -73,18 +74,9 @@ export default function Note() {
                 return; // 프로젝트 로드 실패 시 이미지 로딩 시도 안 함
             }
 
-            // --- 3. [수정] Blob 이미지 로딩 (순차 요청 + 디버깅 로그) ---
+            // --- 3. [수정] Blob 이미지 로딩 (api 인스턴스 사용) ---
             try {
-                const token = localStorage.getItem('token');
-
-                // ================== 🪵 LOG 1 ==================
-                console.log('💡 [Note] 1. 이미지 로더 시작. 토큰:', token ? '있음' : '없음');
-                // ===============================================
-
-                if (!token) {
-                    console.error('❌ [Note] 1-1. 토큰이 없어서 이미지 로드를 중단합니다. (스피너가 계속 돕니다)');
-                    return; // 토큰 없으면 중지
-                }
+                // [수정] 토큰 수동 관리 로직 삭제 (api가 자동으로 처리)
 
                 // API에서 방금 받아온 'initialItems' 배열을 순회합니다.
                 console.log(`💡 [Note] 2. 총 ${initialItems.length}개 아이템 순회 시작.`);
@@ -105,8 +97,9 @@ export default function Note() {
                             console.log(`💡 [Note] 4. (ID: ${itemToLoad.id}) 다음 URL로 GET 요청 시도: ${imageUrl}`);
                             // ===============================================
 
-                            const res = await axios.get(imageUrl, {
-                                headers: { Authorization: `Bearer ${token}` },
+                            // ⬇️ [수정] 'axios.get'을 'api.get'으로 변경
+                            const res = await api.get(imageUrl, {
+                                // [수정] 수동 헤더 삭제 (api가 자동 주입)
                                 responseType: 'blob',
                             });
 
@@ -434,6 +427,7 @@ export default function Note() {
                                                 onClick={(e) => e.stopPropagation()} // 이벤트 버블링 방지
                                                 autoFocus
                                                 className="form-control-inline-edit" // 2. 커스텀 CSS 클래스
+                                                // [수정] 키보드 이벤트 및 안내 텍스트 삭제 (이전 파일에서 빠져있었음)
                                             />
                                             {/* 4. '저장' 아이콘 버튼 */}
                                             <CheckSquare
