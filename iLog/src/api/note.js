@@ -93,20 +93,36 @@ export const deleteProject = async (folderId) => {
     }
 };
 
-/**
- * 6. 새 회의록(Minute) 생성
- * (가정) POST /folders/{folderId}/minutes
- */
-export const createMeetingNote = async (folderId, noteData) => {
+/* ==========================
+ * 회의록 생성 (로그인 필요)
+ * ========================== */
+export const createNote = async (folderId, data) => {
+    console.group('🧾 [createNote] 회의록 생성 요청 디버그 로그');
+    console.log('📁 폴더 ID:', folderId);
+    console.log('📝 요청 데이터:', data);
     try {
-        // [주의] '/folders/{folderId}/minutes'는 실제 API 경로로 수정해야 합니다.
-        // [주의] noteData의 key 이름(title, content)도 백엔드 명세에 맞게 수정해야 합니다.
-        // 예: { "minuteTitle": title, "content": content, "memberList": members }
+        const headers = {
+            ...defaultHeaders,
+            ...getAuthHeader(),
+        };
 
-        const response = await api.post(`/folders/${folderId}/minutes`, noteData);
-        return response.data; // 생성된 새 회의록 객체 반환
-    } catch (error) {
-        console.error('❌ 회의록 생성 실패:', error);
-        throw error;
+        const res = await api.post(`/minutes/${folderId}`, data, { headers });
+        console.log('✅ 회의록 생성 성공:', res.data);
+
+        return res.data;
+    } catch (err) {
+        if (err.response) {
+            console.error('❌ 회의록 생성 실패:', {
+                status: err.response.status,
+                data: err.response.data,
+            });
+        } else if (err.request) {
+            console.error('🚫 서버 응답 없음:', err.request);
+        } else {
+            console.error('⚙️ 요청 설정 오류:', err.message);
+        }
+        throw err;
+    } finally {
+        console.groupEnd();
     }
 };

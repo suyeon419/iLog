@@ -4,6 +4,8 @@ import remarkGfm from 'remark-gfm';
 import './Meeting.css';
 import { Button, Container, Form, ListGroup, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { getUserById } from '../../api/user';
+import { useLocation } from 'react-router-dom';
+import { createNote } from '../../api/note';
 
 // ******** 중간 요약 전송 간격 (ms 단위) ********
 const SEGMENT_DURATION_MS = 300000; // == 5분
@@ -185,6 +187,9 @@ const Meeting = () => {
 
         document.body.appendChild(script);
     }, []);
+
+    const location = useLocation(); //[sy]이전페이지에서 카메라 꺼짐 정보 받아오기
+    const { videoOff } = location.state || {}; //[sy]이전페이지에서 카메라 꺼짐 정보 받아오기
 
     // --- 어플리케이션 전역 상태 관리 ---
     const [meetingState, setMeetingState] = useState('idle'); // idle | active
@@ -1803,6 +1808,37 @@ const Meeting = () => {
                     localTracksRef.current.audio = suppressedTrack; // 기본 오디오 트랙
                     localTracksRef.current.currentActiveVideoTrack = videoTrack;
 
+                    // [sy] videoOff 값에 따라 초기 비디오 상태 설정
+                    if (videoOff) {
+                        console.log('🎥 videoOff 설정 감지됨 → 로컬 비디오 트랙 mute');
+                        await videoTrack.mute();
+
+                        // toggleVideo가 비디오 트랙 mute/unmute 및 상태 갱신을 담당
+                        // videoTrack이 attach되기 전일 수 있으므로 살짝 delay
+                        setTimeout(() => {
+                            toggleVideo();
+                            ensureCssApplied();
+                        }, 300);
+                    } else {
+                        console.log('🎥 videoOff false → 비디오 켜짐 상태로 시작');
+                        // setIsVideoMuted(false);
+                    }
+
+                    // ✅ 비디오 엘리먼트가 attach된 후에 CSS 적용 재시도
+                    const ensureCssApplied = () => {
+                        const videoElem = document.querySelector('video');
+                        if (videoElem && videoElem.offsetParent !== null) {
+                            console.log('🎨 CSS 재적용 시도');
+                            const parent = videoElem.closest('.participant, .video-element-container');
+                            if (parent && !parent.classList.contains('no-video')) {
+                                parent.classList.add('no-video');
+                                console.log('✅ no-video 클래스 강제 적용 완료');
+                            }
+                        } else {
+                            setTimeout(ensureCssApplied, 200); // 아직 attach 안됐으면 재시도
+                        }
+                    };
+
                     // 로컬 오디오 레벨 리스너 (발언 감지 UI용)
                     const localAudioLevelListener = (audioLevel) => {
                         setParticipants((prev) => prev.map((p) => (p.isLocal ? { ...p, audioLevel } : p)));
@@ -1967,7 +2003,7 @@ const Meeting = () => {
         });
     };
 
-    // ---- 추가 부분 --------
+    // ---- [sy]추가 부분 --------
     const inviteLink = `${window.location.origin}${window.location.pathname}?room=${roomName}`;
 
     const [showModal, setShowModal] = useState(false);

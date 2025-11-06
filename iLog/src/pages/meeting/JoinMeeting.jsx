@@ -47,9 +47,10 @@ export default function JoinMeeting() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
+        // 입력값 정리
         let url = meetingURL.trim();
 
-        // 입력된 주소가 http:// 또는 https:// 로 시작하지 않으면 자동으로 추가
+        // 프로토콜 자동 추가 (없을 경우)
         if (!/^https?:\/\//i.test(url)) {
             url = 'https://' + url;
         }
@@ -58,8 +59,15 @@ export default function JoinMeeting() {
         console.log('👤 참가자 이름:', name);
         console.log('🎥 비디오 끄기:', video);
 
-        // ✅ 실제로 해당 URL로 이동
-        window.location.href = url;
+        // URL에서 roomName 추출 (ex: https://webkit-ilo9-api.duckdns.org/meeting/ilo9-abcd123)
+        const roomName = url.split('/').pop().split('?')[0];
+
+        // React Router로 페이지 이동 + videoOff 값 전달
+        navigate(`/meeting/${roomName}`, {
+            state: {
+                videoOff: video,
+            },
+        });
     };
     if (isLoading) {
         return (

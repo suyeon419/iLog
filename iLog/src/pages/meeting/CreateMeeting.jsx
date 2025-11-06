@@ -3,6 +3,7 @@ import { Form, Button, Card, Container, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { getUserById } from '../../api/user';
+import axiosInstance from '../../api/axios';
 
 export default function CreateMeeting() {
     const navigate = useNavigate();
@@ -41,14 +42,22 @@ export default function CreateMeeting() {
         }
     }, []);
 
+    //회의 주소 생성
+    useEffect(() => {
+        const randomRoom = `ilo9-${Math.random().toString(36).substring(2, 10)}`;
+        setMeetingURL(`http://localhost:5173/meeting/${randomRoom}?room=${randomRoom}`);
+    }, []);
+
     const handlerSubmit = (e) => {
         e.preventDefault();
 
-        console.log('meeting: ', meetingURL);
-        console.log('name: ', name);
-        console.log('video: ', video);
+        const roomName = meetingURL.split('/').pop().split('?')[0];
 
-        navigate('/meeting/:meetingId');
+        navigate(`/meeting/${roomName}`, {
+            state: {
+                videoOff: video,
+            },
+        });
     };
 
     if (isLoading) {
@@ -82,7 +91,7 @@ export default function CreateMeeting() {
                     <Form onSubmit={handlerSubmit}>
                         <Form.Group>
                             <Form.Label className="mb-0">회의 주소</Form.Label>
-                            <Form.Control type="text" value={meetingURL} required readOnly />
+                            <Form.Control type="text" value={meetingURL} required />
                         </Form.Group>
 
                         <Form.Group>
