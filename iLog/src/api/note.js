@@ -31,6 +31,22 @@ export const getProjects = async () => {
 };
 
 /**
+ * [추가] 1-1. 특정 프로젝트(폴더) 상세 조회 (하위 회의록 목록 포함)
+ * 이 함수를 NoteDetail.jsx에서 사용합니다.
+ */
+export const getProjectDetails = async (folderId) => {
+    try {
+        // 토큰이 필요한 요청이므로 'api' 인스턴스 사용
+        const response = await api.get(`/folders/${folderId}`);
+        // 응답 데이터 예: { folderId: 9, folderName: "웹킷 팀프로젝트", childMinutes: [...] }
+        return response.data;
+    } catch (error) {
+        console.error(`❌ (ID: ${folderId}) 프로젝트 상세 로드 실패:`, error);
+        throw error;
+    }
+};
+
+/**
  * 2. 새 프로젝트(폴더) 생성 (특정 폴더의 자식으로)
  */
 export const createProject = async (parentId, projectName) => {
