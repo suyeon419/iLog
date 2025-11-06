@@ -1348,6 +1348,7 @@ const Meeting = () => {
                 const localParticipant = {
                     id: myId,
                     name: userName,
+                    email: userInfo.email,
                     isLocal: true,
 
                     videoTrack: localTracksRef.current.video,
@@ -1371,6 +1372,33 @@ const Meeting = () => {
                 }
                 return [...prev, { id: pid, name, isLocal: false }];
             });
+
+            //[sy] 새로 들어온 사람에게 내 정보 전송
+            conf.sendMessage({
+                type: 'user_info',
+                name: userInfo.name,
+                email: userInfo.email,
+            });
+        });
+
+        // [sy] 다른 참가자에게서 정보(user_info)를 받았을 때
+        conf.on(JitsiMeetJS.events.conference.ENDPOINT_MESSAGE_RECEIVED, (participantId, message) => {
+            const data = message.eventData || message; // 메시지 구조 호환성 처리
+            if (data.type === 'user_info' && data.email) {
+                console.log('📩 사용자 정보 수신:', participantId, data);
+
+                // 참가자 목록 업데이트 (이메일 반영)
+                setParticipants((prev) => {
+                    const idx = prev.findIndex((p) => p.id === participantId);
+                    if (idx > -1) {
+                        // 이미 있는 참가자면 정보 업데이트
+                        return prev.map((p, i) => (i === idx ? { ...p, name: data.name, email: data.email } : p));
+                    } else {
+                        // 없던 참가자면 새로 추가
+                        return [...prev, { id: participantId, name: data.name, email: data.email, isLocal: false }];
+                    }
+                });
+            }
         });
 
         // 트랙(오디오, 비디오, 화면공유)이 추가되었을 때 (TRACK_ADDED)
