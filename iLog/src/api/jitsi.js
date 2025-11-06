@@ -1,8 +1,8 @@
 // jitsi.js
 async function startJitsiMeeting() {
-    const roomName = 'MyMeetingRoom'; // 방 이름
-    const userName = '이수연'; // 표시될 이름
-    const userEmail = 'suyeon@example.com'; // 사용자 이메일
+    const roomName = ''; // 방 이름
+    const userName = ''; // 표시될 이름
+    const userEmail = ''; // 사용자 이메일
 
     try {
         // 1️⃣ JWT 토큰 요청 (백엔드에 이미 구현된 /jitsi-jwt 사용)
