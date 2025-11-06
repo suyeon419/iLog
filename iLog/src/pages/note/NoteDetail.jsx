@@ -6,8 +6,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import MemberModal from './MemberModal';
 
-// [수정 1] 멤버를 불러오는 API 함수를 임포트합니다.
-// (주의: 'getProjectMembers'는 예시 이름입니다. 실제 함수 이름으로 변경하세요!)
 import { getProjectDetails, getProjectMembers } from '../../api/note';
 
 export default function NoteDetail() {
@@ -20,14 +18,14 @@ export default function NoteDetail() {
     const [error, setError] = useState('');
 
     const [showMemberModal, setShowMemberModal] = useState(false);
-
-    // [수정 2] 모달에 전달할 멤버 목록을 저장할 state 추가
     const [currentMembers, setCurrentMembers] = useState([]);
+
+    // [수정 없음] 초대 링크를 저장할 state
+    const [currentInviteLink, setCurrentInviteLink] = useState('');
 
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 7;
 
-    // ... (fetchProjectDetails 함수는 동일) ...
     const fetchProjectDetails = async (projectId) => {
         setLoading(true);
         setError('');
@@ -46,9 +44,11 @@ export default function NoteDetail() {
                 .reverse();
 
             setSubMeetings(mappedMeetings);
+            // [✅ 수정] catch (err) 뒤에 중괄호 { 를 추가했습니다.
         } catch (err) {
             console.error('Failed to fetch details:', err);
             setError('프로젝트 정보를 불러오는 데 실패했습니다. (데이터 맵핑 오류 가능성)');
+            // [✅ 수정] } 를 추가했습니다.
         } finally {
             setLoading(false);
         }
@@ -78,16 +78,17 @@ export default function NoteDetail() {
         navigate(`/notes/meeting/${meetingId}`);
     };
 
-    // [수정 3] 모달을 여는 함수 (API 호출 로직 추가)
+    // [수정 없음] 모달을 여는 함수 (API 응답 분리)
     const handleShowMemberModal = async () => {
         try {
-            // (주의: 'getProjectMembers'는 예시 이름입니다. 실제 함수 이름으로 변경하세요!)
-            // GET /folders/{id}/party API를 호출합니다.
-            const membersData = await getProjectMembers(id);
+            // responseData는 { participants: [...], inviteLink: "..." } 형태라고 가정
+            const responseData = await getProjectMembers(id);
 
-            // TODO: API 응답에 맞게 데이터 가공
-            // (예시: membersData가 [{ id: 1, name: '김가현', email: '...', isLeader: true }] 형태라고 가정)
-            setCurrentMembers(membersData);
+            // (1) participants 배열을 저장
+            setCurrentMembers(responseData.participants || []);
+
+            // (2) [추가] inviteLink를 state에 저장
+            setCurrentInviteLink(responseData.inviteLink || ''); // || ''는 링크가 없을 경우 대비
 
             setShowMemberModal(true); // 데이터 로드 성공 시 모달 열기
         } catch (err) {
@@ -96,10 +97,11 @@ export default function NoteDetail() {
         }
     };
 
-    // [수정 4] 모달을 닫는 함수 (state 초기화 로직 추가)
+    // [수정 없음] 모달을 닫는 함수 (state 초기화)
     const handleCloseMemberModal = () => {
         setShowMemberModal(false);
-        setCurrentMembers([]); // 모달이 닫힐 때 목록 비우기
+        setCurrentMembers([]);
+        setCurrentInviteLink(''); // [추가] 링크 state도 초기화
     };
 
     // --- 페이지네이션 로직 (동일) ---
@@ -234,8 +236,13 @@ export default function NoteDetail() {
                 </Button>
             </div>
 
-            {/* [수정 5] MemberModal에 members prop 전달 */}
-            <MemberModal show={showMemberModal} onHide={handleCloseMemberModal} members={currentMembers} />
+            {/* [수정 없음] MemberModal에 'members'와 'inviteLink' prop을 모두 전달 */}
+            <MemberModal
+                show={showMemberModal}
+                onHide={handleCloseMemberModal}
+                members={currentMembers}
+                inviteLink={currentInviteLink}
+            />
         </Container>
     );
 }

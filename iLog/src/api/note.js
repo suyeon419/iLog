@@ -1,6 +1,5 @@
 //여기에 note관련 api정리해서 하십쇼
 import api from './axios';
-import axios from 'axios';
 
 const API_BASE_URL = 'https://webkit-ilo9-api.duckdns.org';
 
@@ -209,4 +208,39 @@ export const getProjectMembers = async (folderId) => {
         console.error(`❌ (ID: ${folderId}) 참가자 목록 로드 실패:`, error);
         throw error;
     }
+};
+
+// [✅ 수정] 'instance'를 'api'로 변경합니다.
+export const getMeetingDetail = async (meetingId) => {
+    const response = await api.get(`/minutes/${meetingId}`);
+    return response.data;
+};
+
+// [✅ 수정] 'instance'를 'api'로 변경합니다.
+export const updateMeetingDetail = async (meetingId, payload) => {
+    const response = await api.patch(`/minutes/${meetingId}`, payload);
+    return response.data;
+};
+
+// [✅ 수정] 'instance'를 'api'로 변경합니다.
+export const deleteMeeting = async (meetingId) => {
+    const response = await api.delete(`/minutes/${meetingId}`);
+    return response.data;
+};
+
+// (Postman에서 보여주신 /minutes/{id}/summary 호출)
+export const getMeetingSummary = async (meetingId) => {
+    const response = await api.get(`/minutes/${meetingId}/summary`);
+    // 응답: { id, title, summary, memos }
+    return response.data;
+};
+
+// [✅ 신규] 메모 생성 (POST)
+// (NoteAISummary.jsx에서 '메모 저장' 시 사용)
+export const createMemo = async (meetingId, payload) => {
+    // payload 예: { content: "메모 내용", selection: "인용된 텍스트" }
+    // 실제 백엔드 API가 원하는 /memos 엔드포인트와 payload 형식으로 수정 필요
+    const response = await api.post(`/minutes/${meetingId}/memos`, payload);
+    // 응답: 새로 생성된 메모 객체 (예: { id, person, note })
+    return response.data;
 };
