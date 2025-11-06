@@ -247,11 +247,15 @@ const Meeting = () => {
         fetchUserInfo();
     }, []);
 
+    // 파일 상단 훅들 옆
+    const hasJoinedRef = useRef(false);
+
+    // 자동 참가 useEffect 교체
     useEffect(() => {
-        if (isUserLoaded) {
-            console.log('🚀 유저 정보 로딩 완료 → 회의 자동 시작');
-            handleJoin(); // 자동 실행
-        }
+        if (!isUserLoaded || hasJoinedRef.current) return;
+        hasJoinedRef.current = true; // ✅ 중복 방지
+        console.log('🚀 유저 정보 로딩 완료 → 회의 자동 시작');
+        handleJoin();
     }, [isUserLoaded]);
 
     // --- 요약 재시도 관련 상태 ---
@@ -1815,8 +1819,15 @@ const Meeting = () => {
 
         // ⭐ UUID v4를 사용하여 랜덤하고 고유한 방 이름 생성
         const randomUuid = crypto.randomUUID().replace(/-/g, ''); // 하이픈 제거
-        const currentRoomName = roomNameToJoin || `ilo9-${randomUuid.substring(0, 10)}`; // 일부만 사용하거나 전체 사용
+        // const currentRoomName = roomNameToJoin || `ilo9-${randomUuid.substring(0, 10)}`; // 일부만 사용하거나 전체 사용
+        // setRoomName(currentRoomName);
+        const params = new URLSearchParams(window.location.search);
+        const roomFromUrl = params.get('room');
+        const currentRoomName = roomFromUrl || roomNameToJoin || `ilo9-${randomUuid.substring(0, 10)}`;
+
+        // ✅ 2️⃣ 실제 연결된 방 이름으로 state 동기화
         setRoomName(currentRoomName);
+        console.log('📡 연결할 실제 방 이름:', currentRoomName);
 
         try {
             // 1. Jitsi 라이브러리 초기화
@@ -2053,7 +2064,7 @@ const Meeting = () => {
         const joiningExistingRoom = !!roomName;
         isHostRef.current = !joiningExistingRoom;
         console.log(`[handleJoin] Is Host Ref: ${isHostRef.current}`);
-        connectJitsi(roomName || null, userName);
+        connectJitsi(roomName, userName);
     };
 
     /**

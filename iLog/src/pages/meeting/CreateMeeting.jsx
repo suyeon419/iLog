@@ -9,6 +9,7 @@ export default function CreateMeeting() {
     const navigate = useNavigate();
 
     const [meetingURL, setMeetingURL] = useState('자동 주소 입력');
+    const [fullUrl, setFullUrl] = useState('');
     const [name, setName] = useState('');
     const [video, setVideo] = useState(false);
 
@@ -42,21 +43,27 @@ export default function CreateMeeting() {
         }
     }, []);
 
-    //회의 주소 생성
+    // 회의 주소 생성
     useEffect(() => {
         const randomRoom = `ilo9-${Math.random().toString(36).substring(2, 10)}`;
-        setMeetingURL(`http://localhost:5173/meeting/${randomRoom}?room=${randomRoom}`);
+        setMeetingURL(`/meeting/${randomRoom}?room=${randomRoom}`); // ✅ 절대 URL 말고 상대경로만
     }, []);
-
+    useEffect(() => {
+        if (meetingURL) {
+            setFullUrl(`${window.location.origin}${meetingURL}`);
+        }
+    }, [meetingURL]);
     const handlerSubmit = (e) => {
         e.preventDefault();
 
-        const roomName = meetingURL.split('/').pop().split('?')[0];
+        // meetingURL에서 방 이름 추출
+        const roomName = meetingURL.split('/')[2].split('?')[0];
 
-        navigate(`/meeting/${roomName}`, {
-            state: {
-                videoOff: video,
-            },
+        // 이동할 URL 생성
+        const url = `/meeting/${roomName}?room=${roomName}`;
+
+        navigate(url, {
+            state: { videoOff: video },
         });
     };
 
@@ -91,7 +98,7 @@ export default function CreateMeeting() {
                     <Form onSubmit={handlerSubmit}>
                         <Form.Group>
                             <Form.Label className="mb-0">회의 주소</Form.Label>
-                            <Form.Control type="text" value={meetingURL} required />
+                            <Form.Control type="text" value={fullUrl} required />
                         </Form.Group>
 
                         <Form.Group>
