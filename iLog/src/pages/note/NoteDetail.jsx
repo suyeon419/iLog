@@ -5,11 +5,14 @@ import { Container, Table, Button, Row, Col, Pagination, Spinner, Alert } from '
 import { useNavigate, useParams } from 'react-router-dom';
 import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import MemberModal from './MemberModal';
-import { getProjectDetails } from '../../api/note'; // createNote는 여기서 사용 안 함
+
+// [수정 1] 멤버를 불러오는 API 함수를 임포트합니다.
+// (주의: 'getProjectMembers'는 예시 이름입니다. 실제 함수 이름으로 변경하세요!)
+import { getProjectDetails, getProjectMembers } from '../../api/note';
 
 export default function NoteDetail() {
     const navigate = useNavigate();
-    const { id } = useParams();
+    const { id } = useParams(); // 현재 프로젝트(폴더) ID
 
     const [project, setProject] = useState(null);
     const [subMeetings, setSubMeetings] = useState([]);
@@ -18,63 +21,56 @@ export default function NoteDetail() {
 
     const [showMemberModal, setShowMemberModal] = useState(false);
 
+    // [수정 2] 모달에 전달할 멤버 목록을 저장할 state 추가
+    const [currentMembers, setCurrentMembers] = useState([]);
+
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 7;
 
+    // ... (fetchProjectDetails 함수는 동일) ...
     const fetchProjectDetails = async (projectId) => {
         setLoading(true);
         setError('');
         try {
             const data = await getProjectDetails(projectId);
-
             setProject({ id: data.folderId, name: data.folderName });
 
-            // [✅✅✅ 여기를 수정합니다 ✅✅✅]
-            const mappedMeetings = (data.childMinutes || [])
+            const mappedMeetings = (data.minutesList || [])
                 .map((minute) => ({
-                    // 1. [수정] minute.minuteId -> minute.id
                     id: minute.id,
-                    name: minute.title || '제목 없음',
-                    members: minute.members || '참가자 없음',
-                    // 2. [수정] 오타 수정 (toLocaleDateDateString -> toLocaleDateString)
+                    name: minute.name || '제목 없음',
+                    members: minute.members || '...',
                     created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '날짜 없음',
-                    modified: minute.updatedAt ? new Date(minute.updatedAt).toLocaleDateString() : '날짜 없음',
+                    modified: minute.approachedAt ? new Date(minute.approachedAt).toLocaleDateString() : '날짜 없음',
                 }))
                 .reverse();
 
             setSubMeetings(mappedMeetings);
         } catch (err) {
             console.error('Failed to fetch details:', err);
-            setError('프로젝트 정보를 불러오는 데 실패했습니다.');
+            setError('프로젝트 정보를 불러오는 데 실패했습니다. (데이터 맵핑 오류 가능성)');
         } finally {
             setLoading(false);
         }
     };
 
-    // [✅✅✅ 수정된 부분 ✅✅✅]
+    // ... (useEffect 탭 포커스 부분은 동일) ...
     useEffect(() => {
-        // 1. 컴포넌트가 로드될 때 즉시 데이터를 가져옵니다.
         fetchProjectDetails(id);
 
-        // 2. 'focus' 이벤트 리스너를 추가합니다.
-        // (다른 페이지로 갔다가 이 탭으로 다시 돌아왔을 때 발생)
         const handleFocus = () => {
-            console.log('💡 [NoteDetail] 탭이 다시 포커스되었습니다. 데이터 새로고침을 시도합니다.');
+            console.log('💡 [NoteDetail] 탭 포커스됨. 목록 새로고침 실행.');
             fetchProjectDetails(id);
         };
 
-        // 3. 이벤트 리스너 등록
         window.addEventListener('focus', handleFocus);
-
-        // 4. 컴포넌트가 언마운트될 때(사라질 때) 리스너를 정리합니다.
         return () => {
             window.removeEventListener('focus', handleFocus);
         };
-    }, [id]); // id가 바뀔 때도 물론 새로고침합니다.
-    // [✅✅✅ 수정 끝 ✅✅✅]
+    }, [id]);
 
+    // ... (handleAddSubMeeting, handleRowClick 함수는 동일) ...
     const handleAddSubMeeting = () => {
-        // 새 회의록 작성 페이지로 이동
         navigate('/notes/new', { state: { parentId: id } });
     };
 
@@ -82,10 +78,31 @@ export default function NoteDetail() {
         navigate(`/notes/meeting/${meetingId}`);
     };
 
-    const handleShowMemberModal = () => setShowMemberModal(true);
-    const handleCloseMemberModal = () => setShowMemberModal(false);
+    // [수정 3] 모달을 여는 함수 (API 호출 로직 추가)
+    const handleShowMemberModal = async () => {
+        try {
+            // (주의: 'getProjectMembers'는 예시 이름입니다. 실제 함수 이름으로 변경하세요!)
+            // GET /folders/{id}/party API를 호출합니다.
+            const membersData = await getProjectMembers(id);
 
-    // --- 페이지네이션 로직 ---
+            // TODO: API 응답에 맞게 데이터 가공
+            // (예시: membersData가 [{ id: 1, name: '김가현', email: '...', isLeader: true }] 형태라고 가정)
+            setCurrentMembers(membersData);
+
+            setShowMemberModal(true); // 데이터 로드 성공 시 모달 열기
+        } catch (err) {
+            console.error('Failed to fetch members:', err);
+            alert('멤버 목록을 불러오는 데 실패했습니다.');
+        }
+    };
+
+    // [수정 4] 모달을 닫는 함수 (state 초기화 로직 추가)
+    const handleCloseMemberModal = () => {
+        setShowMemberModal(false);
+        setCurrentMembers([]); // 모달이 닫힐 때 목록 비우기
+    };
+
+    // --- 페이지네이션 로직 (동일) ---
     const totalPages = Math.ceil(subMeetings.length / ITEMS_PER_PAGE);
     const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
     const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
@@ -110,6 +127,7 @@ export default function NoteDetail() {
     };
     // ------------------------
 
+    // ... (loading, error 처리 UI 동일) ...
     if (loading) {
         return (
             <Container fluid className="pt-3 text-center">
@@ -151,6 +169,7 @@ export default function NoteDetail() {
 
                 {/* 하위 회의록 목록 테이블 */}
                 <Table className="align-middle">
+                    {/* ... (thead 부분 동일) ... */}
                     <thead>
                         <tr>
                             <th>
@@ -168,6 +187,7 @@ export default function NoteDetail() {
                         </tr>
                     </thead>
                     <tbody>
+                        {/* ... (tbody 맵핑 부분 동일) ... */}
                         {currentMeetings.length === 0 ? (
                             <tr>
                                 <td colSpan="4" className="text-center p-4">
@@ -194,6 +214,7 @@ export default function NoteDetail() {
 
             {/* 2. 하단 고정 영역 (페이지네이션 + 버튼) */}
             <div>
+                {/* ... (페이지네이션, 버튼 동일) ... */}
                 <nav className="mt-3 pagination-nav">
                     <Pagination className="justify-content-center">
                         <Pagination.Prev
@@ -213,7 +234,8 @@ export default function NoteDetail() {
                 </Button>
             </div>
 
-            <MemberModal show={showMemberModal} onHide={handleCloseMemberModal} />
+            {/* [수정 5] MemberModal에 members prop 전달 */}
+            <MemberModal show={showMemberModal} onHide={handleCloseMemberModal} members={currentMembers} />
         </Container>
     );
 }

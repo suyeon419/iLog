@@ -148,3 +148,52 @@ export const updateProjectName = async (folderId, newName) => {
         throw error;
     }
 };
+
+/**
+ * 6. 개별 회의록 상세 조회
+ * (가정) GET /minutes/{minuteId}
+ */
+export const getNoteDetails = async (minuteId) => {
+    try {
+        const response = await api.get(`/minutes/${minuteId}`);
+        console.log(`✅ (ID: ${minuteId}) 회의록 상세 로드 성공:`, response.data);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ (ID: ${minuteId}) 회의록 상세 로드 실패:`, error);
+        throw error;
+    }
+};
+
+/**
+ * 7. 개별 회의록 수정
+ * (가정) PATCH /minutes/{minuteId}
+ */
+export const updateNote = async (minuteId, data) => {
+    console.group(`🧾 [updateNote] (ID: ${minuteId}) 회의록 수정 요청`);
+    console.log('📝 수정 데이터:', data);
+    try {
+        const response = await api.patch(`/minutes/${minuteId}`, data);
+        console.log('✅ 회의록 수정 성공:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ (ID: ${minuteId}) 회의록 수정 실패:`, error);
+        throw error;
+    } finally {
+        console.groupEnd();
+    }
+};
+
+/**
+ * 8. 개별 회의록 삭제
+ * (가정) DELETE /minutes/{minuteId}
+ */
+export const deleteNote = async (minuteId) => {
+    try {
+        const response = await api.delete(`/minutes/${minuteId}`);
+        console.log(`✅ (ID: ${minuteId}) 회의록 삭제 성공`);
+        return response.data; // 또는 response.status
+    } catch (error) {
+        console.error(`❌ (ID: ${minuteId}) 회의록 삭제 실패:`, error);
+        throw error;
+    }
+};
