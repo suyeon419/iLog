@@ -8,6 +8,7 @@ const API_BASE_URL = 'https://webkit-ilo9-api.duckdns.org';
 // [수정] Content-Type 제거. Axios가 FormData를 감지하고 자동으로 설정하도록 합니다.
 const defaultHeaders = {
     // 'Content-Type': 'multipart/form-data', // <-- ❌ 이 줄을 삭제했습니다.
+    'Content-Type': 'application/json',
 };
 
 // ✅ 토큰 가져오기 헬퍼
@@ -85,6 +86,40 @@ export const deleteProject = async (folderId) => {
     } catch (error) {
         console.error('❌ 프로젝트 삭제 실패:', error);
         throw error;
+    }
+};
+
+/* ==========================
+ * 회의록 생성 (로그인 필요)
+ * ========================== */
+export const createNote = async (folderId, data) => {
+    console.group('🧾 [createNote] 회의록 생성 요청 디버그 로그');
+    console.log('📁 폴더 ID:', folderId);
+    console.log('📝 요청 데이터:', data);
+    try {
+        const headers = {
+            ...defaultHeaders,
+            ...getAuthHeader(),
+        };
+
+        const res = await api.post(`/minutes/${folderId}`, data, { headers });
+        console.log('✅ 회의록 생성 성공:', res.data);
+
+        return res.data;
+    } catch (err) {
+        if (err.response) {
+            console.error('❌ 회의록 생성 실패:', {
+                status: err.response.status,
+                data: err.response.data,
+            });
+        } else if (err.request) {
+            console.error('🚫 서버 응답 없음:', err.request);
+        } else {
+            console.error('⚙️ 요청 설정 오류:', err.message);
+        }
+        throw err;
+    } finally {
+        console.groupEnd();
     }
 };
 
