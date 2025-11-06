@@ -210,20 +210,48 @@ const Meeting = () => {
 
     const [userInfo, setUserInfo] = useState({ name: '', email: '' }); //[sy]user정보 관리 위함
     const [isUserLoaded, setIsUserLoaded] = useState(false); //[sy] 서버에서 회원정보를 다 받아왔는지 확인하기 위함
+    const [profileImageUrl, setProfileImageUrl] = useState(''); //[sy]회원 이미지
 
     // [sy] user 정보 받아옴
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const data = await getUserById();
-                setUserInfo({ name: data.name, email: data.email });
+                const data = await getUserById(); // ⚠️ userId 인자가 필요하다면 getUserById(userId)로 수정
+                let imageUrl = null;
+
+                // --------[sy] 프로필 이미지 불러오기-------------
+                if (data.profileImage) {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const res = await api.get(`${API_BASE_URL}${data.profileImage}`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                            responseType: 'blob',
+                        });
+                        imageUrl = URL.createObjectURL(res.data);
+                        console.log('🖼️ Blob URL 생성됨:', imageUrl);
+                    } catch (err) {
+                        console.error('❌ 프로필 이미지 불러오기 실패:', err);
+                    }
+                }
+                //--------------------------------------------------
+
+                // ✅ 유저 정보 + 이미지 모두 저장
+                const userData = {
+                    name: data.name,
+                    email: data.email,
+                    imageUrl: imageUrl, // 👈 참가자 목록에도 같이 넣을 수 있도록
+                };
+
+                setUserInfo(userData);
                 setUserName(data.name);
-                setIsUserLoaded(true); // ✅ 유저 로딩 완료 표시
-                console.log('✅ 서버에서 불러온 유저 정보:', data);
+                setIsUserLoaded(true);
+
+                console.log('✅ 서버에서 불러온 유저 정보:', userData);
             } catch (error) {
                 console.error('❌ 유저 정보 조회 실패:', error);
             }
         };
+
         fetchUserInfo();
     }, []);
 
@@ -1349,6 +1377,7 @@ const Meeting = () => {
                     id: myId,
                     name: userName,
                     email: userInfo.email,
+                    imageUrl: userInfo.imageUrl,
                     isLocal: true,
 
                     videoTrack: localTracksRef.current.video,
@@ -1378,24 +1407,39 @@ const Meeting = () => {
                 type: 'user_info',
                 name: userInfo.name,
                 email: userInfo.email,
+                imageUrl: userInfo.imageUrl,
             });
         });
 
         // [sy] 다른 참가자에게서 정보(user_info)를 받았을 때
         conf.on(JitsiMeetJS.events.conference.ENDPOINT_MESSAGE_RECEIVED, (participantId, message) => {
+            const pid = normalizeId(participantId);
             const data = message.eventData || message; // 메시지 구조 호환성 처리
             if (data.type === 'user_info' && data.email) {
                 console.log('📩 사용자 정보 수신:', participantId, data);
 
                 // 참가자 목록 업데이트 (이메일 반영)
                 setParticipants((prev) => {
-                    const idx = prev.findIndex((p) => p.id === participantId);
+                    // 1️⃣ id 또는 name이 같은 참가자 찾기
+                    const idx = prev.findIndex((p) => p.id === pid || (p.name && p.name === data.name));
+
                     if (idx > -1) {
-                        // 이미 있는 참가자면 정보 업데이트
-                        return prev.map((p, i) => (i === idx ? { ...p, name: data.name, email: data.email } : p));
+                        // 2️⃣ 이미 있으면 업데이트 (이메일 추가)
+                        return prev.map((p, i) =>
+                            i === idx ? { ...p, name: data.name, email: data.email, imageUrl: message.imageUrl } : p
+                        );
                     } else {
-                        // 없던 참가자면 새로 추가
-                        return [...prev, { id: participantId, name: data.name, email: data.email, isLocal: false }];
+                        // 3️⃣ 없으면 새로 추가
+                        return [
+                            ...prev,
+                            {
+                                id: pid,
+                                name: data.name,
+                                email: data.email,
+                                imageUrl: data.imageUrl || null,
+                                isLocal: false,
+                            },
+                        ];
                     }
                 });
             }
@@ -1944,6 +1988,7 @@ const Meeting = () => {
                         id: myId,
                         name: userInfo.name, // [sy]서버에서 받은 이름 사용
                         email: userInfo.email, // [sy] 서버에서 받은 이메일 추가
+                        imageUrl: userInfo.imageUrl, //[sy] 서버에서 받은 이미지 추가
                         isLocal: true,
                         videoTrack: videoTrack,
                         audioTrack: suppressedTrack,
@@ -2266,10 +2311,24 @@ const Meeting = () => {
                         <ListGroup variant="flush">
                             {participants.map((p, i) => (
                                 <ListGroup.Item key={i} className="d-flex align-items-center">
-                                    <div
-                                        className="rounded-circle bg-secondary me-3"
-                                        style={{ width: '36px', height: '36px' }}
-                                    ></div>
+                                    {p.imageUrl ? (
+                                        <img
+                                            src={p.imageUrl}
+                                            alt={`${p.name} 프로필`}
+                                            className="rounded-circle me-3"
+                                            style={{
+                                                width: '36px',
+                                                height: '36px',
+                                                objectFit: 'cover',
+                                            }}
+                                        />
+                                    ) : (
+                                        <div
+                                            className="rounded-circle bg-secondary me-3"
+                                            style={{ width: '36px', height: '36px' }}
+                                        ></div>
+                                    )}
+
                                     <div className="text-start">
                                         <div className="fw-semibold">{p.name}</div>
                                         <div className="text-muted small">{p.email}</div>
