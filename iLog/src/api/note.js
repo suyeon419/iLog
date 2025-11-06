@@ -1,11 +1,13 @@
 //여기에 note관련 api정리해서 하십쇼
 import api from './axios';
+import axios from 'axios';
+
+const API_BASE_URL = 'https://webkit-ilo9-api.duckdns.org';
 
 // ✅ 공통 헤더 (모든 요청에 적용)
 // [수정] Content-Type 제거. Axios가 FormData를 감지하고 자동으로 설정하도록 합니다.
 const defaultHeaders = {
     // 'Content-Type': 'multipart/form-data', // <-- ❌ 이 줄을 삭제했습니다.
-    'Content-Type': 'application/json',
 };
 
 // ✅ 토큰 가져오기 헬퍼
@@ -44,26 +46,18 @@ export const createProject = async (parentId, projectName) => {
  * 3. 프로젝트 이미지 업로드 (수정)
  * (Postman 힌트 적용: folderName과 folderImage를 함께 전송)
  */
-export const updateProjectImage = async (folderId, folderName, file) => {
-    try {
-        const formData = new FormData();
+export const updateProjectImage = async (id, name, file) => {
+    const formData = new FormData();
+    formData.append('folderName', name);
+    formData.append('folderImage', file);
 
-        // [수정] Postman처럼 'folderName'과 'folderImage'를 모두 추가
-        formData.append('folderName', folderName);
-        formData.append('folderImage', file);
-
-        const response = await api.patch(`/folders/${folderId}`, formData, {
-            headers: {
-                ...getAuthHeader(),
-                // [수정] Content-Type 제거. Axios가 FormData를 보고 자동으로 설정합니다.
-                // 'Content-Type': 'multipart/form-data', // <-- ❌ 이 줄을 삭제했습니다.
-            },
-        });
-        return response.data;
-    } catch (error) {
-        console.error('❌ 이미지 업로드/수정 실패:', error);
-        throw error;
-    }
+    // ✅ 해결: API 명세에 맞게 'patch'로 변경합니다.
+    const response = await api.patch(`/folders/${id}`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    return response.data;
 };
 
 /**
@@ -94,36 +88,17 @@ export const deleteProject = async (folderId) => {
     }
 };
 
-/* ==========================
- * 회의록 생성 (로그인 필요)
- * ========================== */
-export const createNote = async (folderId, data) => {
-    console.group('🧾 [createNote] 회의록 생성 요청 디버그 로그');
-    console.log('📁 폴더 ID:', folderId);
-    console.log('📝 요청 데이터:', data);
+// [추가] 프로젝트 이름 수정 API
+export const updateProjectName = async (folderId, newName) => {
     try {
-        const headers = {
-            ...defaultHeaders,
-            ...getAuthHeader(),
-        };
-
-        const res = await api.post(`/minutes/${folderId}`, data, { headers });
-        console.log('✅ 회의록 생성 성공:', res.data);
-
-        return res.data;
-    } catch (err) {
-        if (err.response) {
-            console.error('❌ 회의록 생성 실패:', {
-                status: err.response.status,
-                data: err.response.data,
-            });
-        } else if (err.request) {
-            console.error('🚫 서버 응답 없음:', err.request);
-        } else {
-            console.error('⚙️ 요청 설정 오류:', err.message);
-        }
-        throw err;
-    } finally {
-        console.groupEnd();
+        // ✅ 1. 'api' 인스턴스 사용 (토큰 자동 주입)
+        // ✅ 2. { folderName: newName }으로 변경
+        const response = await api.patch(`/folders/${folderId}`, {
+            folderName: newName,
+        });
+        return response.data;
+    } catch (error) {
+        console.error('API Error updateProjectName:', error);
+        throw error;
     }
 };

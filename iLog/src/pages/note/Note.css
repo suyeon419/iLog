@@ -73,3 +73,44 @@
     border: 1px solid #e65a5a;
     color: white;
 }
+
+/* 2. 저장/취소 등 아이콘 버튼 공통 스타일 */
+.edit-action-icon {
+    font-size: 1.6rem; /* 아이콘 크기 키우기 */
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.edit-action-icon:hover {
+    transform: scale(1.1); /* 살짝 커지는 효과 */
+}
+
+.save-icon {
+    color: #b66e03;
+    fill: #b66e03;
+}
+
+.form-control-inline-edit {
+    flex: 1;
+    min-width: 0; /* 👈 [이 줄을 추가!] flex 아이템이 넘치지 않게 함 */
+    width: auto; /* 👈 이 줄은 있어도 되고, min-width: 0이 있다면 없어도 됩니다. */
+
+    /* --- 나머지 스타일 (폰트 크기 등) --- */
+    font-size: 1.25rem !important;
+    font-weight: bold;
+    padding: 0.25rem 0.5rem !important;
+    height: auto;
+    line-height: 1.5;
+}
+
+.form-control-inline-edit:focus {
+    /* Bootstrap의 기본 focus 스타일을 덮어씁니다.
+      'none'으로 설정하면 파란색 그림자가 사라집니다.
+    */
+    box-shadow: none;
+
+    /* (선택) 테두리 색도 기본 회색으로 유지하려면
+      이 코드도 추가하세요. 
+    */
+    border-color: #b66e03;
+}

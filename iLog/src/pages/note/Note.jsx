@@ -2,10 +2,17 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Button, Card, Row, Col, Pagination, Alert, Spinner } from 'react-bootstrap';
+import { Container, Button, Card, Row, Col, Pagination, Alert, Spinner, Form } from 'react-bootstrap'; // Form 추가
 import { useNavigate } from 'react-router-dom';
-import { PencilSquare } from 'react-bootstrap-icons';
-import { getProjects, createProject, updateProjectImage, deleteProjectImage, deleteProject } from '../../api/note';
+import { PencilSquare, CheckSquare } from 'react-bootstrap-icons'; // CheckSquare 추가
+import {
+    getProjects,
+    createProject,
+    updateProjectImage,
+    deleteProjectImage,
+    deleteProject,
+    updateProjectName, // 이름 수정 API 임포트
+} from '../../api/note';
 
 import './Note.css';
 
@@ -22,18 +29,24 @@ export default function Note() {
     const ITEMS_PER_PAGE = 4;
     const fileInputRef = useRef(null);
 
-    // [수정] ID와 Name을 함께 저장
     const [targetItemId, setTargetItemId] = useState(null);
     const [targetItemName, setTargetItemName] = useState(null);
 
-    // [1. 목록 조회] useEffect (Blob 로딩 로직 포함)
+    // 이름 수정을 위한 상태
+    const [editingItemId, setEditingItemId] = useState(null);
+    const [editingItemName, setEditingItemName] = useState('');
+
+    // ==================================================================
+    // [1. 목록 조회] useEffect (디버깅 로그 포함)
+    // ==================================================================
     useEffect(() => {
         const fetchProjects = async () => {
-            let initialItems = [];
+            let initialItems = []; // API로부터 받은 원본 데이터를 담을 배열
             try {
                 setLoading(true);
                 setError('');
 
+                // 1. 프로젝트 목록(텍스트) 우선 가져오기
                 const rootFolderData = await getProjects();
                 setRootFolderId(rootFolderData.folderId);
 
@@ -41,8 +54,8 @@ export default function Note() {
                     .map((project) => ({
                         id: project.id,
                         name: project.name,
-                        imagePath: project.folderImage,
-                        blobUrl: null,
+                        imagePath: project.folderImage, // '/uploads/...'
+                        blobUrl: null, // Blob URL은 아직 없음
                         created: project.createdAt
                             ? new Date(project.createdAt).toLocaleDateString()
                             : '날짜 정보 없음',
@@ -50,82 +63,122 @@ export default function Note() {
                     }))
                     .reverse();
 
+                // 2. 스피너를 표시하기 위해 1차 상태 업데이트
                 setItems(initialItems);
                 setLoading(false);
             } catch (err) {
                 console.error('❌ [Note] 데이터 로드 실패:', err);
                 setError('프로젝트를 불러오는 데 실패했습니다.');
                 setLoading(false);
-                return;
+                return; // 프로젝트 로드 실패 시 이미지 로딩 시도 안 함
             }
 
-            // --- 3. [신규] Blob 이미지 로딩 (EditProfile.jsx 방식) ---
+            // --- 3. [수정] Blob 이미지 로딩 (순차 요청 + 디버깅 로그) ---
             try {
                 const token = localStorage.getItem('token');
-                if (!token) return;
 
-                const imageFetchPromises = initialItems
-                    .filter((item) => item.imagePath)
-                    .map((item) =>
-                        axios
-                            .get(`${SERVER_BASE_URL}${item.imagePath}`, {
+                // ================== 🪵 LOG 1 ==================
+                console.log('💡 [Note] 1. 이미지 로더 시작. 토큰:', token ? '있음' : '없음');
+                // ===============================================
+
+                if (!token) {
+                    console.error('❌ [Note] 1-1. 토큰이 없어서 이미지 로드를 중단합니다. (스피너가 계속 돕니다)');
+                    return; // 토큰 없으면 중지
+                }
+
+                // API에서 방금 받아온 'initialItems' 배열을 순회합니다.
+                console.log(`💡 [Note] 2. 총 ${initialItems.length}개 아이템 순회 시작.`);
+
+                for (const itemToLoad of initialItems) {
+                    // imagePath가 있는 항목만 대상으로 합니다.
+                    if (itemToLoad.imagePath) {
+                        // ================== 🪵 LOG 2 ==================
+                        console.log(
+                            `💡 [Note] 3. (ID: ${itemToLoad.id}) 이미지 로드 필요. 경로: ${itemToLoad.imagePath}`
+                        );
+                        // ===============================================
+
+                        try {
+                            const imageUrl = `${SERVER_BASE_URL}${itemToLoad.imagePath}`;
+
+                            // ================== 🪵 LOG 3 ==================
+                            console.log(`💡 [Note] 4. (ID: ${itemToLoad.id}) 다음 URL로 GET 요청 시도: ${imageUrl}`);
+                            // ===============================================
+
+                            const res = await axios.get(imageUrl, {
                                 headers: { Authorization: `Bearer ${token}` },
                                 responseType: 'blob',
-                            })
-                            .then((res) => {
-                                const blobUrl = URL.createObjectURL(res.data);
-                                return { id: item.id, blobUrl };
-                            })
-                            .catch((err) => {
-                                console.error(`❌ [Note] 이미지 로드 실패 (ID: ${item.id}):`, err);
-                                return null;
-                            })
-                    );
+                            });
 
-                const loadedImages = (await Promise.all(imageFetchPromises)).filter(Boolean);
+                            const blobUrl = URL.createObjectURL(res.data);
 
-                setItems((prevItems) =>
-                    prevItems.map((item) => {
-                        const loadedImage = loadedImages.find((img) => img.id === item.id);
-                        return loadedImage ? { ...item, blobUrl: loadedImage.blobUrl } : item;
-                    })
-                );
+                            // ================== 🪵 LOG 4 ==================
+                            console.log(`✅ [Note] 5. (ID: ${itemToLoad.id}) 이미지 로드 성공. Blob URL 생성됨.`);
+                            // ===============================================
+
+                            // 성공한 아이템만 즉시 state에 반영합니다.
+                            setItems((prevItems) =>
+                                prevItems.map((item) =>
+                                    item.id === itemToLoad.id ? { ...item, blobUrl: blobUrl } : item
+                                )
+                            );
+                        } catch (err) {
+                            // 개별 요청 실패 시 (401, 404, CORS 등)
+
+                            // ================== 🪵 LOG 5 ==================
+                            console.error(
+                                `❌ [Note] 7. (ID: ${itemToLoad.id}) 이미지 로드 실패:`,
+                                err.response || err.message
+                            );
+                            // ===============================================
+
+                            // 실패한 아이템은 imagePath를 null로 만들어 '이미지 없음'으로 표시합니다.
+                            setItems((prevItems) =>
+                                prevItems.map((item) =>
+                                    item.id === itemToLoad.id ? { ...item, imagePath: null } : item
+                                )
+                            );
+                        }
+                    } else {
+                        console.log(`💡 [Note] (ID: ${itemToLoad.id}) imagePath가 없으므로 건너뜁니다.`);
+                    }
+                }
+                console.log('💡 [Note] 9. 이미지 로드 순회 완료.');
             } catch (err) {
-                console.error('❌ [Note] Blob 이미지 로딩 중 전체 오류:', err);
+                console.error('❌ [Note] Blob 이미지 로딩 순회 중 전체 오류:', err);
             }
         };
 
         fetchProjects();
-    }, []);
+    }, []); // 마운트 시 1회만 실행
+    // ==================================================================
+    // useEffect 끝
+    // ==================================================================
 
     // --- 이미지 핸들러 ---
-
-    // [수정] ID와 Name을 모두 저장
     const handleTriggerFileInput = (e, id, name) => {
         e.stopPropagation();
         setTargetItemId(id);
-        setTargetItemName(name); // <-- name도 저장
+        setTargetItemName(name);
         fileInputRef.current.click();
     };
 
-    // [2. 이미지 업로드] (백엔드 연동)
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
-        // [수정] targetItemName도 확인
         if (!file || !targetItemId || !targetItemName) return;
 
-        const newPreviewUrl = URL.createObjectURL(file);
+        console.log('업로드 시도:', file);
+        console.log('파일명:', file.name);
+        console.log('타겟 폴더 ID:', targetItemId);
+        console.log('폴더 이름:', targetItemName);
 
+        const newPreviewUrl = URL.createObjectURL(file);
         try {
             setItems((prevItems) =>
                 prevItems.map((item) => (item.id === targetItemId ? { ...item, blobUrl: newPreviewUrl } : item))
             );
-
-            // [수정] API 호출 시 id, name, file을 모두 전달
             const response = await updateProjectImage(targetItemId, targetItemName, file);
-
             const newImagePath = response.folderImage;
-
             setItems((prevItems) =>
                 prevItems.map((item) =>
                     item.id === targetItemId ? { ...item, imagePath: newImagePath, blobUrl: newPreviewUrl } : item
@@ -141,12 +194,11 @@ export default function Note() {
             alert('이미지 업로드에 실패했습니다.');
         } finally {
             setTargetItemId(null);
-            setTargetItemName(null); // <-- 초기화
+            setTargetItemName(null);
             e.target.value = null;
         }
     };
 
-    // [3. 이미지 삭제] (백엔드 연동)
     const handleDeleteImage = async (e, id) => {
         e.stopPropagation();
         if (!window.confirm('이미지를 삭제하시겠습니까?')) return;
@@ -160,10 +212,51 @@ export default function Note() {
             alert('이미지 삭제에 실패했습니다.');
         }
     };
+    // --- 이미지 핸들러 끝 ---
 
-    // --- 프로젝트 핸들러 (이하 동일) ---
+    // --- 이름 수정 핸들러 ---
+    const handleEditClick = (e, item) => {
+        e.stopPropagation(); // 카드 클릭(이동) 방지
+        setEditingItemId(item.id);
+        setEditingItemName(item.name);
+    };
 
-    // [4. 프로젝트 추가]
+    const handleCancelEdit = (e) => {
+        e.stopPropagation();
+        setEditingItemId(null);
+        setEditingItemName('');
+    };
+
+    const handleNameChange = (e) => {
+        setEditingItemName(e.target.value);
+    };
+
+    const handleSaveEdit = async (e, id) => {
+        e.stopPropagation();
+        if (!editingItemName.trim()) {
+            alert('프로젝트 이름은 비워둘 수 없습니다.');
+            return;
+        }
+        try {
+            // API 호출
+            await updateProjectName(id, editingItemName);
+
+            // 로컬 상태 업데이트
+            setItems((prevItems) =>
+                prevItems.map((item) => (item.id === id ? { ...item, name: editingItemName } : item))
+            );
+
+            // 수정 모드 종료
+            setEditingItemId(null);
+            setEditingItemName('');
+        } catch (err) {
+            console.error('❌ [Note] 프로젝트 이름 수정 실패:', err);
+            alert('이름 수정에 실패했습니다.');
+        }
+    };
+    // --- 이름 수정 핸들러 끝 ---
+
+    // --- 프로젝트 핸들러 ---
     const handleAddMeeting = async () => {
         const newName = window.prompt('새 프로젝트 이름을 입력하세요:', `새 프로젝트 ${items.length + 1}`);
         if (!newName) return;
@@ -189,7 +282,6 @@ export default function Note() {
         }
     };
 
-    // [5. 프로젝트 삭제]
     const handleDeleteProject = async (e, id, name) => {
         e.stopPropagation();
         if (!window.confirm(`'${name}' 프로젝트를 정말 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
@@ -210,10 +302,13 @@ export default function Note() {
     };
 
     const handleRowClick = (id) => {
+        // 수정 모드일 때는 이동 방지
+        if (editingItemId === id) return;
         navigate(`/notes/${id}`);
     };
+    // --- 프로젝트 핸들러 끝 ---
 
-    // --- 페이지네이션 로직 (동일) ---
+    // --- 페이지네이션 로직 ---
     const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
     const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
     const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
@@ -236,7 +331,7 @@ export default function Note() {
     };
     // ------------------------
 
-    // [수정] 로딩 및 에러 UI 처리
+    // 로딩 및 에러 UI 처리
     const renderContent = () => {
         if (loading) {
             return (
@@ -264,27 +359,10 @@ export default function Note() {
                 {currentItems.map((item) => (
                     <Col md="auto" lg="auto" className="mb-4" key={item.id}>
                         <Card className="h-100 card-project">
+                            {/* --- 이미지 영역 --- */}
                             <div className="card-image-container">
-                                {/* {item.blobUrl ? (
-                                    <Card.Img
-                                        className="card-image-placeholder"
-                                        variant="top"
-                                        src={item.blobUrl}
-                                        alt={item.name}
-                                    />
-                                ) : (
-                                    <div className="card-image-placeholder">
-                                        {item.imagePath ? (
-                                            <Spinner animation="border" size="sm" />
-                                        ) : (
-                                            <span>사진을 추가해 주세요</span>
-                                        )}
-                                    </div>
-                                )} */}
                                 {item.blobUrl ? (
-                                    // [1] blobUrl이 있으면 (로딩 최종 완료)
                                     (() => {
-                                        console.log(`✅ [Render ${item.id} / ${item.name}]: 1. blobUrl 표시`);
                                         return (
                                             <Card.Img
                                                 className="card-image-placeholder"
@@ -295,28 +373,19 @@ export default function Note() {
                                         );
                                     })()
                                 ) : (
-                                    // [2] blobUrl이 없으면
                                     <div className="card-image-placeholder">
                                         {item.imagePath
-                                            ? // [3] imagePath는 있으면 (로딩 중)
-                                              (() => {
-                                                  console.log(
-                                                      `⌛ [Render ${item.id} / ${item.name}]: 2. 로딩 중 (imagePath만 있음)`
-                                                  );
+                                            ? (() => {
                                                   return <Spinner animation="border" size="sm" />;
                                               })()
-                                            : // [4] imagePath도 없으면 (이미지 없음)
-                                              (() => {
-                                                  console.log(`⚪ [Render ${item.id} / ${item.name}]: 3. 이미지 없음`);
+                                            : (() => {
                                                   return <span>사진을 추가해 주세요</span>;
                                               })()}
                                     </div>
                                 )}
-
                                 <div className="card-hover-buttons">
                                     {item.blobUrl ? (
                                         <>
-                                            {/* [수정] onClick에 item.name 전달 */}
                                             <Button
                                                 variant="light"
                                                 className="btn-change"
@@ -334,7 +403,6 @@ export default function Note() {
                                         </>
                                     ) : (
                                         !item.imagePath && (
-                                            /* [수정] onClick에 item.name 전달 */
                                             <Button
                                                 variant="light"
                                                 className="btn-add"
@@ -346,16 +414,49 @@ export default function Note() {
                                     )}
                                 </div>
                             </div>
+                            {/* --- 이미지 영역 끝 --- */}
 
                             <Card.Body
                                 onClick={() => handleRowClick(item.id)}
-                                style={{ cursor: 'pointer' }}
+                                style={{ cursor: editingItemId === item.id ? 'default' : 'pointer' }} // 수정 중엔 커서 변경
                                 className="text-center d-flex flex-column"
                             >
-                                <Card.Title style={{ fontWeight: 'bold' }} className="mb-2">
-                                    {item.name}
-                                </Card.Title>
-                                <p style={{ fontSize: '0.95rem', color: '#6c757d' }}>{item.created}</p>
+                                {/* --- 이름 수정 UI (새 버전) --- */}
+                                {editingItemId === item.id ? (
+                                    <>
+                                        {/* 수정 모드일 때 */}
+                                        {/* 1. Flex 컨테이너 */}
+                                        <div className="d-flex align-items-center">
+                                            <Form.Control
+                                                type="text"
+                                                value={editingItemName}
+                                                onChange={handleNameChange}
+                                                onClick={(e) => e.stopPropagation()} // 이벤트 버블링 방지
+                                                autoFocus
+                                                className="form-control-inline-edit" // 2. 커스텀 CSS 클래스
+                                            />
+                                            {/* 4. '저장' 아이콘 버튼 */}
+                                            <CheckSquare
+                                                className="ms-2 edit-action-icon save-icon"
+                                                onClick={(e) => handleSaveEdit(e, item.id)}
+                                            />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        {/* 일반 모드일 때 */}
+                                        <Card.Title style={{ fontWeight: 'bold' }} className="mb-2 card-title-editable">
+                                            {item.name}
+                                            <PencilSquare
+                                                className="ms-2 edit-icon"
+                                                onClick={(e) => handleEditClick(e, item)}
+                                            />
+                                        </Card.Title>
+                                        <p style={{ fontSize: '0.95rem', color: '#6c757d' }}>{item.created}</p>
+                                    </>
+                                )}
+                                {/* --- 이름 수정 UI 끝 --- */}
+
                                 <div className="mt-3 flex-grow-1">
                                     {item.members ? (
                                         item.members.split(' ').map((member, index) => (
