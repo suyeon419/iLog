@@ -5,14 +5,11 @@ import { Container, Table, Button, Row, Col, Pagination, Spinner, Alert } from '
 import { useNavigate, useParams } from 'react-router-dom';
 import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import MemberModal from './MemberModal';
-
-// [수정 1] 멤버를 불러오는 API 함수를 임포트합니다.
-// (주의: 'getProjectMembers'는 예시 이름입니다. 실제 함수 이름으로 변경하세요!)
-import { getProjectDetails, getProjectMembers } from '../../api/note';
+import { getProjectDetails } from '../../api/note';
 
 export default function NoteDetail() {
     const navigate = useNavigate();
-    const { id } = useParams(); // 현재 프로젝트(폴더) ID
+    const { id } = useParams();
 
     const [project, setProject] = useState(null);
     const [subMeetings, setSubMeetings] = useState([]);
@@ -21,46 +18,57 @@ export default function NoteDetail() {
 
     const [showMemberModal, setShowMemberModal] = useState(false);
 
-    // [수정 2] 모달에 전달할 멤버 목록을 저장할 state 추가
-    const [currentMembers, setCurrentMembers] = useState([]);
-
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 7;
 
-    // ... (fetchProjectDetails 함수는 동일) ...
+    // [✅✅✅ 여기가 최종 수정된 함수입니다 ✅✅✅]
     const fetchProjectDetails = async (projectId) => {
         setLoading(true);
         setError('');
         try {
+            // 1. API 호출 (이 부분은 동일)
             const data = await getProjectDetails(projectId);
+
             setProject({ id: data.folderId, name: data.folderName });
 
+            // 2. [수정] 'data.childMinutes' -> 'data.minutesList'
             const mappedMeetings = (data.minutesList || [])
                 .map((minute) => ({
+                    // 3. [수정] 'minute.id' (이건 원래 맞았음)
                     id: minute.id,
+
+                    // 4. [수정] 'minute.title' -> 'minute.name'
                     name: minute.name || '제목 없음',
-                    members: minute.members || '...',
+
+                    // 5. [수정] 'minute.members' (API에 없으므로 임시 처리)
+                    members: minute.members || '...', // 'members' 키가 없으므로 '...'로 표시
+
+                    // 6. [수정] 'minute.createdAt' (원래 맞았음)
                     created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '날짜 없음',
+
+                    // 7. [수정] 'minute.updatedAt' -> 'minute.approachedAt'
                     modified: minute.approachedAt ? new Date(minute.approachedAt).toLocaleDateString() : '날짜 없음',
                 }))
-                .reverse();
+                .reverse(); // 최신순 정렬
 
             setSubMeetings(mappedMeetings);
         } catch (err) {
             console.error('Failed to fetch details:', err);
+            // 맵핑 실패 시에도 에러 메시지 표시
             setError('프로젝트 정보를 불러오는 데 실패했습니다. (데이터 맵핑 오류 가능성)');
         } finally {
             setLoading(false);
         }
     };
+    // [✅✅✅ 수정 끝 ✅✅✅]
 
-    // ... (useEffect 탭 포커스 부분은 동일) ...
+    // [✅ 탭 포커스 시 새로고침]
     useEffect(() => {
-        fetchProjectDetails(id);
+        fetchProjectDetails(id); // 1. 처음 로드 시 실행
 
         const handleFocus = () => {
             console.log('💡 [NoteDetail] 탭 포커스됨. 목록 새로고침 실행.');
-            fetchProjectDetails(id);
+            fetchProjectDetails(id); // 2. 탭으로 돌아올 때마다 실행
         };
 
         window.addEventListener('focus', handleFocus);
@@ -69,7 +77,6 @@ export default function NoteDetail() {
         };
     }, [id]);
 
-    // ... (handleAddSubMeeting, handleRowClick 함수는 동일) ...
     const handleAddSubMeeting = () => {
         navigate('/notes/new', { state: { parentId: id } });
     };
@@ -78,31 +85,10 @@ export default function NoteDetail() {
         navigate(`/notes/meeting/${meetingId}`);
     };
 
-    // [수정 3] 모달을 여는 함수 (API 호출 로직 추가)
-    const handleShowMemberModal = async () => {
-        try {
-            // (주의: 'getProjectMembers'는 예시 이름입니다. 실제 함수 이름으로 변경하세요!)
-            // GET /folders/{id}/party API를 호출합니다.
-            const membersData = await getProjectMembers(id);
+    const handleShowMemberModal = () => setShowMemberModal(true);
+    const handleCloseMemberModal = () => setShowMemberModal(false);
 
-            // TODO: API 응답에 맞게 데이터 가공
-            // (예시: membersData가 [{ id: 1, name: '김가현', email: '...', isLeader: true }] 형태라고 가정)
-            setCurrentMembers(membersData);
-
-            setShowMemberModal(true); // 데이터 로드 성공 시 모달 열기
-        } catch (err) {
-            console.error('Failed to fetch members:', err);
-            alert('멤버 목록을 불러오는 데 실패했습니다.');
-        }
-    };
-
-    // [수정 4] 모달을 닫는 함수 (state 초기화 로직 추가)
-    const handleCloseMemberModal = () => {
-        setShowMemberModal(false);
-        setCurrentMembers([]); // 모달이 닫힐 때 목록 비우기
-    };
-
-    // --- 페이지네이션 로직 (동일) ---
+    // --- 페이지네이션 로직 ---
     const totalPages = Math.ceil(subMeetings.length / ITEMS_PER_PAGE);
     const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
     const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
@@ -127,7 +113,6 @@ export default function NoteDetail() {
     };
     // ------------------------
 
-    // ... (loading, error 처리 UI 동일) ...
     if (loading) {
         return (
             <Container fluid className="pt-3 text-center">
@@ -169,7 +154,6 @@ export default function NoteDetail() {
 
                 {/* 하위 회의록 목록 테이블 */}
                 <Table className="align-middle">
-                    {/* ... (thead 부분 동일) ... */}
                     <thead>
                         <tr>
                             <th>
@@ -187,7 +171,6 @@ export default function NoteDetail() {
                         </tr>
                     </thead>
                     <tbody>
-                        {/* ... (tbody 맵핑 부분 동일) ... */}
                         {currentMeetings.length === 0 ? (
                             <tr>
                                 <td colSpan="4" className="text-center p-4">
@@ -214,7 +197,6 @@ export default function NoteDetail() {
 
             {/* 2. 하단 고정 영역 (페이지네이션 + 버튼) */}
             <div>
-                {/* ... (페이지네이션, 버튼 동일) ... */}
                 <nav className="mt-3 pagination-nav">
                     <Pagination className="justify-content-center">
                         <Pagination.Prev
@@ -234,8 +216,7 @@ export default function NoteDetail() {
                 </Button>
             </div>
 
-            {/* [수정 5] MemberModal에 members prop 전달 */}
-            <MemberModal show={showMemberModal} onHide={handleCloseMemberModal} members={currentMembers} />
+            <MemberModal show={showMemberModal} onHide={handleCloseMemberModal} />
         </Container>
     );
 }
