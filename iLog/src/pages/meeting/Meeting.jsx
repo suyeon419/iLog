@@ -219,19 +219,11 @@ const Meeting = () => {
                 const data = await getUserById(); // ⚠️ userId 인자가 필요하다면 getUserById(userId)로 수정
                 let imageUrl = null;
 
-                // --------[sy] 프로필 이미지 불러오기-------------
+                // --------[sy] 프로필 이미지 경로 설정-------------
                 if (data.profileImage) {
-                    try {
-                        const token = localStorage.getItem('token');
-                        const res = await api.get(`${API_BASE_URL}${data.profileImage}`, {
-                            headers: { Authorization: `Bearer ${token}` },
-                            responseType: 'blob',
-                        });
-                        imageUrl = URL.createObjectURL(res.data);
-                        console.log('🖼️ Blob URL 생성됨:', imageUrl);
-                    } catch (err) {
-                        console.error('❌ 프로필 이미지 불러오기 실패:', err);
-                    }
+                    // 서버에 저장된 정적 파일 경로를 그대로 사용 (Blob ❌)
+                    imageUrl = `${API_BASE_URL}${data.profileImage}`;
+                    console.log('🖼️ 서버 이미지 경로 사용:', imageUrl);
                 }
                 //--------------------------------------------------
 
@@ -239,7 +231,7 @@ const Meeting = () => {
                 const userData = {
                     name: data.name,
                     email: data.email,
-                    imageUrl: imageUrl, // 👈 참가자 목록에도 같이 넣을 수 있도록
+                    imageUrl: imageUrl, // 👈 서버 경로 URL
                 };
 
                 setUserInfo(userData);
