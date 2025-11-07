@@ -87,7 +87,7 @@ export default function NoteMeetingEdit() {
     // --- 로딩 및 에러 UI (수정 없음) ---
     if (loading) {
         return (
-            <Container fluid className="pt-3 container-left text-center">
+            <Container className="pt-3 text-center">
                 <Spinner animation="border" role="status" />
                 <h5 className="mt-2">원본 데이터 로딩 중...</h5>
             </Container>
@@ -96,7 +96,7 @@ export default function NoteMeetingEdit() {
 
     if (error) {
         return (
-            <Container fluid className="pt-3 container-left text-center">
+            <Container className="pt-3 container-left text-center">
                 <Alert variant="danger">{error}</Alert>
                 <Button variant="outline-primary" onClick={() => navigate(-1)}>
                     이전 페이지로 돌아가기
@@ -106,16 +106,12 @@ export default function NoteMeetingEdit() {
     }
 
     if (!meetingData) {
-        return (
-            <Container fluid className="pt-3 container-left">
-                로딩 중...
-            </Container>
-        );
+        return <Container className="pt-3 container-left">로딩 중...</Container>;
     }
     // --- ------------------------- ---
 
     return (
-        <Container fluid className="pt-3 container-left">
+        <Container className="pt-3 container-left">
             {/* 제목 및 완료 버튼 (수정 없음) */}
             <Row className="mb-3 align-items-center">
                 <Col>

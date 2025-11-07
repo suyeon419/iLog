@@ -200,13 +200,15 @@ export const deleteNote = async (minuteId) => {
     }
 };
 
-// [✅ 추가] 6. 프로젝트(폴더) 참가자(조원) 목록 조회
+// 9. 프로젝트(폴더) 참가자(조원) 목록 조회
 export const getProjectMembers = async (folderId) => {
     try {
         // 토큰이 필요한 요청이므로 'api' 인스턴스 사용
         const response = await api.get(`/folders/${folderId}/party`);
         console.log(`✅ (ID: ${folderId}) 참가자 목록 로드 성공:`, response.data);
-        return response.data; // 예: [{ id: 1, name: '김가현', ... }]
+
+        // 👇 [수정] 객체 전체가 아닌 .participants 배열을 반환합니다.
+        return response.data.participants;
     } catch (error) {
         console.error(`❌ (ID: ${folderId}) 참가자 목록 로드 실패:`, error);
         throw error;

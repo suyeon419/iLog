@@ -47,7 +47,7 @@ export default function NoteMeetingDetail() {
                 setMeeting(formattedData);
             } catch (err) {
                 console.error('Failed to fetch meeting:', err);
-                setError('회의록을 불러오는 데 실패했습니다.');
+                setError('삭제된 회의록입니다.');
             } finally {
                 setLoading(false);
             }
@@ -113,7 +113,7 @@ export default function NoteMeetingDetail() {
     // (로딩 중)
     if (loading) {
         return (
-            <Container fluid className="pt-3 text-center">
+            <Container className="pt-3 text-center">
                 <Spinner animation="border" role="status" />
                 <h5 className="mt-2">로딩 중...</h5>
             </Container>
@@ -123,7 +123,7 @@ export default function NoteMeetingDetail() {
     // (에러 발생)
     if (error) {
         return (
-            <Container fluid className="pt-3 text-center">
+            <Container className="pt-3 text-center">
                 <Alert variant="danger">{error}</Alert>
                 <Button variant="outline-primary" onClick={handleGoToList}>
                     목록으로 돌아가기
@@ -135,7 +135,7 @@ export default function NoteMeetingDetail() {
     // (데이터 없음)
     if (!meeting) {
         return (
-            <Container fluid className="pt-3 text-center">
+            <Container className="pt-3 text-center">
                 <Alert variant="warning">회의록 데이터를 찾을 수 없습니다.</Alert>
                 <Button variant="outline-primary" onClick={handleGoToList}>
                     목록으로 돌아가기

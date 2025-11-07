@@ -102,13 +102,13 @@ btn-outline-primary:hover i {
     align-items: center;
     justify-content: center;
     background: white;
-    min-height: 88vh;
+    min-height: 88vh !important;
     font-family: 'Pretendard', sans-serif;
 }
 .container-left {
     display: flex;
     flex-direction: column;
-    min-height: 88vh;
+    min-height: 88vh !important;
     background: white;
     font-family: 'Pretendard', sans-serif;
     padding: 30px;
