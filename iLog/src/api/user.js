@@ -233,6 +233,10 @@ export const updateUserInfo = async (data) => {
 export const getMeetingHistory = async () => {
     console.log('📤 화상회의 이력 요청');
     try {
+        // [수정] getAuthHeader()를 호출하여 인증 헤더를 가져옵니다.
+        const headers = { ...getAuthHeader() };
+
+        // [수정] headers를 API 요청에 포함시킵니다.
         const res = await api.get('/logs/meeting', { headers });
 
         console.log('✅ 화상회의 이력 조회 성공:', res.data);
@@ -244,23 +248,16 @@ export const getMeetingHistory = async () => {
     }
 };
 
-export const getUserInfo = async () => {
-    try {
-        const headers = getAuthHeader();
-        const res = await api.get('/members', { headers });
-        return res.data;
-    } catch (err) {
-        console.error('사용자 정보 불러오기 실패:', err);
-        throw err;
-    }
-};
-
 /**
  * (신규) 회의록 이력 조회 API
  */
 export const getNoteHistory = async () => {
     try {
-        const response = await api.get('/logs/minutes');
+        // [수정] getAuthHeader()를 호출하여 인증 헤더를 가져옵니다.
+        const headers = { ...getAuthHeader() };
+
+        // [수정] headers를 API 요청에 포함시킵니다.
+        const response = await api.get('/logs/minutes', { headers });
 
         return response.data.logs;
     } catch (error) {

@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 // [수정] Alert 추가
 import { Container, Table, Pagination, Row, Col, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus } from 'react-bootstrap-icons';
+// [수정] 아이콘 변경 (API 응답에 맞게)
+import { PencilSquare, CheckSquare, CalendarCheck, ShieldLock } from 'react-bootstrap-icons';
 // [수정] API 함수 임포트
 import { getNoteHistory } from '../../api/user'; // [수정] getNoteHistory 임포트
 
@@ -95,19 +96,17 @@ export default function NoteHistory() {
 
                 {/* 회의록 이력 테이블 */}
                 <Table className="align-middle">
+                    {/* [수정] <thead>: API 응답에 맞게 헤더 변경 */}
                     <thead>
                         <tr>
                             <th>
-                                <CheckSquare className="me-2" /> 회의 이름
+                                <CheckSquare className="me-2" /> 회의록 ID
                             </th>
                             <th>
-                                <People className="me-2" /> 참가자
+                                <ShieldLock className="me-2" /> 상태
                             </th>
                             <th>
                                 <CalendarCheck className="me-2" /> 생성일자
-                            </th>
-                            <th>
-                                <CalendarPlus className="me-2" /> 수정일자
                             </th>
                         </tr>
                     </thead>
@@ -115,28 +114,29 @@ export default function NoteHistory() {
                         {/* [수정] 로딩, 데이터 없음, 데이터 있음 3가지 상태 처리 */}
                         {loading ? (
                             <tr>
-                                <td colSpan="4" className="text-center p-4">
+                                {/* [수정] colSpan="3"로 변경 */}
+                                <td colSpan="3" className="text-center p-4">
                                     데이터를 불러오는 중입니다...
                                 </td>
                             </tr>
                         ) : currentMeetings.length === 0 ? (
                             <tr>
-                                <td colSpan="4" className="text-center p-4">
+                                {/* [수정] colSpan="3"로 변경 */}
+                                <td colSpan="3" className="text-center p-4">
                                     회의록 이력이 없습니다.
                                 </td>
                             </tr>
                         ) : (
                             currentMeetings.map((meeting) => (
                                 <tr
-                                    key={meeting.id} // API 응답에 id가 있다고 가정
+                                    key={meeting.id}
                                     onClick={() => handleRowClick(meeting.id)}
                                     style={{ cursor: 'pointer' }}
                                 >
-                                    {/* API 응답 객체의 key 이름에 맞게 수정 필요 */}
-                                    <td>{meeting.name}</td>
-                                    <td>{meeting.members}</td>
-                                    <td>{meeting.created}</td>
-                                    <td>{meeting.modified}</td>
+                                    {/* [수정] API 응답 키(id, status, created64)에 맞게 수정 */}
+                                    <td>{meeting.id}</td>
+                                    <td>{meeting.status}</td>
+                                    <td>{meeting.created64}</td>
                                 </tr>
                             ))
                         )}
