@@ -1,13 +1,15 @@
 // NoteCreate.jsx
 
-import React, { useState } from 'react';
-// [수정] Alert 추가
+import React, { useState, useEffect } from 'react'; // 1. useEffect 추가
 import { Container, Form, Button, Row, Col, Alert } from 'react-bootstrap';
 import { PencilSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MemberModal from './MemberModal';
-// [수정] API 함수 임포트
 import { createNote } from '../../api/note';
+
+// 2. Settings.jsx에서 사용한 API와 라이브러리를 그대로 가져옵니다.
+import { getUserById } from '../../api/user'; // (Settings.jsx 4줄 참고)
+import { jwtDecode } from 'jwt-decode'; // (Settings.jsx 5줄 참고)
 
 export default function NoteCreate() {
     const [title, setTitle] = useState('');
@@ -16,19 +18,48 @@ export default function NoteCreate() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // [수정] 에러 상태 추가
     const [error, setError] = useState('');
-
     const [showMemberModal, setShowMemberModal] = useState(false);
 
-    // (중요) 이 parentId가 상위 폴더의 ID (예: 21)일 것입니다.
-    const parentId = location.state?.parentId;
+    // 3. Settings.jsx처럼 사용자 정보를 담을 state를 만듭니다.
+    const [user, setUser] = useState(null);
+    // (선택) 사용자 정보 로딩 중인지 확인
+    const [isLoadingUser, setIsLoadingUser] = useState(true);
 
-    // [수정] API 응답을 기다리므로 today를 미리 만들 필요가 없을 수 있습니다.
-    // (백엔드가 생성일자를 저장한다고 가정)
+    const parentId = location.state?.parentId;
     const today = new Date().toISOString().split('T')[0].replace(/-/g, '.') + '.';
 
-    // [수정] 백엔드 연동 handleSave
+    // 4. Settings.jsx의 useEffect 로직을 적용합니다.
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            try {
+                const decoded = jwtDecode(token);
+                const userId = decoded.id; // 토큰에서 사용자 ID 추출
+
+                // 사용자 ID로 API 호출
+                getUserById(userId)
+                    .then((data) => {
+                        setUser(data); // state에 사용자 정보 저장
+                    })
+                    .catch((err) => {
+                        console.error('❌ [NoteCreate] 회원 정보 요청 실패:', err);
+                        setError('사용자 정보를 불러오는 데 실패했습니다.');
+                    })
+                    .finally(() => {
+                        setIsLoadingUser(false); // 로딩 완료
+                    });
+            } catch (err) {
+                console.error('JWT 실패', err);
+                setError('로그인 토큰이 유효하지 않습니다.');
+                setIsLoadingUser(false);
+            }
+        } else {
+            setError('로그인이 필요합니다.');
+            setIsLoadingUser(false);
+        }
+    }, []); // 페이지 로드 시 1회만 실행
+
     const handleSave = async () => {
         if (!parentId) {
             setError('상위 폴더 ID가 없습니다. 프로젝트 페이지에서 다시 시도해 주세요.');
@@ -38,40 +69,44 @@ export default function NoteCreate() {
             setError('제목을 입력해야 합니다.');
             return;
         }
+        // 5. 사용자 정보가 로드되기 전이면 저장 방지
+        if (isLoadingUser || !user) {
+            setError('사용자 정보를 로드 중입니다. 잠시 후 다시 시도해 주세요.');
+            return;
+        }
 
         if (isSaving) return;
         setIsSaving(true);
         setError('');
 
-        // [수정] 백엔드로 보낼 데이터 (API 명세에 맞게 key 이름 수정 필요)
         const payload = {
-            title: title || '제목 없음', // (가정) API가 'title'을 받음
-            content: content, // (가정) API가 'content'를 받음
-            members: ['최겸'], // (가정) API가 'members' 배열을 받음
+            title: title || '제목 없음',
+            content: content,
+            // 6. state에 저장된 user의 이름을 사용합니다.
+            members: [user?.name || '참가자'],
         };
 
         try {
-            // [수정] API 호출
             console.log(`[NoteCreate] API 호출: POST /folders/${parentId}/minutes`);
             const data = await createNote(parentId, payload);
 
             console.log('[NoteCreate] 저장 성공:', data);
-
-            // 저장이 성공하면 이전 페이지(아마도 해당 폴더의 회의록 목록)로 이동
             navigate(-1);
         } catch (err) {
             console.error('❌ [NoteCreate] 저장 실패:', err);
             setError('회의록 저장에 실패했습니다.');
-            setIsSaving(false); // 실패 시 버튼 활성화
+            setIsSaving(false);
         }
     };
 
     const handleShowMemberModal = () => setShowMemberModal(true);
     const handleCloseMemberModal = () => setShowMemberModal(false);
 
+    // 7. 사용자 정보 로딩 상태에 따라 이름을 표시합니다.
+    const currentUserName = isLoadingUser ? '로딩 중...' : user?.name || '정보 없음';
+
     return (
         <Container fluid className="pt-3 container-left">
-            {/* [수정] 에러 발생 시 Alert 표시 */}
             {error && <Alert variant="danger">{error}</Alert>}
 
             <Row className="mb-3 align-items-center">
@@ -93,19 +128,26 @@ export default function NoteCreate() {
                     </Form.Group>
                 </Col>
                 <Col xs="auto">
-                    <Button variant="primary mini-btn" onClick={handleSave} className="fw-bold" disabled={isSaving}>
+                    {/* 8. 사용자 로딩 중일 때도 '생성' 버튼 비활성화 */}
+                    <Button
+                        variant="primary"
+                        className="mini-btn fw-bold"
+                        onClick={handleSave}
+                        disabled={isSaving || isLoadingUser}
+                    >
                         {isSaving ? '저장 중...' : '생성'}
                     </Button>
                 </Col>
             </Row>
 
-            {/* ... (참가자, 생성일자 등 나머지 UI는 동일) ... */}
+            {/* 참가자 */}
             <Row className="mb-2 align-items-center text-secondary">
                 <Col>
                     <div className="d-flex align-items-center">
                         <People className="me-2" />
                         <span className="me-2 fw-bold">참가자</span>
-                        <span className="me-2">최겸</span>
+                        {/* 9. state 기반의 사용자 이름 표시 */}
+                        <span className="me-2">{currentUserName}</span>
                     </div>
                 </Col>
                 <Col xs="auto">
@@ -113,12 +155,13 @@ export default function NoteCreate() {
                 </Col>
             </Row>
 
+            {/* 생성일자 / 수정일자 */}
             <Row className="mb-3 align-items-center text-secondary">
                 <Col md={6}>
                     <div className="d-flex align-items-center">
                         <CalendarCheck className="me-2" />
                         <span className="me-2 fw-bold">생성일자</span>
-                        <span>{today}</span> {/* (참고) 실제로는 저장 후 API 응답값으로 표시하는 것이 더 정확합니다 */}
+                        <span>{today}</span>
                     </div>
                 </Col>
                 <Col md={6}>
@@ -129,6 +172,8 @@ export default function NoteCreate() {
                     </div>
                 </Col>
             </Row>
+
+            {/* 본문 */}
             <Row>
                 <Col>
                     <Form.Group>

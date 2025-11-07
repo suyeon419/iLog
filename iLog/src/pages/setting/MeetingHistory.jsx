@@ -81,7 +81,7 @@ export default function MeetingHistory() {
                     <Col>
                         <h2 className="fw-bold m-0">
                             <PencilSquare className="me-3" />
-                            화상회의의 이력
+                            화상회의 이력
                         </h2>
                     </Col>
                 </Row>

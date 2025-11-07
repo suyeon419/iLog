@@ -12,17 +12,14 @@ export default function NoteDetail() {
     const navigate = useNavigate();
     const { id } = useParams(); // 현재 프로젝트(폴더) ID
 
+    // ... (모든 state 선언은 동일) ...
     const [project, setProject] = useState(null);
     const [subMeetings, setSubMeetings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
     const [showMemberModal, setShowMemberModal] = useState(false);
     const [currentMembers, setCurrentMembers] = useState([]);
-
-    // [수정 없음] 초대 링크를 저장할 state
     const [currentInviteLink, setCurrentInviteLink] = useState('');
-
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 7;
 
@@ -44,17 +41,16 @@ export default function NoteDetail() {
                 .reverse();
 
             setSubMeetings(mappedMeetings);
-            // [✅ 수정] catch (err) 뒤에 중괄호 { 를 추가했습니다.
         } catch (err) {
             console.error('Failed to fetch details:', err);
-            setError('프로젝트 정보를 불러오는 데 실패했습니다. (데이터 맵핑 오류 가능성)');
-            // [✅ 수정] } 를 추가했습니다.
+            // [수정] 에러 메시지 설정
+            setError('회의록을 불러오는 데 실패했습니다.');
         } finally {
             setLoading(false);
         }
     };
 
-    // ... (useEffect 탭 포커스 부분은 동일) ...
+    // ... (useEffect, handleAddSubMeeting, handleRowClick, Modals, Pagination 로직 모두 동일) ...
     useEffect(() => {
         fetchProjectDetails(id);
 
@@ -69,7 +65,6 @@ export default function NoteDetail() {
         };
     }, [id]);
 
-    // ... (handleAddSubMeeting, handleRowClick 함수는 동일) ...
     const handleAddSubMeeting = () => {
         navigate('/notes/new', { state: { parentId: id } });
     };
@@ -78,33 +73,24 @@ export default function NoteDetail() {
         navigate(`/notes/meeting/${meetingId}`);
     };
 
-    // [수정 없음] 모달을 여는 함수 (API 응답 분리)
     const handleShowMemberModal = async () => {
         try {
-            // responseData는 { participants: [...], inviteLink: "..." } 형태라고 가정
             const responseData = await getProjectMembers(id);
-
-            // (1) participants 배열을 저장
             setCurrentMembers(responseData.participants || []);
-
-            // (2) [추가] inviteLink를 state에 저장
-            setCurrentInviteLink(responseData.inviteLink || ''); // || ''는 링크가 없을 경우 대비
-
-            setShowMemberModal(true); // 데이터 로드 성공 시 모달 열기
+            setCurrentInviteLink(responseData.inviteLink || '');
+            setShowMemberModal(true);
         } catch (err) {
             console.error('Failed to fetch members:', err);
             alert('멤버 목록을 불러오는 데 실패했습니다.');
         }
     };
 
-    // [수정 없음] 모달을 닫는 함수 (state 초기화)
     const handleCloseMemberModal = () => {
         setShowMemberModal(false);
         setCurrentMembers([]);
-        setCurrentInviteLink(''); // [추가] 링크 state도 초기화
+        setCurrentInviteLink('');
     };
 
-    // --- 페이지네이션 로직 (동일) ---
     const totalPages = Math.ceil(subMeetings.length / ITEMS_PER_PAGE);
     const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
     const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
@@ -129,7 +115,7 @@ export default function NoteDetail() {
     };
     // ------------------------
 
-    // ... (loading, error 처리 UI 동일) ...
+    // ... (loading 처리 UI 동일) ...
     if (loading) {
         return (
             <Container fluid className="pt-3 text-center">
@@ -139,14 +125,37 @@ export default function NoteDetail() {
         );
     }
 
+    // [✅ 수정] if (error) 블록을 수정하여
+    // 성공 시와 동일한 flex 구조(flex-grow-1)를 유지하도록 변경
     if (error) {
         return (
-            <Container fluid className="pt-3 text-center">
-                <Alert variant="danger">{error}</Alert>
+            // 1. .container-left 스타일 유지 (flex-direction: column)
+            <Container fluid className="pt-3 container-left">
+                {/* 2. 콘텐츠 영역 (flex-grow-1) */}
+                {/* 이 div가 남은 공간을 모두 차지하고(flex-grow-1),
+                   내부 아이템(에러 메시지)을 수직/수평 중앙 정렬합니다. */}
+                <div className="flex-grow-1 d-flex flex-column justify-content-center align-items-center">
+                    <div className="text-center">
+                        <Alert variant="danger" className="mb-3">
+                            {error}
+                        </Alert>
+                        <Button
+                            variant="outline-secondary"
+                            onClick={() => navigate(-1)} // -1: 이전 페이지(목록)로 이동
+                        >
+                            목록으로 돌아가기
+                        </Button>
+                    </div>
+                </div>
+
+                {/* 3. 하단 고정 영역 (페이지네이션 등) */}
+                {/* 성공 상태와 구조를 맞추기 위해 빈 div를 유지합니다. */}
+                <div></div>
             </Container>
         );
     }
 
+    // ... (성공 시 렌더링하는 return 문은 동일) ...
     return (
         <Container fluid className="pt-3 container-left">
             {/* 1. 콘텐츠 영역 (flex-grow-1) */}
