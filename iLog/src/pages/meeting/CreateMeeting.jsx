@@ -3,6 +3,7 @@ import { Form, Button, Card, Container, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { getUserById } from '../../api/user';
+import { startJitsiMeeting } from '../../api/jitsi';
 import axiosInstance from '../../api/axios';
 
 export default function CreateMeeting() {
@@ -11,6 +12,7 @@ export default function CreateMeeting() {
     const [meetingURL, setMeetingURL] = useState('자동 주소 입력');
     const [fullUrl, setFullUrl] = useState('');
     const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
     const [video, setVideo] = useState(false);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -24,10 +26,13 @@ export default function CreateMeeting() {
 
                 getUserById(userId)
                     .then((data) => {
+                        console.log('🧾 [CreateMeeting] getUserById 응답:', data);
                         if (data && data.name) {
                             setName(data.name);
+                            setEmail(data.email);
                         } else if (data?.data?.name) {
                             setName(data.data.name);
+                            setEmail(data.email);
                         }
                     })
                     .catch((err) => {
@@ -48,12 +53,14 @@ export default function CreateMeeting() {
         const randomRoom = `ilo9-${Math.random().toString(36).substring(2, 10)}`;
         setMeetingURL(`/meeting/${randomRoom}?room=${randomRoom}`); // ✅ 절대 URL 말고 상대경로만
     }, []);
+
     useEffect(() => {
         if (meetingURL) {
             setFullUrl(`${window.location.origin}${meetingURL}`);
         }
     }, [meetingURL]);
-    const handlerSubmit = (e) => {
+
+    const handlerSubmit = async (e) => {
         e.preventDefault();
 
         // meetingURL에서 방 이름 추출
@@ -62,8 +69,21 @@ export default function CreateMeeting() {
         // 이동할 URL 생성
         const url = `/meeting/${roomName}?room=${roomName}`;
 
+        console.log('📨 [CreateMeeting] 회의방 생성 요청:', {
+            roomName,
+            name,
+            email,
+            meetingURL,
+        });
+        // // Jitsi JWT 요청 (userName, userEmail 전달)
+        // await startJitsiMeeting({
+        //     roomName,
+        //     userName: name,
+        //     userEmail: email,
+        // });
+
         navigate(url, {
-            state: { videoOff: video },
+            state: { videoOff: video, isHost: true },
         });
     };
 

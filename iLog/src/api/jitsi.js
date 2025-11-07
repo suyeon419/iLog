@@ -1,52 +1,34 @@
-// jitsi.js
-async function startJitsiMeeting() {
-    const roomName = ''; // 방 이름
-    const userName = ''; // 표시될 이름
-    const userEmail = ''; // 사용자 이메일
+import apiClient from './axios'; // axios 인스턴스
+
+/**
+ * 회의 JWT 토큰 발급 함수
+ * @param {string} roomName - 회의방 이름
+ * @param {string} userName - 사용자 이름
+ * @param {string} userEmail - 사용자 이메일
+ * @returns {Promise<string>} - JWT 토큰
+ */
+export async function startJitsiMeeting({ roomName, userName, userEmail }) {
+    console.log('🚀 [Jitsi.js] startJitsiMeeting 호출됨');
+    console.log('📩 전달받은 인자:', { roomName, userName, userEmail });
 
     try {
-        // 1️⃣ JWT 토큰 요청 (백엔드에 이미 구현된 /jitsi-jwt 사용)
-        const response = await fetch('/jitsi-jwt', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomName, userName, userEmail }),
-        });
+        // ✅ JWT 요청
+        const { data, status } = await apiClient.post(
+            '/jitsi-jwt',
+            { roomName, userName, userEmail },
+            { headers: { 'Content-Type': 'application/json' } }
+        );
 
-        if (!response.ok) {
-            throw new Error('JWT 생성 실패: ' + response.statusText);
-        }
+        console.log('📬 [Jitsi.js] 응답 상태:', status);
+        console.log('🪙 [Jitsi.js] 받은 데이터:', data);
 
-        const { token } = await response.json();
+        const token = data?.jwt || data?.token;
+        if (!token) throw new Error('JWT 토큰 누락됨');
 
-        // 2️⃣ Jitsi Meet 임베드 설정
-        const domain = 'meet.jit.si'; // 혹은 커스텀 Jitsi 서버 주소
-        const options = {
-            roomName: roomName,
-            parentNode: document.getElementById('jitsi-container'),
-            jwt: token,
-            userInfo: {
-                displayName: userName,
-                email: userEmail,
-            },
-            configOverwrite: {
-                startWithAudioMuted: true,
-                startWithVideoMuted: false,
-            },
-            interfaceConfigOverwrite: {
-                TOOLBAR_BUTTONS: ['microphone', 'camera', 'chat', 'raisehand', 'hangup'],
-            },
-        };
-
-        // 3️⃣ Jitsi 객체 생성 및 이벤트 바인딩
-        const api = new JitsiMeetExternalAPI(domain, options);
-        api.addEventListener('videoConferenceJoined', () => {
-            console.log('✅ 회의에 성공적으로 입장했습니다.');
-        });
+        // ✅ iframe 생성은 제거 → Meeting.jsx에서 JitsiMeetJS가 사용하므로 불필요
+        return token;
     } catch (error) {
-        console.error('❌ Jitsi 로딩 실패:', error);
-        alert('화상회의를 시작할 수 없습니다. 관리자에게 문의하세요.');
+        console.error('❌ [Jitsi.js] JWT 요청 실패:', error);
+        throw error;
     }
 }
-
-// 페이지 로드 후 실행
-window.addEventListener('load', startJitsiMeeting);
