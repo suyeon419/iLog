@@ -11,10 +11,9 @@ import {
     updateProjectImage,
     deleteProjectImage,
     deleteProject,
-    updateProjectName,
-    getProjectMembers, // 👈 [수정] 참가자 API 임포트
+    updateProjectName, // 이름 수정 API 임포트
 } from '../../api/note';
-import api from '../../api/axios';
+import api from '../../api/axios'; // 👈 [수정] api 인스턴스 임포트
 
 import './Note.css';
 
@@ -61,7 +60,7 @@ export default function Note() {
                         created: project.createdAt
                             ? new Date(project.createdAt).toLocaleDateString()
                             : '날짜 정보 없음',
-                        members: project.members || '...', // 👈 [수정] 초기값 (기존과 동일)
+                        members: project.members || '...',
                     }))
                     .reverse();
 
@@ -75,8 +74,10 @@ export default function Note() {
                 return; // 프로젝트 로드 실패 시 이미지 로딩 시도 안 함
             }
 
-            // --- 3. [수정] Blob 이미지 및 참가자 로딩 (api 인스턴스 사용) ---
+            // --- 3. [수정] Blob 이미지 로딩 (api 인스턴스 사용) ---
             try {
+                // [수정] 토큰 수동 관리 로직 삭제 (api가 자동으로 처리)
+
                 // API에서 방금 받아온 'initialItems' 배열을 순회합니다.
                 console.log(`💡 [Note] 2. 총 ${initialItems.length}개 아이템 순회 시작.`);
 
@@ -96,7 +97,9 @@ export default function Note() {
                             console.log(`💡 [Note] 4. (ID: ${itemToLoad.id}) 다음 URL로 GET 요청 시도: ${imageUrl}`);
                             // ===============================================
 
+                            // ⬇️ [수정] 'axios.get'을 'api.get'으로 변경
                             const res = await api.get(imageUrl, {
+                                // [수정] 수동 헤더 삭제 (api가 자동 주입)
                                 responseType: 'blob',
                             });
 
@@ -132,48 +135,10 @@ export default function Note() {
                     } else {
                         console.log(`💡 [Note] (ID: ${itemToLoad.id}) imagePath가 없으므로 건너뜁니다.`);
                     }
-
-                    try {
-                        // 1. 참가자 API 호출
-                        // (note.js 수정으로 인해 membersData는 이제 배열입니다)
-                        const membersData = await getProjectMembers(itemToLoad.id);
-                        let membersString = '참가자 없음'; // 기본값
-
-                        if (membersData && membersData.length > 0) {
-                            // 👈 이제 이 조건이 정상 작동합니다.
-                            // 2. 렌더링 코드(split(' '))와 맞추기 위해 띄어쓰기로 join합니다.
-
-                            // 👇 [수정] m.name이 아니라 m.participantName 입니다.
-                            membersString = membersData.map((m) => m.participantName).join(' ');
-                        }
-
-                        console.log(`✅ [Note] (ID: ${itemToLoad.id}) 참가자 로드 성공.`);
-
-                        // 3. state 업데이트 (members 필드)
-                        setItems((prevItems) =>
-                            prevItems.map((item) =>
-                                item.id === itemToLoad.id ? { ...item, members: membersString } : item
-                            )
-                        );
-                    } catch (err) {
-                        console.error(
-                            `❌ [Note] (ID: ${itemToLoad.id}) 참가자 로드 실패:`,
-                            err.response || err.message
-                        );
-                        // 4. 실패 시 state 업데이트
-                        setItems((prevItems) =>
-                            prevItems.map((item) =>
-                                item.id === itemToLoad.id ? { ...item, members: '멤버 조회 실패' } : item
-                            )
-                        );
-                    }
-                    // ==========================================================
-                    // 👆👆👆 [수정] 참가자 로드 로직 (여기까지) 👆👆👆
-                    // ==========================================================
                 }
-                console.log('💡 [Note] 9. 이미지/멤버 로드 순회 완료.'); // 👈 [수정] 로그 메시지
+                console.log('💡 [Note] 9. 이미지 로드 순회 완료.');
             } catch (err) {
-                console.error('❌ [Note] Blob 이미지/멤버 로딩 순회 중 전체 오류:', err); // 👈 [수정] 로그 메시지
+                console.error('❌ [Note] Blob 이미지 로딩 순회 중 전체 오류:', err);
             }
         };
 
@@ -300,7 +265,7 @@ export default function Note() {
                 imagePath: newProject.folderImage,
                 blobUrl: null,
                 created: newProject.createdAt ? new Date(newProject.createdAt).toLocaleDateString() : '날짜 정보 없음',
-                members: '...', // 👈 [수정] 새 프로젝트 생성 시 기본값
+                members: '...',
             };
             setItems((prevItems) => [mappedProject, ...prevItems]);
             setCurrentPage(1);
@@ -462,6 +427,7 @@ export default function Note() {
                                                 onClick={(e) => e.stopPropagation()} // 이벤트 버블링 방지
                                                 autoFocus
                                                 className="form-control-inline-edit" // 2. 커스텀 CSS 클래스
+                                                // [수정] 키보드 이벤트 및 안내 텍스트 삭제 (이전 파일에서 빠져있었음)
                                             />
                                             {/* 4. '저장' 아이콘 버튼 */}
                                             <CheckSquare
@@ -486,16 +452,14 @@ export default function Note() {
                                 {/* --- 이름 수정 UI 끝 --- */}
 
                                 <div className="mt-3 flex-grow-1">
-                                    {/* 👇 [수정] item.members가 '...'이 아닐 때만 렌더링 (또는 다른 조건) */}
-                                    {item.members && item.members !== '...' ? (
+                                    {item.members ? (
                                         item.members.split(' ').map((member, index) => (
                                             <p key={index} style={{ marginBottom: '0.25rem', fontWeight: '500' }}>
                                                 {member}
                                             </p>
                                         ))
                                     ) : (
-                                        // '...' 이거나, '참가자 없음'이거나, '멤버 조회 실패'일 때
-                                        <p style={{ fontStyle: 'italic', color: '#aaa' }}>{item.members}</p>
+                                        <p style={{ fontStyle: 'italic', color: '#aaa' }}>...</p>
                                     )}
                                 </div>
                                 <Button
