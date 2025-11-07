@@ -250,6 +250,7 @@ const Meeting = () => {
 
     // 파일 상단 훅들 옆
     const hasJoinedRef = useRef(false);
+    const joinLogSentRef = useRef(false); // [sy] JOIN 로그 중복 방지
 
     // 자동 참가 useEffect 교체
     useEffect(() => {
@@ -1370,12 +1371,13 @@ const Meeting = () => {
         const events = JitsiMeetJS.events;
 
         // 회의에 성공적으로 참가했을 때 (CONFERENCE_JOINED)
-        conf.on(events.conference.CONFERENCE_JOINED, () => {
+        conf.on(events.conference.CONFERENCE_JOINED, async () => {
             setMeetingState('active');
             setIsProcessing(false);
             const myId = normalizeId(conf.myUserId?.() ?? '');
             participantInfoRef.current[myId] = participantInfoRef.current[myId] || userName;
             console.log('📥 CONFERENCE_JOINED', myId);
+
             setParticipants((prev) => {
                 if (prev.some((p) => p.isLocal)) return prev;
                 const localParticipant = {
@@ -1391,6 +1393,24 @@ const Meeting = () => {
                 };
                 return [localParticipant, ...prev];
             });
+
+            //[sy] 참가자 로그 확인을 위함
+            if (!isHostRef.current && !joinLogSentRef.current) {
+                joinLogSentRef.current = true;
+                try {
+                    await api.post('/logs/meeting', {
+                        status: 'JOIN',
+                        roomName: roomName, // 실제 방 이름
+                        email: userInfo.email, // 참가자 이메일
+                        role: 'PARTICIPANT',
+                        timestamp: new Date().toISOString(),
+                    });
+                    console.log('✅ 참가자 JOIN 로그 저장 완료');
+                } catch (e) {
+                    joinLogSentRef.current = false;
+                    console.error('❌ 참가자 JOIN 로그 저장 실패:', e);
+                }
+            }
         });
 
         // 다른 참가자가 입장했을 때 (USER_JOINED)
@@ -2085,6 +2105,32 @@ const Meeting = () => {
 
     //     connectJitsi(roomName || null, userName);
     // };
+    // const handleJoin = async () => {
+    //     console.log('🔧 handleJoin()');
+
+    //     const displayName = userInfo.name?.trim();
+    //     const joiningExistingRoom = !!roomName;
+    //     const fromCreate = location.state?.isHost === true;
+    //     isHostRef.current = fromCreate ? true : !joiningExistingRoom;
+    //     console.log(`[handleJoin] Is Host Ref: ${isHostRef.current}`);
+
+    //     try {
+    //         // ✅ JWT 토큰만 받아옴
+    //         const token = await startJitsiMeeting({
+    //             roomName,
+    //             userName: displayName,
+    //             userEmail: userInfo.email,
+    //         });
+
+    //         console.log('🪙 JWT 토큰 발급 완료:', token);
+
+    //         // ✅ token을 connectJitsi에 넘겨서 사용하거나, 나중에 헤더로 전달 가능
+    //         connectJitsi(roomName, displayName);
+    //     } catch (error) {
+    //         console.error('❌ [Meeting.jsx] 회의 시작 중 오류:', error);
+    //         alert('회의를 시작할 수 없습니다. 관리자에게 문의하세요.');
+    //     }
+    // };
     const handleJoin = async () => {
         console.log('🔧 handleJoin()');
 
@@ -2095,16 +2141,19 @@ const Meeting = () => {
         console.log(`[handleJoin] Is Host Ref: ${isHostRef.current}`);
 
         try {
-            // ✅ JWT 토큰만 받아옴
-            const token = await startJitsiMeeting({
-                roomName,
-                userName: displayName,
-                userEmail: userInfo.email,
-            });
+            if (isHostRef.current) {
+                // ✅ 방장일 때만 JWT 요청
+                const token = await startJitsiMeeting({
+                    roomName,
+                    userName: displayName,
+                    userEmail: userInfo.email,
+                });
+                console.log('🪙 JWT 토큰 발급 완료:', token);
+            } else {
+                console.log('🙋 참가자는 JWT 발급 생략');
+            }
 
-            console.log('🪙 JWT 토큰 발급 완료:', token);
-
-            // ✅ token을 connectJitsi에 넘겨서 사용하거나, 나중에 헤더로 전달 가능
+            // ✅ 방장이든 참가자든 공통적으로 Jitsi 접속
             connectJitsi(roomName, displayName);
         } catch (error) {
             console.error('❌ [Meeting.jsx] 회의 시작 중 오류:', error);
