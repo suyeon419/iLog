@@ -63,7 +63,7 @@ export default function JoinMeeting() {
         const roomName = url.split('/').pop().split('?')[0];
 
         // React Router로 페이지 이동 + videoOff 값 전달
-        navigate(`/meeting/${roomName}`, {
+        navigate(`/meeting/${roomName}?room=${roomName}`, {
             state: {
                 videoOff: video,
             },
