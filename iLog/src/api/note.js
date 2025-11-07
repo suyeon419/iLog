@@ -3,10 +3,8 @@ import api from './axios';
 
 const API_BASE_URL = 'https://webkit-ilo9-api.duckdns.org';
 
-// ✅ 공통 헤더 (모든 요청에 적용)
-// [수정] Content-Type 제거. Axios가 FormData를 감지하고 자동으로 설정하도록 합니다.
+// [중요] createNote 함수 근처에 있는 defaultHeaders 변수를 참조합니다.
 const defaultHeaders = {
-    // 'Content-Type': 'multipart/form-data', // <-- ❌ 이 줄을 삭제했습니다.
     'Content-Type': 'application/json',
 };
 
@@ -164,37 +162,15 @@ export const getNoteDetails = async (minuteId) => {
 };
 
 /**
- * 7. 개별 회의록 수정
- * (가정) PATCH /minutes/{minuteId}
+ * 7. 개별 회의록 수정 (PATCH /minutes/{minuteId})
  */
 export const updateNote = async (minuteId, data) => {
-    console.group(`🧾 [updateNote] (ID: ${minuteId}) 회의록 수정 요청`);
-    console.log('📝 수정 데이터:', data);
-    try {
-        const response = await api.patch(`/minutes/${minuteId}`, data);
-        console.log('✅ 회의록 수정 성공:', response.data);
-        return response.data;
-    } catch (error) {
-        console.error(`❌ (ID: ${minuteId}) 회의록 수정 실패:`, error);
-        throw error;
-    } finally {
-        console.groupEnd();
-    }
-};
-
-/**
- * 8. 개별 회의록 삭제
- * (가정) DELETE /minutes/{minuteId}
- */
-export const deleteNote = async (minuteId) => {
-    try {
-        const response = await api.delete(`/minutes/${minuteId}`);
-        console.log(`✅ (ID: ${minuteId}) 회의록 삭제 성공`);
-        return response.data; // 또는 response.status
-    } catch (error) {
-        console.error(`❌ (ID: ${minuteId}) 회의록 삭제 실패:`, error);
-        throw error;
-    }
+    const headers = {
+        ...defaultHeaders, // 👈 'Content-Type' 하드코딩 대신 이 변수를 사용
+        ...getAuthHeader(),
+    };
+    const response = await api.patch(`/minutes/${minuteId}`, data, { headers });
+    return response.data;
 };
 
 // [✅ 추가] 6. 프로젝트(폴더) 참가자(조원) 목록 조회
@@ -208,24 +184,6 @@ export const getProjectMembers = async (folderId) => {
         console.error(`❌ (ID: ${folderId}) 참가자 목록 로드 실패:`, error);
         throw error;
     }
-};
-
-// [✅ 수정] 'instance'를 'api'로 변경합니다.
-export const getMeetingDetail = async (meetingId) => {
-    const response = await api.get(`/minutes/${meetingId}`);
-    return response.data;
-};
-
-// [✅ 수정] 'instance'를 'api'로 변경합니다.
-export const updateMeetingDetail = async (meetingId, payload) => {
-    const response = await api.patch(`/minutes/${meetingId}`, payload);
-    return response.data;
-};
-
-// [✅ 수정] 'instance'를 'api'로 변경합니다.
-export const deleteMeeting = async (meetingId) => {
-    const response = await api.delete(`/minutes/${meetingId}`);
-    return response.data;
 };
 
 // (Postman에서 보여주신 /minutes/{id}/summary 호출)
