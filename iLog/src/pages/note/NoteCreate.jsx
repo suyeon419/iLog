@@ -1,15 +1,14 @@
 // NoteCreate.jsx
 
-import React, { useState, useEffect } from 'react'; // 1. useEffect 추가
+import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Row, Col, Alert } from 'react-bootstrap';
 import { PencilSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MemberModal from './MemberModal';
 import { createNote } from '../../api/note';
 
-// 2. Settings.jsx에서 사용한 API와 라이브러리를 그대로 가져옵니다.
-import { getUserById } from '../../api/user'; // (Settings.jsx 4줄 참고)
-import { jwtDecode } from 'jwt-decode'; // (Settings.jsx 5줄 참고)
+import { getUserById } from '../../api/user';
+import { jwtDecode } from 'jwt-decode';
 
 export default function NoteCreate() {
     const [title, setTitle] = useState('');
@@ -21,33 +20,29 @@ export default function NoteCreate() {
     const [error, setError] = useState('');
     const [showMemberModal, setShowMemberModal] = useState(false);
 
-    // 3. Settings.jsx처럼 사용자 정보를 담을 state를 만듭니다.
     const [user, setUser] = useState(null);
-    // (선택) 사용자 정보 로딩 중인지 확인
     const [isLoadingUser, setIsLoadingUser] = useState(true);
 
     const parentId = location.state?.parentId;
     const today = new Date().toISOString().split('T')[0].replace(/-/g, '.') + '.';
 
-    // 4. Settings.jsx의 useEffect 로직을 적용합니다.
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
         if (token) {
             try {
                 const decoded = jwtDecode(token);
-                const userId = decoded.id; // 토큰에서 사용자 ID 추출
+                const userId = decoded.id;
 
-                // 사용자 ID로 API 호출
                 getUserById(userId)
                     .then((data) => {
-                        setUser(data); // state에 사용자 정보 저장
+                        setUser(data);
                     })
                     .catch((err) => {
                         console.error('❌ [NoteCreate] 회원 정보 요청 실패:', err);
                         setError('사용자 정보를 불러오는 데 실패했습니다.');
                     })
                     .finally(() => {
-                        setIsLoadingUser(false); // 로딩 완료
+                        setIsLoadingUser(false);
                     });
             } catch (err) {
                 console.error('JWT 실패', err);
@@ -58,7 +53,7 @@ export default function NoteCreate() {
             setError('로그인이 필요합니다.');
             setIsLoadingUser(false);
         }
-    }, []); // 페이지 로드 시 1회만 실행
+    }, []);
 
     const handleSave = async () => {
         if (!parentId) {
@@ -69,7 +64,6 @@ export default function NoteCreate() {
             setError('제목을 입력해야 합니다.');
             return;
         }
-        // 5. 사용자 정보가 로드되기 전이면 저장 방지
         if (isLoadingUser || !user) {
             setError('사용자 정보를 로드 중입니다. 잠시 후 다시 시도해 주세요.');
             return;
@@ -82,7 +76,6 @@ export default function NoteCreate() {
         const payload = {
             title: title || '제목 없음',
             content: content,
-            // 6. state에 저장된 user의 이름을 사용합니다.
             members: [user?.name || '참가자'],
         };
 
@@ -102,7 +95,6 @@ export default function NoteCreate() {
     const handleShowMemberModal = () => setShowMemberModal(true);
     const handleCloseMemberModal = () => setShowMemberModal(false);
 
-    // 7. 사용자 정보 로딩 상태에 따라 이름을 표시합니다.
     const currentUserName = isLoadingUser ? '로딩 중...' : user?.name || '정보 없음';
 
     return (
@@ -128,11 +120,10 @@ export default function NoteCreate() {
                     </Form.Group>
                 </Col>
                 <Col xs="auto">
-                    {/* 8. 사용자 로딩 중일 때도 '생성' 버튼 비활성화 */}
                     <Button
                         variant="primary"
-                        className="mini-btn fw-bold"
                         onClick={handleSave}
+                        className="mini-btn fw-bold"
                         disabled={isSaving || isLoadingUser}
                     >
                         {isSaving ? '저장 중...' : '생성'}
@@ -146,7 +137,6 @@ export default function NoteCreate() {
                     <div className="d-flex align-items-center">
                         <People className="me-2" />
                         <span className="me-2 fw-bold">참가자</span>
-                        {/* 9. state 기반의 사용자 이름 표시 */}
                         <span className="me-2">{currentUserName}</span>
                     </div>
                 </Col>
@@ -155,22 +145,18 @@ export default function NoteCreate() {
                 </Col>
             </Row>
 
-            {/* 생성일자 / 수정일자 */}
+            {/* ✅ [수정] 생성일자 Row (수정일자 Col 제거) */}
             <Row className="mb-3 align-items-center text-secondary">
-                <Col md={6}>
+                <Col>
+                    {' '}
+                    {/* md={6} -> Col로 변경하여 한 줄을 다 쓰도록 함 */}
                     <div className="d-flex align-items-center">
                         <CalendarCheck className="me-2" />
                         <span className="me-2 fw-bold">생성일자</span>
                         <span>{today}</span>
                     </div>
                 </Col>
-                <Col md={6}>
-                    <div className="d-flex align-items-center">
-                        <CalendarPlus className="me-2" />
-                        <span className="me-2 fw-bold">수정일자</span>
-                        <span>{today}</span>
-                    </div>
-                </Col>
+                {/* 수정일자 Col이 삭제되었습니다. */}
             </Row>
 
             {/* 본문 */}
