@@ -171,7 +171,11 @@ export const updateNote = async (minuteId, data) => {
     console.group(`🧾 [updateNote] (ID: ${minuteId}) 회의록 수정 요청`);
     console.log('📝 수정 데이터:', data);
     try {
-        const response = await api.patch(`/minutes/${minuteId}`, data);
+        const headers = {
+            'Content-Type': 'application/json',
+            ...getAuthHeader(), // ✅ 토큰 추가
+        };
+        const response = await api.patch(`/minutes/${minuteId}`, data, { headers });
         console.log('✅ 회의록 수정 성공:', response.data);
         return response.data;
     } catch (error) {
@@ -181,7 +185,6 @@ export const updateNote = async (minuteId, data) => {
         console.groupEnd();
     }
 };
-
 /**
  * 8. 개별 회의록 삭제
  * (가정) DELETE /minutes/{minuteId}
