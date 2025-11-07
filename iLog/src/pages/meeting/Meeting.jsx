@@ -7,6 +7,7 @@ import { getUserById } from '../../api/user';
 import { useLocation } from 'react-router-dom';
 import api from '../../api/axios';
 import { createNote } from '../../api/note';
+import { startJitsiMeeting } from '../../api/jitsi';
 
 // ******** 중간 요약 전송 간격 (ms 단위) ********
 const SEGMENT_DURATION_MS = 300000; // == 5분
@@ -977,6 +978,14 @@ const Meeting = () => {
         let commonMeetingStartTime = recordingStartTime; // 전역 회의 시작 시간
         let commonChunkStartTime = null; // 이 *배치*의 시작 시간 (가장 이른 시간)
 
+        //[sy] 이메일 추가하기
+        if (userInfo?.email) {
+            formData.append('email', userInfo.email);
+        }
+        if (userInfo?.name) {
+            formData.append('name', userInfo.name);
+        }
+
         collectedChunks.forEach(({ fileForUpload, participantId, options }) => {
             // 백엔드는 audio_files 리스트를 순회하며 filename에서 발언자를 추측함
             formData.append('audio_files', fileForUpload, fileForUpload.name);
@@ -1224,7 +1233,7 @@ const Meeting = () => {
                 const jwtRes = await fetch(`${API_BASE_URL}/jitsi-jwt`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ roomName: roomName, userName: screenUserName }),
+                    body: JSON.stringify({ roomName: roomName, userName: screenUserName, email: Info.email }),
                 });
                 if (!jwtRes.ok) throw new Error('Failed to get ScreenShare JWT');
                 const { jwt } = await jwtRes.json();
@@ -1805,6 +1814,14 @@ const Meeting = () => {
      */
     const connectJitsi = async (roomNameToJoin, userDisplayName) => {
         console.log('📲 connectJitsi()');
+
+        //[sy] 디버깅용
+        console.log('🎥 [Meeting] connectJitsi 호출', {
+            roomNameToJoin,
+            userDisplayName,
+            userEmail: userInfo.email,
+        });
+
         if (!navigator.mediaDevices) {
             alert('카메라/마이크 접근 권한이 필요합니다.');
             setIsProcessing(false);
@@ -1842,7 +1859,7 @@ const Meeting = () => {
             const jwtRes = await fetch(`${API_BASE_URL}/jitsi-jwt`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ roomName: currentRoomName, userName: userInfo.name }), //[sy] userDisplayName를 userInfo.name로 바꿈
+                body: JSON.stringify({ roomName: currentRoomName, userName: userInfo.name, email: userInfo.email }), //[sy] userDisplayName를 userInfo.name로 바꿈
             });
             if (!jwtRes.ok) throw new Error('Failed to get JWT');
             const { jwt } = await jwtRes.json();
@@ -2053,18 +2070,46 @@ const Meeting = () => {
     /**
      * '회의 참가/시작' 버튼 핸들러
      */
-    const handleJoin = () => {
+    // const handleJoin = () => {
+    //     console.log('🔧 handleJoin()');
+    //     const displayName = userInfo.name?.trim();
+    //     // if (!userName.trim()) {
+    //     //     alert('Please enter your name.');
+    //     //     return;
+    //     // }
+    //     // 방 이름이 없으면 '새 회의 시작' (방장), 있으면 '회의 참가' (참가자)
+    //     const joiningExistingRoom = !!roomName;
+    //     const fromCreate = location.state?.isHost === true;
+    //     isHostRef.current = fromCreate ? true : !joiningExistingRoom;
+    //     console.log(`[handleJoin] Is Host Ref: ${isHostRef.current}`);
+
+    //     connectJitsi(roomName || null, userName);
+    // };
+    const handleJoin = async () => {
         console.log('🔧 handleJoin()');
+
         const displayName = userInfo.name?.trim();
-        // if (!userName.trim()) {
-        //     alert('Please enter your name.');
-        //     return;
-        // }
-        // 방 이름이 없으면 '새 회의 시작' (방장), 있으면 '회의 참가' (참가자)
         const joiningExistingRoom = !!roomName;
-        isHostRef.current = !joiningExistingRoom;
+        const fromCreate = location.state?.isHost === true;
+        isHostRef.current = fromCreate ? true : !joiningExistingRoom;
         console.log(`[handleJoin] Is Host Ref: ${isHostRef.current}`);
-        connectJitsi(roomName, userName);
+
+        try {
+            // ✅ JWT 토큰만 받아옴
+            const token = await startJitsiMeeting({
+                roomName,
+                userName: displayName,
+                userEmail: userInfo.email,
+            });
+
+            console.log('🪙 JWT 토큰 발급 완료:', token);
+
+            // ✅ token을 connectJitsi에 넘겨서 사용하거나, 나중에 헤더로 전달 가능
+            connectJitsi(roomName, displayName);
+        } catch (error) {
+            console.error('❌ [Meeting.jsx] 회의 시작 중 오류:', error);
+            alert('회의를 시작할 수 없습니다. 관리자에게 문의하세요.');
+        }
     };
 
     /**
