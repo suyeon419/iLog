@@ -1,14 +1,13 @@
 // NoteCreate.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+// [수정] Alert 추가
 import { Container, Form, Button, Row, Col, Alert } from 'react-bootstrap';
 import { PencilSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MemberModal from './MemberModal';
+// [수정] API 함수 임포트
 import { createNote } from '../../api/note';
-
-import { getUserById } from '../../api/user';
-import { jwtDecode } from 'jwt-decode';
 
 export default function NoteCreate() {
     const [title, setTitle] = useState('');
@@ -17,44 +16,19 @@ export default function NoteCreate() {
     const navigate = useNavigate();
     const location = useLocation();
 
+    // [수정] 에러 상태 추가
     const [error, setError] = useState('');
+
     const [showMemberModal, setShowMemberModal] = useState(false);
 
-    const [user, setUser] = useState(null);
-    const [isLoadingUser, setIsLoadingUser] = useState(true);
-
+    // (중요) 이 parentId가 상위 폴더의 ID (예: 21)일 것입니다.
     const parentId = location.state?.parentId;
+
+    // [수정] API 응답을 기다리므로 today를 미리 만들 필요가 없을 수 있습니다.
+    // (백엔드가 생성일자를 저장한다고 가정)
     const today = new Date().toISOString().split('T')[0].replace(/-/g, '.') + '.';
 
-    useEffect(() => {
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-            try {
-                const decoded = jwtDecode(token);
-                const userId = decoded.id;
-
-                getUserById(userId)
-                    .then((data) => {
-                        setUser(data);
-                    })
-                    .catch((err) => {
-                        console.error('❌ [NoteCreate] 회원 정보 요청 실패:', err);
-                        setError('사용자 정보를 불러오는 데 실패했습니다.');
-                    })
-                    .finally(() => {
-                        setIsLoadingUser(false);
-                    });
-            } catch (err) {
-                console.error('JWT 실패', err);
-                setError('로그인 토큰이 유효하지 않습니다.');
-                setIsLoadingUser(false);
-            }
-        } else {
-            setError('로그인이 필요합니다.');
-            setIsLoadingUser(false);
-        }
-    }, []);
-
+    // [수정] 백엔드 연동 handleSave
     const handleSave = async () => {
         if (!parentId) {
             setError('상위 폴더 ID가 없습니다. 프로젝트 페이지에서 다시 시도해 주세요.');
@@ -64,41 +38,40 @@ export default function NoteCreate() {
             setError('제목을 입력해야 합니다.');
             return;
         }
-        if (isLoadingUser || !user) {
-            setError('사용자 정보를 로드 중입니다. 잠시 후 다시 시도해 주세요.');
-            return;
-        }
 
         if (isSaving) return;
         setIsSaving(true);
         setError('');
 
+        // [수정] 백엔드로 보낼 데이터 (API 명세에 맞게 key 이름 수정 필요)
         const payload = {
-            title: title || '제목 없음',
-            content: content,
-            members: [user?.name || '참가자'],
+            title: title || '제목 없음', // (가정) API가 'title'을 받음
+            content: content, // (가정) API가 'content'를 받음
+            members: ['최겸'], // (가정) API가 'members' 배열을 받음
         };
 
         try {
+            // [수정] API 호출
             console.log(`[NoteCreate] API 호출: POST /folders/${parentId}/minutes`);
             const data = await createNote(parentId, payload);
 
             console.log('[NoteCreate] 저장 성공:', data);
+
+            // 저장이 성공하면 이전 페이지(아마도 해당 폴더의 회의록 목록)로 이동
             navigate(-1);
         } catch (err) {
             console.error('❌ [NoteCreate] 저장 실패:', err);
             setError('회의록 저장에 실패했습니다.');
-            setIsSaving(false);
+            setIsSaving(false); // 실패 시 버튼 활성화
         }
     };
 
     const handleShowMemberModal = () => setShowMemberModal(true);
     const handleCloseMemberModal = () => setShowMemberModal(false);
 
-    const currentUserName = isLoadingUser ? '로딩 중...' : user?.name || '정보 없음';
-
     return (
         <Container fluid className="pt-3 container-left">
+            {/* [수정] 에러 발생 시 Alert 표시 */}
             {error && <Alert variant="danger">{error}</Alert>}
 
             <Row className="mb-3 align-items-center">
@@ -120,24 +93,19 @@ export default function NoteCreate() {
                     </Form.Group>
                 </Col>
                 <Col xs="auto">
-                    <Button
-                        variant="primary"
-                        onClick={handleSave}
-                        className="mini-btn fw-bold"
-                        disabled={isSaving || isLoadingUser}
-                    >
+                    <Button variant="primary mini-btn" onClick={handleSave} className="fw-bold" disabled={isSaving}>
                         {isSaving ? '저장 중...' : '생성'}
                     </Button>
                 </Col>
             </Row>
 
-            {/* 참가자 */}
+            {/* ... (참가자, 생성일자 등 나머지 UI는 동일) ... */}
             <Row className="mb-2 align-items-center text-secondary">
                 <Col>
                     <div className="d-flex align-items-center">
                         <People className="me-2" />
                         <span className="me-2 fw-bold">참가자</span>
-                        <span className="me-2">{currentUserName}</span>
+                        <span className="me-2">최겸</span>
                     </div>
                 </Col>
                 <Col xs="auto">
@@ -145,21 +113,22 @@ export default function NoteCreate() {
                 </Col>
             </Row>
 
-            {/* ✅ [수정] 생성일자 Row (수정일자 Col 제거) */}
             <Row className="mb-3 align-items-center text-secondary">
-                <Col>
-                    {' '}
-                    {/* md={6} -> Col로 변경하여 한 줄을 다 쓰도록 함 */}
+                <Col md={6}>
                     <div className="d-flex align-items-center">
                         <CalendarCheck className="me-2" />
                         <span className="me-2 fw-bold">생성일자</span>
+                        <span>{today}</span> {/* (참고) 실제로는 저장 후 API 응답값으로 표시하는 것이 더 정확합니다 */}
+                    </div>
+                </Col>
+                <Col md={6}>
+                    <div className="d-flex align-items-center">
+                        <CalendarPlus className="me-2" />
+                        <span className="me-2 fw-bold">수정일자</span>
                         <span>{today}</span>
                     </div>
                 </Col>
-                {/* 수정일자 Col이 삭제되었습니다. */}
             </Row>
-
-            {/* 본문 */}
             <Row>
                 <Col>
                     <Form.Group>

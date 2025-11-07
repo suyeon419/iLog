@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import MemberModal from './MemberModal';
 
-import { getProjectDetails, getProjectMembers, getNoteDetails } from '../../api/note';
+import { getProjectDetails, getProjectMembers } from '../../api/note';
 
 export default function NoteDetail() {
     const navigate = useNavigate();
@@ -26,75 +26,28 @@ export default function NoteDetail() {
     const fetchProjectDetails = async (projectId) => {
         setLoading(true);
         setError('');
-        let initialMeetings = []; // 👈 [수정] 2차 로딩을 위해 변수 분리
-
-        // --- 1단계: 회의록 목록 우선 로드 ---
         try {
             const data = await getProjectDetails(projectId);
             setProject({ id: data.folderId, name: data.folderName });
 
-            initialMeetings = (data.minutesList || []) // 👈 [수정]
+            const mappedMeetings = (data.minutesList || [])
                 .map((minute) => ({
                     id: minute.id,
                     name: minute.name || '제목 없음',
-                    members: minute.members || '...', // 👈 초기값 '...'
+                    members: minute.members || '...',
                     created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '날짜 없음',
                     modified: minute.approachedAt ? new Date(minute.approachedAt).toLocaleDateString() : '날짜 없음',
                 }))
                 .reverse();
 
-            setSubMeetings(initialMeetings); // 👈 1차 렌더링 (참가자는 '...')
-            setLoading(false); // 👈 1차 로딩 완료, 스피너 숨기기
+            setSubMeetings(mappedMeetings);
         } catch (err) {
             console.error('Failed to fetch details:', err);
+            // [수정] 에러 메시지 설정
             setError('회의록을 불러오는 데 실패했습니다.');
-            setLoading(false); // 👈 실패 시에도 로딩 중지
-            return; // 2차 로딩 시도 중지
+        } finally {
+            setLoading(false);
         }
-
-        // ==========================================================
-        // 👇👇👇 [신규] 2단계: 개별 회의록 참가자 로딩 👇👇👇
-        // ==========================================================
-        try {
-            console.log(`💡 [NoteDetail] 2. 총 ${initialMeetings.length}개 회의록 순회 시작.`);
-
-            for (const meetingToLoad of initialMeetings) {
-                try {
-                    // 1. 개별 회의록 상세 정보 API 호출
-                    const detailData = await getNoteDetails(meetingToLoad.id);
-
-                    // ⭐️ (가정) API 응답 구조: { ..., participants: [{ participantName: '...' }] }
-                    const participantsArray = detailData.participants;
-                    let membersString = '참가자 없음';
-
-                    if (participantsArray && participantsArray.length > 0) {
-                        // 2. (가정) 이름이 participantName 속성에 있음
-                        membersString = participantsArray.map((m) => m.participantName).join(' ');
-                    }
-
-                    console.log(`✅ [NoteDetail] (ID: ${meetingToLoad.id}) 참가자 로드 성공.`);
-
-                    // 3. state 업데이트
-                    setSubMeetings((prevMeetings) =>
-                        prevMeetings.map((m) => (m.id === meetingToLoad.id ? { ...m, members: membersString } : m))
-                    );
-                } catch (err) {
-                    console.error(
-                        `❌ [NoteDetail] (ID: ${meetingToLoad.id}) 개별 회의록 로드 실패:`,
-                        err.response || err.message
-                    );
-                    setSubMeetings((prevMeetings) =>
-                        prevMeetings.map((m) => (m.id === meetingToLoad.id ? { ...m, members: '조회 실패' } : m))
-                    );
-                }
-            }
-            console.log('💡 [NoteDetail] 9. 개별 회의록 순회 완료.');
-        } catch (err) {
-            console.error('❌ [NoteDetail] 개별 회의록 순회 중 전체 오류:', err);
-        }
-        // ==========================================================
-        // 👆👆👆 [신규] 2단계 로딩 끝 👆👆👆
-        // ==========================================================
     };
 
     // ... (useEffect, handleAddSubMeeting, handleRowClick, Modals, Pagination 로직 모두 동일) ...
@@ -177,7 +130,7 @@ export default function NoteDetail() {
     if (error) {
         return (
             // 1. .container-left 스타일 유지 (flex-direction: column)
-            <Container fluid className="pt-3 container-left">
+            <Container className="pt-3 container-left">
                 {/* 2. 콘텐츠 영역 (flex-grow-1) */}
                 {/* 이 div가 남은 공간을 모두 차지하고(flex-grow-1),
                    내부 아이템(에러 메시지)을 수직/수평 중앙 정렬합니다. */}
@@ -204,7 +157,7 @@ export default function NoteDetail() {
 
     // ... (성공 시 렌더링하는 return 문은 동일) ...
     return (
-        <Container fluid className="pt-3 container-left">
+        <Container className="pt-3 container-left">
             {/* 1. 콘텐츠 영역 (flex-grow-1) */}
             <div className="flex-grow-1">
                 {/* 프로젝트 타이틀 */}
