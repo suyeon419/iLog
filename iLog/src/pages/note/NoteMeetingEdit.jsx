@@ -111,7 +111,7 @@ export default function NoteMeetingEdit() {
     // --- ------------------------- ---
 
     return (
-        <Container className="pt-3 container-left">
+        <Container fluid className="pt-3 container-left">
             {/* 제목 및 완료 버튼 (수정 없음) */}
             <Row className="mb-3 align-items-center">
                 <Col>
