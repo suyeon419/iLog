@@ -1,6 +1,8 @@
 //여기에 note관련 api정리해서 하십쇼
 import api from './axios';
 
+const API_BASE_URL = 'https://webkit-ilo9-api.duckdns.org';
+
 // ✅ 공통 헤더 (모든 요청에 적용)
 // [수정] Content-Type 제거. Axios가 FormData를 감지하고 자동으로 설정하도록 합니다.
 const defaultHeaders = {
@@ -59,26 +61,14 @@ export const createProject = async (parentId, projectName) => {
 /**
  * 3. 프로젝트 이미지 업로드 (수정)
  */
-export const updateProjectImage = async (folderId, folderName, file) => {
-    try {
-        const formData = new FormData();
+export const updateProjectImage = async (id, name, file) => {
+    const formData = new FormData(); // 👈 "택배 상자" 생성
+    formData.append('folderImage', file); // 👈 상자에 "파일" 담기
 
-        // [수정] Postman처럼 'folderName'과 'folderImage'를 모두 추가
-        formData.append('folderName', folderName);
-        formData.append('folderImage', file);
+    // 'api'가 formData를 감지하고 자동으로 Content-Type: multipart/form-data 헤더를 설정
+    const response = await api.patch(`/folders/${id}`, formData);
 
-        const response = await api.patch(`/folders/${folderId}`, formData, {
-            headers: {
-                ...getAuthHeader(),
-                // [수정] Content-Type 제거. Axios가 FormData를 보고 자동으로 설정합니다.
-                // 'Content-Type': 'multipart/form-data', // <-- ❌ 이 줄을 삭제했습니다.
-            },
-        });
-        return response.data;
-    } catch (error) {
-        console.error('❌ 이미지 업로드/수정 실패:', error);
-        throw error;
-    }
+    return response.data;
 };
 
 /**
@@ -223,4 +213,39 @@ export const getProjectMembers = async (folderId) => {
         console.error(`❌ (ID: ${folderId}) 참가자 목록 로드 실패:`, error);
         throw error;
     }
+};
+
+// [✅ 수정] 'instance'를 'api'로 변경합니다.
+export const getMeetingDetail = async (meetingId) => {
+    const response = await api.get(`/minutes/${meetingId}`);
+    return response.data;
+};
+
+// [✅ 수정] 'instance'를 'api'로 변경합니다.
+export const updateMeetingDetail = async (meetingId, payload) => {
+    const response = await api.patch(`/minutes/${meetingId}`, payload);
+    return response.data;
+};
+
+// [✅ 수정] 'instance'를 'api'로 변경합니다.
+export const deleteMeeting = async (meetingId) => {
+    const response = await api.delete(`/minutes/${meetingId}`);
+    return response.data;
+};
+
+// (Postman에서 보여주신 /minutes/{id}/summary 호출)
+export const getMeetingSummary = async (meetingId) => {
+    const response = await api.get(`/minutes/${meetingId}/summary`);
+    // 응답: { id, title, summary, memos }
+    return response.data;
+};
+
+// [✅ 신규] 메모 생성 (POST)
+// (NoteAISummary.jsx에서 '메모 저장' 시 사용)
+export const createMemo = async (meetingId, payload) => {
+    // payload 예: { content: "메모 내용", selection: "인용된 텍스트" }
+    // 실제 백엔드 API가 원하는 /memos 엔드포인트와 payload 형식으로 수정 필요
+    const response = await api.post(`/minutes/${meetingId}/memos`, payload);
+    // 응답: 새로 생성된 메모 객체 (예: { id, person, note })
+    return response.data;
 };

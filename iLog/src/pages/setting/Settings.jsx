@@ -144,6 +144,8 @@ export default function Settings() {
                 <hr className="beigeHr" />
             </section>
 
+            {/* ... (이하 나머지 코드는 동일) ... */}
+
             <section>
                 <h2>🔐 내 계정 관리</h2>
                 <hr className="brownHr" />
