@@ -8,7 +8,6 @@ import { useLocation } from 'react-router-dom';
 import api from '../../api/axios';
 import { createNote } from '../../api/note';
 import { startJitsiMeeting } from '../../api/jitsi';
-import { getProjects } from '../../api/note';
 
 // ******** 중간 요약 전송 간격 (ms 단위) ********
 const SEGMENT_DURATION_MS = 300000; // == 5분
@@ -2290,39 +2289,6 @@ const Meeting = () => {
         }
     };
 
-    // 프로젝트 리스트 띄우기 위함
-    useEffect(() => {
-        if (showSummaryModal) {
-            console.log('🟡 [useEffect] showSummaryModal 감지됨 → 폴더 불러오기 시작');
-            (async () => {
-                try {
-                    const data = await getProjects();
-                    console.log('📡 [getProjects] 응답 원본:', data);
-
-                    // childFolders가 있으면 그것을 폴더 리스트로 사용
-                    const folders = Array.isArray(data) ? data : data.childFolders || [];
-
-                    console.log('📦 [정제된 folders 배열]:', folders);
-                    setFolderResults(folders);
-                    console.log('✅ [setFolderResults] 완료. 폴더 수:', folders.length);
-                } catch (e) {
-                    console.error('❌ [useEffect] 폴더 목록 불러오기 실패:', e);
-                    setFolderResults([]);
-                }
-            })();
-        }
-    }, [showSummaryModal]);
-
-    // state
-    const [selectedFolderId, setSelectedFolderId] = useState('');
-
-    // 모달 열릴 때 초기화(선택 해제)
-    useEffect(() => {
-        if (showSummaryModal) {
-            setSelectedFolderId('');
-        }
-    }, [showSummaryModal]);
-
     // --- 메인 렌더링 ---
     return (
         <Container className={`container-black`} style={{ overflow: 'hidden' }}>
@@ -2344,33 +2310,53 @@ const Meeting = () => {
                                 value={noteTitle}
                                 onChange={(e) => setNoteTitle(e.target.value)}
                             />
+                            <Button variant="secondary">검색</Button>
                         </div>
                     </Form.Group>
 
                     <Form.Group className="mb-3">
                         <Form.Label>회의록 위치</Form.Label>
                         <div className="d-flex gap-2">
-                            <Form.Select
-                                value={selectedFolderId}
-                                onChange={(e) => {
-                                    const val = e.target.value; // 항상 문자열
-                                    setSelectedFolderId(val); // 선택된 값 보이기용
-                                    const folder = folderResults.find((f) => String(f.folderId ?? f.id) === val);
-                                    setSelectedFolder(folder); // 실제 선택된 폴더 객체
-                                }}
-                            >
-                                <option value="">폴더를 선택하세요</option>
-                                {Array.isArray(folderResults) &&
-                                    folderResults.map((f) => {
-                                        const idStr = String(f.folderId ?? f.id);
-                                        const name = f.folderName ?? f.name ?? `폴더 #${idStr}`;
-                                        return (
-                                            <option key={idStr} value={idStr}>
-                                                {name}
-                                            </option>
-                                        );
-                                    })}
-                            </Form.Select>
+                            <Form.Control
+                                className="form-modal"
+                                type="text"
+                                placeholder="폴더 경로 또는 ID를 입력하세요"
+                                value={locationQuery}
+                                onChange={(e) => setLocationQuery(e.target.value)}
+                            />
+                            <Button variant="secondary" onClick={handleSearchFolder}>
+                                검색
+                            </Button>
+                        </div>
+                        {/* 검색 결과 표시 (선택 리스트) */}
+                        {folderResults.length > 0 && (
+                            <ListGroup className="mt-2" style={{ maxHeight: 160, overflowY: 'auto' }}>
+                                {folderResults.map((f) => (
+                                    <ListGroup.Item
+                                        key={f.id}
+                                        action
+                                        active={selectedFolder?.id === f.id}
+                                        onClick={() => handleSelectFolder(f)}
+                                    >
+                                        <div className="d-flex justify-content-between align-items-center">
+                                            <span>{f.name || `폴더 #${f.id}`}</span>
+                                            <small className="text-muted">ID: {f.id}</small>
+                                        </div>
+                                        {f.path && <div className="text-muted small">{f.path}</div>}
+                                    </ListGroup.Item>
+                                ))}
+                            </ListGroup>
+                        )}
+                        {/* 선택 상태 표시 / 폴백 안내 */}
+                        <div className="mt-2 small text-muted">
+                            {selectedFolder ? (
+                                <>
+                                    선택된 폴더: <strong>{selectedFolder.name || `#${selectedFolder.id}`}</strong> (ID:{' '}
+                                    {selectedFolder.id})
+                                </>
+                            ) : (
+                                '검색이 없거나 실패하면 폴더 ID(숫자)를 직접 입력할 수 있어요.'
+                            )}
                         </div>
                     </Form.Group>
 
