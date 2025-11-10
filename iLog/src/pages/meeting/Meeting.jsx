@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm';
 import './Meeting.css';
 import { Button, Container, Form, ListGroup, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { getUserById } from '../../api/user';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import { createNote } from '../../api/note';
 import { startJitsiMeeting } from '../../api/jitsi';
@@ -2177,6 +2177,7 @@ const Meeting = () => {
 
     // ---- [sy]추가 부분 --------
     const inviteLink = `${window.location.origin}${window.location.pathname}?room=${roomName}`;
+    const navigate = useNavigate();
 
     const [showModal, setShowModal] = useState(false);
 
@@ -2567,8 +2568,13 @@ const Meeting = () => {
                                     size="lg"
                                     variant="danger"
                                     onClick={() => {
-                                        cleanUpConnection();
-                                        handleEndMeeting();
+                                        // 방장 또는 반장일 때만 회의 종료 가능
+                                        if (isHostRef.current || userInfo.role === '반장') {
+                                            handleEndMeeting();
+                                        } else {
+                                            cleanUpConnection();
+                                            navigate('/');
+                                        }
                                     }}
                                 >
                                     <i className="bi bi-telephone-x-fill"></i>
