@@ -215,24 +215,6 @@ export const getProjectMembers = async (folderId) => {
     }
 };
 
-// [✅ 수정] 'instance'를 'api'로 변경합니다.
-export const getMeetingDetail = async (meetingId) => {
-    const response = await api.get(`/minutes/${meetingId}`);
-    return response.data;
-};
-
-// [✅ 수정] 'instance'를 'api'로 변경합니다.
-export const updateMeetingDetail = async (meetingId, payload) => {
-    const response = await api.patch(`/minutes/${meetingId}`, payload);
-    return response.data;
-};
-
-// [✅ 수정] 'instance'를 'api'로 변경합니다.
-export const deleteMeeting = async (meetingId) => {
-    const response = await api.delete(`/minutes/${meetingId}`);
-    return response.data;
-};
-
 // (Postman에서 보여주신 /minutes/{id}/summary 호출)
 export const getMeetingSummary = async (meetingId) => {
     const response = await api.get(`/minutes/${meetingId}/summary`);

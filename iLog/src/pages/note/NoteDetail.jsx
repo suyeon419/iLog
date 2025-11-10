@@ -26,86 +26,27 @@ export default function NoteDetail() {
     const fetchProjectDetails = async (projectId) => {
         setLoading(true);
         setError('');
-        let initialMeetings = []; // 👈 [수정] 2차 로딩을 위해 변수 분리
 
-        // --- 1단계: 회의록 목록 우선 로드 ---
         try {
             const data = await getProjectDetails(projectId);
             setProject({ id: data.folderId, name: data.folderName });
 
-            initialMeetings = (data.minutesList || []) // 👈 [수정]
-                .map((minute) => ({
-                    id: minute.id,
-                    name: minute.name || '제목 없음',
-                    members: minute.members || '...', // 👈 초기값 '...'
-                    created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '날짜 없음',
-                    modified: minute.approachedAt ? new Date(minute.approachedAt).toLocaleDateString() : '날짜 없음',
-                }))
-                .reverse();
+            // 👇 서버가 주는 순서를 그대로 사용
+            const meetings = (data.minutesList || []).map((minute) => ({
+                id: minute.id,
+                name: minute.name || '제목 없음',
+                members: minute.members || '-', // 서버가 이 필드에 참가자 요약을 담는다면 그대로
+                created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '날짜 없음',
+                modified: minute.approachedAt ? new Date(minute.approachedAt).toLocaleDateString() : '날짜 없음',
+            }));
 
-            setSubMeetings(initialMeetings); // 👈 1차 렌더링 (참가자는 '...')
-            setLoading(false); // 👈 1차 로딩 완료, 스피너 숨기기
+            setSubMeetings(meetings); // ✅ 한 번만 set
+            setLoading(false);
         } catch (err) {
             console.error('Failed to fetch details:', err);
             setError('회의록을 불러오는 데 실패했습니다.');
-            setLoading(false); // 👈 실패 시에도 로딩 중지
-            return; // 2차 로딩 시도 중지
+            setLoading(false);
         }
-
-        // ==========================================================
-        // 👇👇👇 [수정] 2단계: 개별 회의록 참가자 '병렬' 로딩 👇👇👇
-        // ==========================================================
-        if (initialMeetings.length > 0) {
-            // 👈 [추가] 회의록이 있을 때만 실행
-            try {
-                console.log(`💡 [NoteDetail] 2. 총 ${initialMeetings.length}개 회의록 상세 정보 '병렬' 요청 시작.`);
-
-                // 1. 모든 회의록에 대해 getNoteDetails API 호출을 '프로미스 배열'로 만듭니다.
-                const detailPromises = initialMeetings.map((meeting) => getNoteDetails(meeting.id));
-
-                // 2. Promise.allSettled를 사용해 모든 요청이 완료될 때까지 기다립니다.
-                // (하나가 실패해도 나머지는 완료됩니다)
-                const results = await Promise.allSettled(detailPromises);
-
-                console.log('💡 [NoteDetail] 8. 모든 병렬 요청 완료.');
-
-                // 3. initialMeetings를 기반으로 '새로운' 배열을 만듭니다.
-                const updatedMeetings = initialMeetings.map((meeting, index) => {
-                    const result = results[index];
-
-                    if (result.status === 'fulfilled') {
-                        // 4. 성공 시: 참가자 정보 추출
-                        const detailData = result.value;
-                        const participantsArray = detailData.participants;
-                        let membersString = '참가자 없음';
-
-                        if (participantsArray && participantsArray.length > 0) {
-                            membersString = participantsArray.map((m) => m.participantName).join(' ');
-                        }
-                        console.log(`✅ [NoteDetail] (ID: ${meeting.id}) 참가자 로드 성공.`);
-                        return { ...meeting, members: membersString };
-                    } else {
-                        // 5. 실패 시: 에러 처리
-                        console.error(
-                            `❌ [NoteDetail] (ID: ${meeting.id}) 개별 회의록 로드 실패:`,
-                            result.reason.response || result.reason.message
-                        );
-                        return { ...meeting, members: '조회 실패' };
-                    }
-                });
-
-                // 6. 모든 정보가 취합된 'updatedMeetings'로 state를 '단 한 번' 업데이트합니다.
-                setSubMeetings(updatedMeetings);
-                console.log('💡 [NoteDetail] 9. 전체 회의록 state 업데이트 완료.');
-            } catch (err) {
-                console.error('❌ [NoteDetail] 개별 회의록 병렬 처리 중 예상치 못한 오류:', err);
-
-                setSubMeetings((prevMeetings) => prevMeetings.map((m) => ({ ...m, members: '조회 실패' })));
-            }
-        }
-        // ==========================================================
-        // 👆👆👆 [수정] 2단계 로딩 끝 👆👆👆
-        // ==========================================================
     };
 
     useEffect(() => {

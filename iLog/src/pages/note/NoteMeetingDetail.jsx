@@ -7,7 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import NoteAISummary from './NoteAISummary';
 
 // API 함수들을 임포트합니다.
-import { getMeetingDetail, deleteMeeting, getMeetingSummary } from '../../api/note';
+import { getNoteDetails, deleteNote, getMeetingSummary } from '../../api/note';
 
 export default function NoteMeetingDetail() {
     const [meeting, setMeeting] = useState(null); // 회의록 본문 정보
@@ -29,7 +29,7 @@ export default function NoteMeetingDetail() {
             setError('');
             try {
                 // 본문 API 호출 (예: /minutes/19)
-                const data = await getMeetingDetail(meetingId);
+                const data = await getNoteDetails(meetingId);
 
                 // API 응답(data)을 UI 상태(meeting)에 맞게 가공
                 const formattedData = {
@@ -65,7 +65,7 @@ export default function NoteMeetingDetail() {
     const handleDelete = async () => {
         if (window.confirm('정말로 이 회의록을 삭제하시겠습니까?')) {
             try {
-                await deleteMeeting(meetingId);
+                await deleteNote(meetingId);
                 alert('회의록이 삭제되었습니다.');
                 navigate(-1); // 목록으로 돌아가기
             } catch (err) {
