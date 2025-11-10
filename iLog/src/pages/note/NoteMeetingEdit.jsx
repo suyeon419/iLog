@@ -89,7 +89,7 @@ export default function NoteMeetingEdit() {
         return (
             <Container className="pt-3 text-center">
                 <Spinner animation="border" role="status" />
-                <h5 className="mt-2">원본 데이터 로딩 중...</h5>
+                <h5 className="mt-2">원본 데이터 불러오는 중...</h5>
             </Container>
         );
     }
@@ -133,12 +133,12 @@ export default function NoteMeetingEdit() {
                 </Col>
                 <Col xs="auto">
                     <Button variant="primary mini-btn" onClick={handleSave} className="fw-bold" disabled={isSaving}>
-                        {isSaving ? '저장 중...' : '완료'}
+                        {isSaving ? '저장' : '완료'}
                     </Button>
                 </Col>
             </Row>
 
-            {/* 참가자 및 날짜 정보 (수정 없음) */}
+            {/* 참가자 및 날짜 정보 */}
             <Row className="mb-2 align-items-center text-secondary">
                 <Col>
                     <div className="d-flex align-items-center">
@@ -148,7 +148,7 @@ export default function NoteMeetingEdit() {
                     </div>
                 </Col>
                 <Col xs="auto">
-                    <PersonPlus size={20} style={{ cursor: 'not-allowed', opacity: 0.5 }} />
+                    <PersonPlus size={20} style={{ cursor: 'pointer' }} onClick={handleShowMemberModal} />
                 </Col>
             </Row>
 
