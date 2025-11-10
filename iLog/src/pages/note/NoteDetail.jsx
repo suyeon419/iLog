@@ -53,51 +53,61 @@ export default function NoteDetail() {
         }
 
         // ==========================================================
-        // 👇👇👇 [신규] 2단계: 개별 회의록 참가자 로딩 👇👇👇
+        // 👇👇👇 [수정] 2단계: 개별 회의록 참가자 '병렬' 로딩 👇👇👇
         // ==========================================================
-        try {
-            console.log(`💡 [NoteDetail] 2. 총 ${initialMeetings.length}개 회의록 순회 시작.`);
+        if (initialMeetings.length > 0) {
+            // 👈 [추가] 회의록이 있을 때만 실행
+            try {
+                console.log(`💡 [NoteDetail] 2. 총 ${initialMeetings.length}개 회의록 상세 정보 '병렬' 요청 시작.`);
 
-            for (const meetingToLoad of initialMeetings) {
-                try {
-                    // 1. 개별 회의록 상세 정보 API 호출
-                    const detailData = await getNoteDetails(meetingToLoad.id);
+                // 1. 모든 회의록에 대해 getNoteDetails API 호출을 '프로미스 배열'로 만듭니다.
+                const detailPromises = initialMeetings.map((meeting) => getNoteDetails(meeting.id));
 
-                    // ⭐️ (가정) API 응답 구조: { ..., participants: [{ participantName: '...' }] }
-                    const participantsArray = detailData.participants;
-                    let membersString = '참가자 없음';
+                // 2. Promise.allSettled를 사용해 모든 요청이 완료될 때까지 기다립니다.
+                // (하나가 실패해도 나머지는 완료됩니다)
+                const results = await Promise.allSettled(detailPromises);
 
-                    if (participantsArray && participantsArray.length > 0) {
-                        // 2. (가정) 이름이 participantName 속성에 있음
-                        membersString = participantsArray.map((m) => m.participantName).join(' ');
+                console.log('💡 [NoteDetail] 8. 모든 병렬 요청 완료.');
+
+                // 3. initialMeetings를 기반으로 '새로운' 배열을 만듭니다.
+                const updatedMeetings = initialMeetings.map((meeting, index) => {
+                    const result = results[index];
+
+                    if (result.status === 'fulfilled') {
+                        // 4. 성공 시: 참가자 정보 추출
+                        const detailData = result.value;
+                        const participantsArray = detailData.participants;
+                        let membersString = '참가자 없음';
+
+                        if (participantsArray && participantsArray.length > 0) {
+                            membersString = participantsArray.map((m) => m.participantName).join(' ');
+                        }
+                        console.log(`✅ [NoteDetail] (ID: ${meeting.id}) 참가자 로드 성공.`);
+                        return { ...meeting, members: membersString };
+                    } else {
+                        // 5. 실패 시: 에러 처리
+                        console.error(
+                            `❌ [NoteDetail] (ID: ${meeting.id}) 개별 회의록 로드 실패:`,
+                            result.reason.response || result.reason.message
+                        );
+                        return { ...meeting, members: '조회 실패' };
                     }
+                });
 
-                    console.log(`✅ [NoteDetail] (ID: ${meetingToLoad.id}) 참가자 로드 성공.`);
+                // 6. 모든 정보가 취합된 'updatedMeetings'로 state를 '단 한 번' 업데이트합니다.
+                setSubMeetings(updatedMeetings);
+                console.log('💡 [NoteDetail] 9. 전체 회의록 state 업데이트 완료.');
+            } catch (err) {
+                console.error('❌ [NoteDetail] 개별 회의록 병렬 처리 중 예상치 못한 오류:', err);
 
-                    // 3. state 업데이트
-                    setSubMeetings((prevMeetings) =>
-                        prevMeetings.map((m) => (m.id === meetingToLoad.id ? { ...m, members: membersString } : m))
-                    );
-                } catch (err) {
-                    console.error(
-                        `❌ [NoteDetail] (ID: ${meetingToLoad.id}) 개별 회의록 로드 실패:`,
-                        err.response || err.message
-                    );
-                    setSubMeetings((prevMeetings) =>
-                        prevMeetings.map((m) => (m.id === meetingToLoad.id ? { ...m, members: '조회 실패' } : m))
-                    );
-                }
+                setSubMeetings((prevMeetings) => prevMeetings.map((m) => ({ ...m, members: '조회 실패' })));
             }
-            console.log('💡 [NoteDetail] 9. 개별 회의록 순회 완료.');
-        } catch (err) {
-            console.error('❌ [NoteDetail] 개별 회의록 순회 중 전체 오류:', err);
         }
         // ==========================================================
-        // 👆👆👆 [신규] 2단계 로딩 끝 👆👆👆
+        // 👆👆👆 [수정] 2단계 로딩 끝 👆👆👆
         // ==========================================================
     };
 
-    // ... (useEffect, handleAddSubMeeting, handleRowClick, Modals, Pagination 로직 모두 동일) ...
     useEffect(() => {
         fetchProjectDetails(id);
 
@@ -162,7 +172,6 @@ export default function NoteDetail() {
     };
     // ------------------------
 
-    // ... (loading 처리 UI 동일) ...
     if (loading) {
         return (
             <Container className="pt-3 text-center">
@@ -172,15 +181,9 @@ export default function NoteDetail() {
         );
     }
 
-    // [✅ 수정] if (error) 블록을 수정하여
-    // 성공 시와 동일한 flex 구조(flex-grow-1)를 유지하도록 변경
     if (error) {
         return (
-            // 1. .container-left 스타일 유지 (flex-direction: column)
             <Container fluid className="pt-3 container-left">
-                {/* 2. 콘텐츠 영역 (flex-grow-1) */}
-                {/* 이 div가 남은 공간을 모두 차지하고(flex-grow-1),
-                   내부 아이템(에러 메시지)을 수직/수평 중앙 정렬합니다. */}
                 <div className="flex-grow-1 d-flex flex-column justify-content-center align-items-center">
                     <div className="text-center">
                         <Alert variant="danger" className="mb-3">
@@ -195,19 +198,14 @@ export default function NoteDetail() {
                     </div>
                 </div>
 
-                {/* 3. 하단 고정 영역 (페이지네이션 등) */}
-                {/* 성공 상태와 구조를 맞추기 위해 빈 div를 유지합니다. */}
                 <div></div>
             </Container>
         );
     }
 
-    // ... (성공 시 렌더링하는 return 문은 동일) ...
     return (
         <Container fluid className="pt-3 container-left">
-            {/* 1. 콘텐츠 영역 (flex-grow-1) */}
             <div className="flex-grow-1">
-                {/* 프로젝트 타이틀 */}
                 <Row className="mb-3 mt-3 align-items-center">
                     <Col xs="auto" style={{ visibility: 'hidden' }}>
                         <PersonPlus size={24} />
@@ -227,7 +225,6 @@ export default function NoteDetail() {
 
                 {/* 하위 회의록 목록 테이블 */}
                 <Table className="align-middle">
-                    {/* ... (thead 부분 동일) ... */}
                     <thead>
                         <tr>
                             <th>
@@ -245,7 +242,6 @@ export default function NoteDetail() {
                         </tr>
                     </thead>
                     <tbody>
-                        {/* ... (tbody 맵핑 부분 동일) ... */}
                         {currentMeetings.length === 0 ? (
                             <tr>
                                 <td colSpan="4" className="text-center p-4">
@@ -272,7 +268,6 @@ export default function NoteDetail() {
 
             {/* 2. 하단 고정 영역 (페이지네이션 + 버튼) */}
             <div>
-                {/* ... (페이지네이션, 버튼 동일) ... */}
                 <nav className="mt-3 pagination-nav">
                     <Pagination className="justify-content-center">
                         <Pagination.Prev
@@ -292,7 +287,6 @@ export default function NoteDetail() {
                 </Button>
             </div>
 
-            {/* [수정 없음] MemberModal에 'members'와 'inviteLink' prop을 모두 전달 */}
             <MemberModal
                 show={showMemberModal}
                 onHide={handleCloseMemberModal}
