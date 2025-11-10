@@ -9,7 +9,7 @@ export default function NoteHistory() {
     // --- 페이지네이션 로직 ---
     const [currentPage, setCurrentPage] = useState(1);
     const [subMeetings, setSubMeetings] = useState([]); // 빈 배열로 초기화
-    const ITEMS_PER_PAGE = 7;
+    const ITEMS_PER_PAGE = 10;
 
     // [수정] 로딩 및 오류 상태 추가
     const [loading, setLoading] = useState(true);
