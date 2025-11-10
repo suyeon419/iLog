@@ -19,10 +19,8 @@ export default function NoteAISummary({ summaryText }) {
                       <pre> 태그 사용 (부트스트랩 기본 스타일 리셋 필요 시 css 추가) 
                     */}
                     <pre
-                        className="ai-summary-pre"
+                        className="ai-summary-pre note-box"
                         style={{
-                            whiteSpace: 'pre-wrap' /* 줄바꿈 및 공백 유지 */,
-                            wordBreak: 'break-all' /* 긴 단어 줄바꿈 */,
                             fontFamily: 'inherit' /* 부모 폰트 상속 */,
                             fontSize: 'inherit' /* 부모 폰트 크기 상속 */,
                         }}

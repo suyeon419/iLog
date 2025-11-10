@@ -211,10 +211,15 @@ export default function NoteMeetingDetail() {
                     <Col>
                         {!showAiSummary ? (
                             // 1. 본문 보기
-                            <pre className="border p-3 rounded text-break">{meeting.content}</pre>
+                            <pre className="border p-3 rounded text-break note-box">
+                                {meeting.content
+                                    .replace(/\\\\n/g, '\n') // 1️⃣ 첫 번째 인코딩 해제: '\\n' → '\n'
+                                    .replace(/\\n/g, '\n') // 2️⃣ 두 번째 인코딩 해제: '\n' → 실제 줄바꿈
+                                    .trim()}
+                            </pre>
                         ) : aiLoading ? (
                             // 2. AI 요약 로딩 중
-                            <div className="text-center p-5">
+                            <div className="text-center p-5 ">
                                 <Spinner animation="border" />
                                 <h5 className="mt-2">AI 요약본을 불러오는 중...</h5>
                             </div>

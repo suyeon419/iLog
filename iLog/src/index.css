@@ -294,3 +294,8 @@ btn-outline-primary:hover i {
     border-color: #b66e03 !important;
     border-right-color: transparent !important; /* 회전 시 투명 부분 */
 }
+
+.note-box {
+    white-space: pre-wrap;
+    word-break: break-word;
+}

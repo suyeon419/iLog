@@ -1235,7 +1235,7 @@ const Meeting = () => {
                 const jwtRes = await fetch(`${API_BASE_URL}/jitsi-jwt`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ roomName: roomName, userName: screenUserName, email: Info.email }),
+                    body: JSON.stringify({ roomName: roomName, userName: screenUserName }),
                 });
                 if (!jwtRes.ok) throw new Error('Failed to get ScreenShare JWT');
                 const { jwt } = await jwtRes.json();
@@ -2276,14 +2276,18 @@ const Meeting = () => {
 
         setIsCreatingNote(true);
         try {
+            const safeContent = summaryText.replaceAll('\n', '\\n');
             await createNote(folderId, {
                 title: noteTitle.trim(),
-                content: summaryText, // 모달에 보이는 최종 요약
+                // content: summaryText, // 모달에 보이는 최종 요약
+                content: safeContent,
                 status: 'MEETING',
             });
             window.location.href = '/';
         } catch (err) {
             console.error('회의록 생성 실패:', err);
+            console.log('📄 요약 내용:', summaryText);
+            console.log('📏 길이:', summaryText.length);
             alert('회의록 저장에 실패했습니다. 잠시 후 다시 시도하세요.');
         } finally {
             setIsCreatingNote(false);
