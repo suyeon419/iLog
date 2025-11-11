@@ -3,73 +3,75 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form, Badge, ListGroup, OverlayTrigger, Tooltip, Spinner } from 'react-bootstrap';
 
-// [수정] deleteProjectMember 임포트
-import { addProjectMemberByEmail, deleteProjectMember } from '../../api/note';
+// ❗ note.js의 API 함수를 여기서 직접 임포트하지 않습니다.
+// 대신 props로 받아옵니다.
 
 export default function MemberModal({
     show,
     onHide,
     members = [],
     inviteLink = '',
-    folderId,
-    onMemberUpdate, // 부모(NoteDetail) 상태 업데이트용 콜백
+    onMemberUpdate, // 부모 상태 업데이트용 콜백
+
+    // [✅ 1. 재사용을 위한 Props]
+    entityId, // 폴더 ID(folderId) 또는 회의록 ID(meetingId)
+    addMemberApi, // 멤버 추가 API 함수 (e.g., addProjectMemberByEmail)
+    deleteMemberApi, // 멤버 삭제 API 함수 (e.g., deleteProjectMember)
 }) {
     const [email, setEmail] = useState('');
     const [isInviting, setIsInviting] = useState(false);
     const [showCopiedTooltip, setShowCopiedTooltip] = useState(false);
-
-    // [수정] 삭제 로딩 상태를 관리할 state (삭제 중인 participantId 저장)
     const [isDeletingId, setIsDeletingId] = useState(null);
 
-    // [수정] 이메일로 초대 기능 (이전과 동일)
+    // [✅ 2. props로 받은 API 함수 사용하도록 수정]
     const handleInviteByEmail = async () => {
         if (!email) {
             alert('이메일을 입력해주세요.');
             return;
         }
-        if (!folderId) {
-            console.error('folderId가 없습니다.');
+        // entityId와 addMemberApi 함수가 있는지 확인
+        if (!entityId || typeof addMemberApi !== 'function') {
+            console.error('필수 props(entityId, addMemberApi)가 없습니다.');
             alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
             return;
         }
 
         setIsInviting(true);
         try {
-            const updatedData = await addProjectMemberByEmail(folderId, email);
+            // props로 받은 API 함수 호출
+            const updatedData = await addMemberApi(entityId, email);
+
             if (onMemberUpdate) {
-                onMemberUpdate(updatedData);
+                onMemberUpdate(updatedData); // 부모 컴포넌트 상태 업데이트
             }
             setEmail('');
         } catch (error) {
             console.error('Failed to add member by email:', error);
-            // note.js에서 throw한 에러 메시지를 사용
             alert(error.message || '초대에 실패했습니다. 이메일을 확인해주세요.');
         } finally {
             setIsInviting(false);
         }
     };
 
-    // [수정] 멤버 삭제 핸들러 구현
+    // [✅ 3. props로 받은 API 함수 사용하도록 수정]
     const handleRemoveMember = async (participantId) => {
-        // ❗ Postman을 보면 `member.id`가 아닌 `member.participantId`를 사용합니다.
-
         if (!window.confirm('정말로 이 멤버를 삭제하시겠습니까?')) {
             return;
         }
-        if (!folderId) {
-            console.error('folderId가 없습니다.');
+        // entityId와 deleteMemberApi 함수가 있는지 확인
+        if (!entityId || typeof deleteMemberApi !== 'function') {
+            console.error('필수 props(entityId, deleteMemberApi)가 없습니다.');
             alert('오류가 발생했습니다.');
             return;
         }
 
         setIsDeletingId(participantId); // 해당 멤버 삭제 로딩 시작
         try {
-            // [수정] 삭제 API 호출
-            const updatedData = await deleteProjectMember(folderId, participantId);
+            // props로 받은 API 함수 호출
+            const updatedData = await deleteMemberApi(entityId, participantId);
 
-            // 부모(NoteDetail) 상태 업데이트
             if (onMemberUpdate) {
-                onMemberUpdate(updatedData);
+                onMemberUpdate(updatedData); // 부모 컴포넌트 상태 업데이트
             }
         } catch (error) {
             console.error('Failed to remove member:', error);
@@ -96,20 +98,28 @@ export default function MemberModal({
             .catch((err) => console.error('Failed to copy: ', err));
     };
 
+    // 모달이 닫힐 때 입력값 초기화
+    const handleModalHide = () => {
+        setEmail('');
+        setIsInviting(false);
+        setIsDeletingId(null);
+        onHide(); // 부모의 onHide 함수 호출
+    };
+
     return (
-        <Modal show={show} onHide={onHide} centered className="modal-custom-bg">
+        <Modal show={show} onHide={handleModalHide} centered className="modal-custom-bg">
             <Modal.Header closeButton className="border-0">
-                <Modal.Title className="fw-bold">조원 관리</Modal.Title>
+                <Modal.Title className="fw-bold">참가자 관리</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                {/* 1. 초대 링크 (동일) */}
+                {/* 1. 초대 링크 */}
                 <Form.Group className="mb-3">
                     <Form.Label>초대 링크</Form.Label>
                     <div className="d-flex gap-2">
                         <Form.Control
                             className="form-modal"
                             type="text"
-                            value={inviteLink || '링크 정보가 없습니다.'}
+                            value={inviteLink || '초대 링크 정보가 없습니다.'}
                             readOnly
                         />
                         <OverlayTrigger
@@ -119,6 +129,7 @@ export default function MemberModal({
                             <Button
                                 variant={showCopiedTooltip ? 'outline-secondary' : 'secondary'}
                                 onClick={handleCopyLink}
+                                disabled={!inviteLink} // 링크 없으면 비활성화
                             >
                                 복사
                             </Button>
@@ -126,7 +137,7 @@ export default function MemberModal({
                     </div>
                 </Form.Group>
 
-                {/* 2. 이메일로 초대 (동일) */}
+                {/* 2. 이메일로 초대 */}
                 <Form.Group className="mb-3">
                     <Form.Label>이메일</Form.Label>
                     <div className="d-flex gap-2">
@@ -148,16 +159,15 @@ export default function MemberModal({
                 <hr className="brownHr my-1" />
 
                 <ListGroup variant="flush" style={{ overflowY: 'auto' }}>
-                    {Array.isArray(members) &&
+                    {Array.isArray(members) && members.length > 0 ? (
                         members.map((member) => (
-                            // ❗ Key는 Postman 응답의 고유 ID인 `member.id`를 사용
                             <React.Fragment key={member.id}>
                                 <ListGroup.Item
                                     className="d-flex align-items-center justify-content-between px-0"
                                     style={{ backgroundColor: 'transparent' }}
                                 >
                                     <div className="d-flex align-items-center">
-                                        {/* ... (프로필 이미지 렌더링 동일) ... */}
+                                        {/* ... (프로필 이미지 렌더링) ... */}
                                         {member.participantImage ? (
                                             <img
                                                 src={member.participantImage}
@@ -165,8 +175,7 @@ export default function MemberModal({
                                                 className="rounded-circle me-3"
                                                 style={{ width: '40px', height: '40px', objectFit: 'cover' }}
                                                 onError={(e) => {
-                                                    console.error(`❌ 이미지 로드 실패: ${member.participantImage}`);
-                                                    e.target.src = '/default-profile.png';
+                                                    e.target.src = '/default-profile.png'; // 기본 이미지
                                                 }}
                                             />
                                         ) : (
@@ -184,13 +193,11 @@ export default function MemberModal({
                                         </div>
                                     </div>
 
-                                    {/* [수정] 삭제 버튼 로직 */}
+                                    {/* 삭제 버튼 로직 */}
                                     {!member.leader && (
                                         <Button
                                             variant="danger"
-                                            // ❗ API가 요구하는 `participantId`를 전달
                                             onClick={() => handleRemoveMember(member.participantId)}
-                                            // ❗ 현재 삭제 중인 ID와 일치하면 비활성화
                                             disabled={isDeletingId === member.participantId}
                                         >
                                             {isDeletingId === member.participantId ? (
@@ -203,7 +210,15 @@ export default function MemberModal({
                                 </ListGroup.Item>
                                 <hr className="brownHr my-1" />
                             </React.Fragment>
-                        ))}
+                        ))
+                    ) : (
+                        <ListGroup.Item
+                            className="text-center text-muted px-0"
+                            style={{ backgroundColor: 'transparent' }}
+                        >
+                            참가자가 없습니다.
+                        </ListGroup.Item>
+                    )}
                 </ListGroup>
             </Modal.Body>
         </Modal>

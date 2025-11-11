@@ -307,3 +307,88 @@ export const deleteProjectMember = async (folderId, participantId) => {
         }
     }
 };
+
+/* =============================================
+ * [✅ 신규] 회의록(Minutes) 참가자 관리 API 3종
+ * ============================================= */
+
+/**
+ * [✅ 신규] 12. 회의록 참가자 목록 조회
+ * (가정) GET /minutes/{minutesId}/party
+ */
+export const getMeetingMembers = async (minutesId) => {
+    try {
+        const response = await api.get(`/minutes/${minutesId}/party`);
+        console.log(`✅ (Minute ID: ${minutesId}) 회의록 참가자 목록 로드 성공:`, response.data);
+        return response.data; // { participants: [], ... }
+    } catch (error) {
+        console.error(`❌ (Minute ID: ${minutesId}) 회의록 참가자 목록 로드 실패:`, error);
+        throw error;
+    }
+};
+
+/**
+ * [✅ 신규] 13. 회의록 참가자 이메일로 추가
+ * POST /minutes/{minutesId}/party
+ * (Postman 스크린샷 기반)
+ */
+export const addMeetingMemberByEmail = async (minutesId, email) => {
+    try {
+        const payload = {
+            createMemberEmail: email,
+        };
+        const headers = {
+            'Content-Type': 'application/json',
+            ...getAuthHeader(),
+        };
+        const response = await api.post(`/minutes/${minutesId}/party`, payload, { headers });
+        console.log(`✅ (Minute ID: ${minutesId}) 이메일(${email})로 회의록 참가자 추가 성공:`, response.data);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ (Minute ID: ${minutesId}) 이메일(${email})로 회의록 참가자 추가 실패:`, error);
+        if (error.response) {
+            console.error('Error data:', error.response.data);
+            throw new Error(error.response.data.message || '서버 처리 중 오류가 발생했습니다.');
+        } else if (error.request) {
+            console.error('No response received:', error.request);
+            throw new Error('서버에서 응답이 없습니다.');
+        } else {
+            console.error('Error setting up request:', error.message);
+            throw new Error('요청을 보내는 중 오류가 발생했습니다.');
+        }
+    }
+};
+
+/**
+ * [✅ 신규] 14. 회의록 참가자 삭제
+ * DELETE /minutes/{minutesId}/party?deleteMemberId={memberId}
+ * (Postman 스크린샷 기반)
+ */
+export const deleteMeetingMember = async (minutesId, participantId) => {
+    console.log(`[API] 회의록 멤버 삭제 요청: minutesId=${minutesId}, participantId=${participantId}`);
+    try {
+        const headers = {
+            ...getAuthHeader(), // 인증 토큰 포함
+        };
+        const response = await api.delete(`/minutes/${minutesId}/party`, {
+            headers: headers,
+            params: {
+                deleteMemberId: participantId,
+            },
+        });
+        console.log(`✅ (Minute ID: ${minutesId}) 회의록 멤버(PID: ${participantId}) 삭제 성공:`, response.data);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ (Minute ID: ${minutesId}) 회의록 멤버(PID: ${participantId}) 삭제 실패:`, error);
+        if (error.response) {
+            console.error('Error data:', error.response.data);
+            throw new Error(error.response.data.message || '멤버 삭제에 실패했습니다.');
+        } else if (error.request) {
+            console.error('No response received:', error.request);
+            throw new Error('서버에서 응답이 없습니다.');
+        } else {
+            console.error('Error setting up request:', error.message);
+            throw new Error('요청을 보내는 중 오류가 발생했습니다.');
+        }
+    }
+};
