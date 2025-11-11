@@ -7,7 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import NoteAISummary from './NoteAISummary';
 
 // API 함수들을 임포트합니다.
-import { getNoteDetails, deleteNote, getMeetingSummary } from '../../api/note';
+import { getNoteDetails, deleteNote, getMeetingSummary, getMeetingMembers } from '../../api/note';
 
 export default function NoteMeetingDetail() {
     const [meeting, setMeeting] = useState(null); // 회의록 본문 정보
@@ -31,17 +31,20 @@ export default function NoteMeetingDetail() {
                 // 본문 API 호출 (예: /minutes/19)
                 const data = await getNoteDetails(meetingId);
 
+                const membersData = await getMeetingMembers(meetingId);
+
                 // API 응답(data)을 UI 상태(meeting)에 맞게 가공
                 const formattedData = {
                     id: data.id,
                     name: data.title || '제목 없음', // API의 'title'을 'name'으로 매핑
                     content: data.content || '', // API의 'content'
 
-                    // TODO: 이 필드들은 백엔드 API 응답에 포함되어야 합니다.
-                    // (API 응답에 없다면 임시로 처리)
-                    members: data.members || '참가자 정보 없음',
+                    members:
+                        membersData.participants?.length > 0
+                            ? membersData.participants.map((m) => m.participantName).join(', ')
+                            : '참가자 정보 없음',
                     created: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '날짜 정보 없음',
-                    modified: data.modifiedAt ? new Date(data.modifiedAt).toLocaleDateString() : '날짜 정보 없음',
+                    modified: data.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : '날짜 정보 없음',
                 };
 
                 setMeeting(formattedData);
