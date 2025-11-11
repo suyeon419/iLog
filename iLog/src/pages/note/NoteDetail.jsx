@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import MemberModal from './MemberModal';
 
-import { getProjectDetails, getProjectMembers } from '../../api/note';
+import { getProjectDetails, getProjectMembers, addProjectMemberByEmail } from '../../api/note';
 
 export default function NoteDetail() {
     const navigate = useNavigate();
@@ -253,7 +253,8 @@ export default function NoteDetail() {
                 onHide={handleCloseMemberModal}
                 members={currentMembers}
                 inviteLink={currentInviteLink}
-                folderId={id}
+                entityId={id}
+                addMemberApi={addProjectMemberByEmail}
                 onMemberUpdate={handleMemberUpdate}
             />
         </Container>

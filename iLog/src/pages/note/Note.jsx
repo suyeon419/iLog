@@ -173,127 +173,11 @@ export default function Note() {
 
                 console.log('📡 [Note] /folders API 호출 시작');
                 const rootData = await getProjects();
-                console.log('📂 [Note] /folders 응답:', rootData);
+                console.log('📂 [Note] /folders 응답:', JSON.parse(JSON.stringify(rootData)));
 
                 // ✅ 루트 폴더 ID 저장
                 setRootFolderId(rootData.folderId);
 
-                // 2️⃣ 토큰에서 내 id 추출
-                const token = localStorage.getItem('token');
-                let myId = null;
-                if (token) {
-                    try {
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        myId = payload.id;
-                        console.log('👤 내 사용자 ID:', myId);
-                    } catch (err) {
-                        console.error('❌ JWT 파싱 실패:', err);
-                    }
-                }
-
-                // ✅ mapFolder 헬퍼 함수
-                const mapFolder = (p) => ({
-                    id: p.id,
-                    name: p.name,
-                    imagePath: p.folderImage,
-                    blobUrl: null,
-                    created: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '날짜 정보 없음',
-                    approachedAt: p.approachedAt || null,
-                    members: '...',
-                });
-
-                const combinedProjects = [];
-                console.log('🔍 [Note] 루트 폴더 목록:', rootData.childFolders);
-
-                // ✅ 폴더 순회
-                for (const folder of rootData.childFolders || []) {
-                    console.log(`📁 [폴더 탐색] 폴더명: ${folder.name} (id=${folder.id})`);
-
-                    if (folder.name === 'Root') {
-                        // 🚪 남의 루트 폴더 → 초대받은 프로젝트
-                        console.log(`🔵 남의 root 폴더 감지됨 → ${folder.name} (id=${folder.id})`);
-                        try {
-                            const detail = await getProjectDetails(folder.id);
-                            console.log(`  📂 하위 응답(남의 root ${folder.name}):`, detail);
-
-                            (detail.childFolders || []).forEach((sub) => {
-                                console.log(`   ↳ 초대받은 프로젝트 추가: ${sub.name}`);
-                                combinedProjects.push(mapFolder(sub));
-                            });
-                        } catch (err) {
-                            console.error(`❌ (남의 root ${folder.id}) 하위 조회 실패:`, err);
-                        }
-                    } else {
-                        // 🟢 내 프로젝트
-                        console.log(`🟢 내 프로젝트 감지됨 → ${folder.name}`);
-                        combinedProjects.push(mapFolder(folder));
-                    }
-                }
-
-                console.log('📊 [병합 완료 전 정렬 전] 총', combinedProjects.length, '개');
-
-                // ✅ approachedAt 기준 정렬 (최신순)
-                combinedProjects.sort((a, b) => {
-                    const aTime = a.approachedAt ? new Date(a.approachedAt).getTime() : 0;
-                    const bTime = b.approachedAt ? new Date(b.approachedAt).getTime() : 0;
-                    return bTime - aTime;
-                });
-
-                console.log('📊 [정렬 후] 접근일자 기준 최신순으로 정렬됨');
-                console.table(
-                    combinedProjects.map((p) => ({
-                        id: p.id,
-                        name: p.name,
-                        approachedAt: p.approachedAt,
-                    }))
-                );
-
-                // ✅ 최신순 그대로 렌더링
-                setItems(combinedProjects);
-                // ✅ 정렬 후 setItems 직전에 추가
-                console.log('🖼️ [Note] 이미지 로딩 시작');
-
-                for (const project of combinedProjects) {
-                    if (project.imagePath) {
-                        try {
-                            const imageUrl = `${SERVER_BASE_URL}${project.imagePath}`;
-                            const res = await api.get(imageUrl, { responseType: 'blob' });
-                            const blobUrl = URL.createObjectURL(res.data);
-
-                            setItems((prev) =>
-                                prev.map((item) => (item.id === project.id ? { ...item, blobUrl } : item))
-                            );
-
-                            console.log(`✅ 이미지 로드 성공: ${project.name}`);
-                        } catch (err) {
-                            console.error(`❌ 이미지 로드 실패 (${project.name}):`, err);
-                        }
-                    } else {
-                        console.log(`⚪ ${project.name} → 이미지 없음, 건너뜀`);
-                    }
-                }
-                setLoading(false);
-            } catch (err) {
-                console.error('❌ 전체 폴더 로드 실패:', err);
-                setError('프로젝트를 불러오는 데 실패했습니다.');
-                setLoading(false);
-            }
-        };
-
-        fetchProjects();
-    }, []);
-
-    useEffect(() => {
-        const fetchProjects = async () => {
-            try {
-                setLoading(true);
-                setError('');
-
-                // 1) /folders
-                const rootData = await getProjects();
-                setRootFolderId(rootData.folderId);
-
-                // 2) helper
                 const mapFolder = (p) => ({
                     id: p.id,
                     name: p.name,
@@ -304,74 +188,100 @@ export default function Note() {
                     members: '...',
                 });
 
-                // 3) collect: mine directly, invited via /folders/{id}
                 const combinedProjects = [];
+
+                console.log('🔍 [Note] 루트 폴더 childFolders:', rootData.childFolders);
+
                 for (const folder of rootData.childFolders || []) {
+                    console.log(`📁 [폴더 탐색] 폴더명: ${folder.name} (id=${folder.id})`);
+
                     if (folder.name === 'Root') {
-                        // invited bundle → dive once
+                        console.log(`🔵 남의 root 폴더 감지됨 → ${folder.name}`);
                         try {
                             const detail = await getProjectDetails(folder.id);
-                            (detail.childFolders || []).forEach((sub) => combinedProjects.push(mapFolder(sub)));
-                        } catch (e) {
-                            console.error('하위 조회 실패(초대 루트):', folder.id, e);
+                            console.log(`  📂 [남의 Root 응답(id=${folder.id})]:`, detail);
+                            (detail.childFolders || []).forEach((sub) => {
+                                console.log(`   ↳ 초대받은 프로젝트 추가: ${sub.name}`);
+                                combinedProjects.push(mapFolder(sub));
+                            });
+                        } catch (err) {
+                            console.error(`❌ (남의 root ${folder.id}) 하위 조회 실패:`, err);
                         }
                     } else {
-                        // my project
+                        console.log(`🟢 내 프로젝트 감지됨 → ${folder.name}`);
                         combinedProjects.push(mapFolder(folder));
                     }
                 }
 
-                // 4) sort by approachedAt desc (latest first)
+                console.log('📊 [병합 완료 전 정렬 전]', combinedProjects.length, '개');
+                combinedProjects.forEach((p) =>
+                    console.log(`   • ${p.name} (id=${p.id}, approachedAt=${p.approachedAt})`)
+                );
+
                 combinedProjects.sort((a, b) => {
                     const aT = a.approachedAt ? new Date(a.approachedAt).getTime() : 0;
                     const bT = b.approachedAt ? new Date(b.approachedAt).getTime() : 0;
                     return bT - aT;
                 });
 
-                // 5) paint list first
+                console.log('📊 [정렬 후 목록]');
+                combinedProjects.forEach((p, i) => console.log(`   ${i + 1}. ${p.name} (id=${p.id})`));
+
+                // 1차 렌더링
                 setItems(combinedProjects);
                 setLoading(false);
 
-                // 6) lazy-load images + participants in parallel
-                await Promise.all(
+                console.log('🧩 [이미지+참가자 병렬 로드 시작]');
+                const updatedProjects = await Promise.all(
                     combinedProjects.map(async (proj) => {
-                        // image
+                        let blobUrl = proj.blobUrl;
+                        let membersString = proj.members;
+
+                        // 🖼️ 이미지 로드
                         if (proj.imagePath) {
                             try {
                                 const imageUrl = `${SERVER_BASE_URL}${proj.imagePath}`;
                                 const res = await api.get(imageUrl, { responseType: 'blob' });
-                                const blobUrl = URL.createObjectURL(res.data);
-                                setItems((prev) => prev.map((it) => (it.id === proj.id ? { ...it, blobUrl } : it)));
+                                blobUrl = URL.createObjectURL(res.data);
+                                console.log(`🖼️ (ID:${proj.id}) 이미지 로드 성공`);
                             } catch (e) {
-                                // hide broken image
-                                setItems((prev) =>
-                                    prev.map((it) => (it.id === proj.id ? { ...it, imagePath: null } : it))
-                                );
+                                console.warn(`⚠️ (ID:${proj.id}) 이미지 없음`);
+                                blobUrl = null;
                             }
                         }
 
-                        // participants (defensive: array 또는 {participants, link} 모두 처리)
+                        // 👥 참가자 로드
                         try {
                             const raw = await getProjectMembers(proj.id);
-                            // note.js가 배열을 반환하도록 되어 있지만,
-                            // 환경마다 {participants: [...], link: "..."} 전체 객체가 올 수도 있으니 방어적으로 처리
-                            const arr = Array.isArray(raw) ? raw : raw?.participants ?? [];
+                            console.log(`👥 (ID:${proj.id}) getProjectMembers 응답:`, raw);
 
-                            const membersString =
+                            const arr = Array.isArray(raw)
+                                ? raw.map((p) => ({ ...p }))
+                                : (raw?.participants ?? []).map((p) => ({ ...p }));
+
+                            membersString =
                                 arr.length > 0 ? arr.map((m) => m.participantName || m.name).join(' ') : '참가자 없음';
 
-                            setItems((prev) =>
-                                prev.map((it) => (it.id === proj.id ? { ...it, members: membersString } : it))
-                            );
+                            console.log(`✅ (ID:${proj.id}) 참가자 목록 확정 → ${membersString}`);
                         } catch (e) {
-                            setItems((prev) =>
-                                prev.map((it) => (it.id === proj.id ? { ...it, members: '멤버 조회 실패' } : it))
-                            );
+                            membersString = '멤버 조회 실패';
+                            console.error(`❌ (ID:${proj.id}) 참가자 로드 실패:`, e);
                         }
+
+                        return { ...proj, blobUrl, members: membersString };
                     })
                 );
+
+                // ✅ 최종 반영 로그
+                console.log('✅ [최종 반영 직전 updatedProjects]');
+                updatedProjects.forEach((p, i) =>
+                    console.log(`   ${i + 1}. ${p.name} (${p.id}) → members: ${p.members}`)
+                );
+
+                setItems([...updatedProjects.map((p) => ({ ...p }))]);
+                console.log('✅ [렌더링 완료]');
             } catch (err) {
-                console.error('전체 폴더 로드 실패:', err);
+                console.error('❌ 전체 폴더 로드 실패:', err);
                 setError('프로젝트를 불러오는 데 실패했습니다.');
                 setLoading(false);
             }
