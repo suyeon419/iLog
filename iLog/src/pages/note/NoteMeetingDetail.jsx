@@ -122,7 +122,9 @@ export default function NoteMeetingDetail() {
             // API가 요구하는 payload 형식
             const payload = {
                 content: memoContent,
+                memoType: 'SELF',
             };
+            console.log('📤 [메모 생성 요청] payload:', payload);
 
             // createMemo API 호출 (Postman에서 확인한 POST)
             // (이전 답변에서 createMemo가 '최신 메모 배열'을 반환하도록 수정했음)

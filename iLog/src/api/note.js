@@ -225,9 +225,26 @@ export const getMemos = async (meetingId) => {
  * @returns {Promise<Array>} 최신 메모 객체 배열
  */
 export const createMemo = async (meetingId, payload) => {
-    const response = await api.post(`/minutes/${meetingId}/memos`, payload);
-    // 응답: { memos: [...] }
-    return response.data.memos; // memos 배열만 반환
+    console.log('📤 [API 전송 직전] payload:', payload);
+
+    try {
+        const headers = {
+            ...defaultHeaders, // ✅ 공통 헤더 (Content-Type 포함)
+            ...getAuthHeader(), // ✅ 토큰 포함
+        };
+
+        const response = await api.post(
+            `/minutes/${meetingId}/memos`,
+            JSON.stringify(payload), // ✅ 명시적 직렬화 (서버가 확실히 JSON으로 인식)
+            { headers }
+        );
+
+        console.log('✅ [메모 생성 응답]', response.data);
+        return response.data.memos;
+    } catch (error) {
+        console.error('❌ 메모 생성 실패:', error.response?.data || error.message);
+        throw error;
+    }
 };
 
 // 9. 프로젝트(폴더) 참가자(조원) 목록 조회
