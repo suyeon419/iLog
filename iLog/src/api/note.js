@@ -200,21 +200,6 @@ export const deleteNote = async (minuteId) => {
     }
 };
 
-// 9. 프로젝트(폴더) 참가자(조원) 목록 조회
-export const getProjectMembers = async (folderId) => {
-    try {
-        // 토큰이 필요한 요청이므로 'api' 인스턴스 사용
-        const response = await api.get(`/folders/${folderId}/party`);
-        console.log(`✅ (ID: ${folderId}) 참가자 목록 로드 성공:`, response.data);
-
-        // 👇 [수정] 객체 전체가 아닌 .participants 배열을 반환합니다.
-        return response.data.participants;
-    } catch (error) {
-        console.error(`❌ (ID: ${folderId}) 참가자 목록 로드 실패:`, error);
-        throw error;
-    }
-};
-
 // (Postman에서 보여주신 /minutes/{id}/summary 호출)
 export const getMeetingSummary = async (meetingId) => {
     const response = await api.get(`/minutes/${meetingId}/summary`);
@@ -230,4 +215,95 @@ export const createMemo = async (meetingId, payload) => {
     const response = await api.post(`/minutes/${meetingId}/memos`, payload);
     // 응답: 새로 생성된 메모 객체 (예: { id, person, note })
     return response.data;
+};
+
+// 9. 프로젝트(폴더) 참가자(조원) 목록 조회
+// [수정] NoteDetail에서 멤버 목록(participants)과 초대 링크(inviteLink)가
+//       모두 필요하므로, 응답 객체 전체(response.data)를 반환합니다.
+export const getProjectMembers = async (folderId) => {
+    try {
+        const response = await api.get(`/folders/${folderId}/party`);
+        console.log(`✅ (ID: ${folderId}) 참가자 목록 로드 성공:`, response.data);
+        return response.data; // participants 배열만이 아닌 객체 전체 반환
+    } catch (error) {
+        console.error(`❌ (ID: ${folderId}) 참가자 목록 로드 실패:`, error);
+        throw error;
+    }
+};
+
+// [신규] 10. 프로젝트(폴더) 참가자 이메일로 추가
+export const addProjectMemberByEmail = async (folderId, email) => {
+    try {
+        const payload = {
+            createMemberEmail: email,
+        };
+
+        // [수정] 헤더에 인증 토큰(getAuthHeader)을 명시적으로 추가합니다.
+        const headers = {
+            'Content-Type': 'application/json',
+            ...getAuthHeader(),
+        };
+
+        // [수정] api.post의 세 번째 인자로 headers 객체를 전달합니다.
+        const response = await api.post(`/folders/${folderId}/party`, payload, { headers });
+
+        console.log(`✅ (ID: ${folderId}) 이메일(${email})로 참가자 추가 성공:`, response.data);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ (ID: ${folderId}) 이메일(${email})로 참가자 추가 실패:`, error);
+
+        // [수정] 에러 핸들링을 좀 더 구체적으로
+        if (error.response) {
+            // 서버가 4xx, 5xx 응답을 한 경우
+            console.error('Error data:', error.response.data);
+            // 서버가 보낸 에러 메시지를 우선적으로 throw
+            throw new Error(error.response.data.message || '서버 처리 중 오류가 발생했습니다.');
+        } else if (error.request) {
+            // 요청은 갔으나 응답을 받지 못한 경우
+            console.error('No response received:', error.request);
+            throw new Error('서버에서 응답이 없습니다.');
+        } else {
+            // 요청 설정 중 에러
+            console.error('Error setting up request:', error.message);
+            throw new Error('요청을 보내는 중 오류가 발생했습니다.');
+        }
+    }
+};
+
+/**
+ * [신규] 11. 프로젝트(폴더) 참가자 삭제
+ * DELETE /folders/{folderId}/party?deleteMemberId={memberId}
+ */
+export const deleteProjectMember = async (folderId, participantId) => {
+    console.log(`[API] 멤버 삭제 요청: folderId=${folderId}, participantId=${participantId}`);
+    try {
+        const headers = {
+            ...getAuthHeader(), // 인증 토큰 포함
+        };
+
+        const response = await api.delete(`/folders/${folderId}/party`, {
+            headers: headers,
+            // `delete` 요청 시 쿼리 파라미터를 보내는 방법
+            params: {
+                deleteMemberId: participantId,
+            },
+        });
+
+        console.log(`✅ (ID: ${folderId}) 멤버(PID: ${participantId}) 삭제 성공:`, response.data);
+        // Postman과 동일하게 갱신된 참가자 목록을 반환합니다.
+        return response.data;
+    } catch (error) {
+        console.error(`❌ (ID: ${folderId}) 멤버(PID: ${participantId}) 삭제 실패:`, error);
+
+        if (error.response) {
+            console.error('Error data:', error.response.data);
+            throw new Error(error.response.data.message || '멤버 삭제에 실패했습니다.');
+        } else if (error.request) {
+            console.error('No response received:', error.request);
+            throw new Error('서버에서 응답이 없습니다.');
+        } else {
+            console.error('Error setting up request:', error.message);
+            throw new Error('요청을 보내는 중 오류가 발생했습니다.');
+        }
+    }
 };

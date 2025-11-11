@@ -2,9 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Button, Card, Row, Col, Pagination, Alert, Spinner, Form } from 'react-bootstrap'; // Form 추가
-import { useNavigate } from 'react-router-dom';
-import { PencilSquare, CheckSquare } from 'react-bootstrap-icons'; // CheckSquare 추가
+import { Container, Button, Card, Row, Col, Pagination, Alert, Spinner, Form } from 'react-bootstrap';
+import { PencilSquare, CheckSquare } from 'react-bootstrap-icons';
 import {
     getProjects,
     createProject,
@@ -12,9 +11,10 @@ import {
     deleteProjectImage,
     deleteProject,
     updateProjectName,
-    getProjectMembers, // 👈 [수정] 참가자 API 임포트
+    getProjectMembers,
 } from '../../api/note';
 import api from '../../api/axios';
+import { useNavigate } from 'react-router-dom';
 
 import './Note.css';
 
@@ -34,16 +34,15 @@ export default function Note() {
     const [targetItemId, setTargetItemId] = useState(null);
     const [targetItemName, setTargetItemName] = useState(null);
 
-    // 이름 수정을 위한 상태
     const [editingItemId, setEditingItemId] = useState(null);
     const [editingItemName, setEditingItemName] = useState('');
 
     // ==================================================================
-    // [1. 목록 조회] useEffect (디버깅 로그 포함)
+    // [1. 목록 조회] useEffect
     // ==================================================================
     useEffect(() => {
         const fetchProjects = async () => {
-            let initialItems = []; // API로부터 받은 원본 데이터를 담을 배열
+            let initialItems = [];
             try {
                 setLoading(true);
                 setError('');
@@ -56,73 +55,55 @@ export default function Note() {
                     .map((project) => ({
                         id: project.id,
                         name: project.name,
-                        imagePath: project.folderImage, // '/uploads/...'
-                        blobUrl: null, // Blob URL은 아직 없음
+                        imagePath: project.folderImage,
+                        blobUrl: null,
+
+                        // [수정] 날짜는 원래대로 'createdAt'을 사용합니다.
                         created: project.createdAt
                             ? new Date(project.createdAt).toLocaleDateString()
                             : '날짜 정보 없음',
-                        members: project.members || '...', // 👈 [수정] 초기값 (기존과 동일)
+
+                        members: project.members || '...',
                     }))
                     .reverse();
 
-                // 2. 스피너를 표시하기 위해 1차 상태 업데이트
                 setItems(initialItems);
                 setLoading(false);
             } catch (err) {
                 console.error('❌ [Note] 데이터 로드 실패:', err);
                 setError('프로젝트를 불러오는 데 실패했습니다.');
                 setLoading(false);
-                return; // 프로젝트 로드 실패 시 이미지 로딩 시도 안 함
+                return;
             }
 
-            // --- 3. [수정] Blob 이미지 및 참가자 로딩 (api 인스턴스 사용) ---
+            // --- 3. Blob 이미지 및 참가자 로딩 ---
             try {
-                // API에서 방금 받아온 'initialItems' 배열을 순회합니다.
                 console.log(`💡 [Note] 2. 총 ${initialItems.length}개 아이템 순회 시작.`);
 
                 for (const itemToLoad of initialItems) {
-                    // imagePath가 있는 항목만 대상으로 합니다.
+                    // ... (이미지 로드 로직은 동일) ...
                     if (itemToLoad.imagePath) {
-                        // ================== 🪵 LOG 2 ==================
                         console.log(
                             `💡 [Note] 3. (ID: ${itemToLoad.id}) 이미지 로드 필요. 경로: ${itemToLoad.imagePath}`
                         );
-                        // ===============================================
-
                         try {
                             const imageUrl = `${SERVER_BASE_URL}${itemToLoad.imagePath}`;
-
-                            // ================== 🪵 LOG 3 ==================
                             console.log(`💡 [Note] 4. (ID: ${itemToLoad.id}) 다음 URL로 GET 요청 시도: ${imageUrl}`);
-                            // ===============================================
-
                             const res = await api.get(imageUrl, {
                                 responseType: 'blob',
                             });
-
                             const blobUrl = URL.createObjectURL(res.data);
-
-                            // ================== 🪵 LOG 4 ==================
                             console.log(`✅ [Note] 5. (ID: ${itemToLoad.id}) 이미지 로드 성공. Blob URL 생성됨.`);
-                            // ===============================================
-
-                            // 성공한 아이템만 즉시 state에 반영합니다.
                             setItems((prevItems) =>
                                 prevItems.map((item) =>
                                     item.id === itemToLoad.id ? { ...item, blobUrl: blobUrl } : item
                                 )
                             );
                         } catch (err) {
-                            // 개별 요청 실패 시 (401, 404, CORS 등)
-
-                            // ================== 🪵 LOG 5 ==================
                             console.error(
                                 `❌ [Note] 7. (ID: ${itemToLoad.id}) 이미지 로드 실패:`,
                                 err.response || err.message
                             );
-                            // ===============================================
-
-                            // 실패한 아이템은 imagePath를 null로 만들어 '이미지 없음'으로 표시합니다.
                             setItems((prevItems) =>
                                 prevItems.map((item) =>
                                     item.id === itemToLoad.id ? { ...item, imagePath: null } : item
@@ -133,23 +114,24 @@ export default function Note() {
                         console.log(`💡 [Note] (ID: ${itemToLoad.id}) imagePath가 없으므로 건너뜁니다.`);
                     }
 
+                    // ==========================================================
+                    // 👇👇👇 [수정] 참가자 로드 로직 (여기부터) 👇👇👇
+                    // ==========================================================
                     try {
                         // 1. 참가자 API 호출
-                        // (note.js 수정으로 인해 membersData는 이제 배열입니다)
+                        // (getProjectMembers는 { participants: [...] } 객체를 반환)
                         const membersData = await getProjectMembers(itemToLoad.id);
                         let membersString = '참가자 없음'; // 기본값
 
-                        if (membersData && membersData.length > 0) {
-                            // 👈 이제 이 조건이 정상 작동합니다.
-                            // 2. 렌더링 코드(split(' '))와 맞추기 위해 띄어쓰기로 join합니다.
-
-                            // 👇 [수정] m.name이 아니라 m.participantName 입니다.
-                            membersString = membersData.map((m) => m.participantName).join(' ');
+                        // [수정] membersData는 객체이므로, membersData.participants 배열로 확인
+                        if (membersData.participants && membersData.participants.length > 0) {
+                            // [수정] m.participantName을 사용합니다.
+                            membersString = membersData.participants.map((m) => m.participantName).join(' '); // 렌더링 코드와 맞추기 위해 띄어쓰기로 join
                         }
 
                         console.log(`✅ [Note] (ID: ${itemToLoad.id}) 참가자 로드 성공.`);
 
-                        // 3. state 업데이트 (members 필드)
+                        // 3. state 업데이트
                         setItems((prevItems) =>
                             prevItems.map((item) =>
                                 item.id === itemToLoad.id ? { ...item, members: membersString } : item
@@ -160,7 +142,6 @@ export default function Note() {
                             `❌ [Note] (ID: ${itemToLoad.id}) 참가자 로드 실패:`,
                             err.response || err.message
                         );
-                        // 4. 실패 시 state 업데이트
                         setItems((prevItems) =>
                             prevItems.map((item) =>
                                 item.id === itemToLoad.id ? { ...item, members: '멤버 조회 실패' } : item
@@ -171,18 +152,19 @@ export default function Note() {
                     // 👆👆👆 [수정] 참가자 로드 로직 (여기까지) 👆👆👆
                     // ==========================================================
                 }
-                console.log('💡 [Note] 9. 이미지/멤버 로드 순회 완료.'); // 👈 [수정] 로그 메시지
+                console.log('💡 [Note] 9. 이미지/멤버 로드 순회 완료.');
             } catch (err) {
-                console.error('❌ [Note] Blob 이미지/멤버 로딩 순회 중 전체 오류:', err); // 👈 [수정] 로그 메시지
+                console.error('❌ [Note] Blob 이미지/멤버 로딩 순회 중 전체 오류:', err);
             }
         };
 
         fetchProjects();
-    }, []); // 마운트 시 1회만 실행
+    }, []);
     // ==================================================================
     // useEffect 끝
     // ==================================================================
 
+    // ... (이미지 핸들러, 이름 수정 핸들러 등은 모두 동일) ...
     // --- 이미지 핸들러 ---
     const handleTriggerFileInput = (e, id, name) => {
         e.stopPropagation();
@@ -244,7 +226,7 @@ export default function Note() {
 
     // --- 이름 수정 핸들러 ---
     const handleEditClick = (e, item) => {
-        e.stopPropagation(); // 카드 클릭(이동) 방지
+        e.stopPropagation();
         setEditingItemId(item.id);
         setEditingItemName(item.name);
     };
@@ -266,15 +248,10 @@ export default function Note() {
             return;
         }
         try {
-            // API 호출
             await updateProjectName(id, editingItemName);
-
-            // 로컬 상태 업데이트
             setItems((prevItems) =>
                 prevItems.map((item) => (item.id === id ? { ...item, name: editingItemName } : item))
             );
-
-            // 수정 모드 종료
             setEditingItemId(null);
             setEditingItemName('');
         } catch (err) {
@@ -299,11 +276,33 @@ export default function Note() {
                 name: newProject.folderName,
                 imagePath: newProject.folderImage,
                 blobUrl: null,
+                // [수정] 날짜는 원래대로 'createdAt'을 사용합니다.
                 created: newProject.createdAt ? new Date(newProject.createdAt).toLocaleDateString() : '날짜 정보 없음',
-                members: '...', // 👈 [수정] 새 프로젝트 생성 시 기본값
+                members: '...',
             };
             setItems((prevItems) => [mappedProject, ...prevItems]);
             setCurrentPage(1);
+
+            // [수정] 새 프로젝트 생성 후, 해당 프로젝트의 멤버도 바로 불러옵니다.
+            try {
+                const membersData = await getProjectMembers(newProject.folderId);
+                let membersString = '참가자 없음';
+                if (membersData.participants && membersData.participants.length > 0) {
+                    membersString = membersData.participants.map((m) => m.participantName).join(' ');
+                }
+                setItems((prevItems) =>
+                    prevItems.map((item) =>
+                        item.id === newProject.folderId ? { ...item, members: membersString } : item
+                    )
+                );
+            } catch (err) {
+                console.error(`❌ [Note] (ID: ${newProject.folderId}) 새 프로젝트 참가자 로드 실패:`, err);
+                setItems((prevItems) =>
+                    prevItems.map((item) =>
+                        item.id === newProject.folderId ? { ...item, members: '멤버 조회 실패' } : item
+                    )
+                );
+            }
         } catch (err) {
             console.error('❌ [Note] 프로젝트 생성 실패:', err);
             alert('프로젝트 생성에 실패했습니다.');
@@ -330,13 +329,12 @@ export default function Note() {
     };
 
     const handleRowClick = (id) => {
-        // 수정 모드일 때는 이동 방지
         if (editingItemId === id) return;
         navigate(`/notes/${id}`);
     };
     // --- 프로젝트 핸들러 끝 ---
 
-    // --- 페이지네이션 로직 ---
+    // --- 페이지네이션 로직 (동일) ---
     const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
     const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
     const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
@@ -359,7 +357,7 @@ export default function Note() {
     };
     // ------------------------
 
-    // 로딩 및 에러 UI 처리
+    // ... (로딩 및 에러 UI 처리 (동일)) ...
     const renderContent = () => {
         if (loading) {
             return (
@@ -381,13 +379,12 @@ export default function Note() {
             );
         }
 
-        // 데이터가 있을 경우
         return (
             <Row className="justify-content-center">
                 {currentItems.map((item) => (
                     <Col md="auto" lg="auto" className="mb-4" key={item.id}>
                         <Card className="h-100 card-project">
-                            {/* --- 이미지 영역 --- */}
+                            {/* ... (이미지 영역 (동일)) ... */}
                             <div className="card-image-container">
                                 {item.blobUrl ? (
                                     (() => {
@@ -446,24 +443,21 @@ export default function Note() {
 
                             <Card.Body
                                 onClick={() => handleRowClick(item.id)}
-                                style={{ cursor: editingItemId === item.id ? 'default' : 'pointer' }} // 수정 중엔 커서 변경
+                                style={{ cursor: editingItemId === item.id ? 'default' : 'pointer' }}
                                 className="text-center d-flex flex-column"
                             >
-                                {/* --- 이름 수정 UI (새 버전) --- */}
+                                {/* ... (이름 수정 UI (동일)) ... */}
                                 {editingItemId === item.id ? (
                                     <>
-                                        {/* 수정 모드일 때 */}
-                                        {/* 1. Flex 컨테이너 */}
                                         <div className="d-flex align-items-center">
                                             <Form.Control
                                                 type="text"
                                                 value={editingItemName}
                                                 onChange={handleNameChange}
-                                                onClick={(e) => e.stopPropagation()} // 이벤트 버블링 방지
+                                                onClick={(e) => e.stopPropagation()}
                                                 autoFocus
-                                                className="form-control-inline-edit" // 2. 커스텀 CSS 클래스
+                                                className="form-control-inline-edit"
                                             />
-                                            {/* 4. '저장' 아이콘 버튼 */}
                                             <CheckSquare
                                                 className="ms-2 edit-action-icon save-icon"
                                                 onClick={(e) => handleSaveEdit(e, item.id)}
@@ -472,7 +466,6 @@ export default function Note() {
                                     </>
                                 ) : (
                                     <>
-                                        {/* 일반 모드일 때 */}
                                         <Card.Title style={{ fontWeight: 'bold' }} className="mb-2 card-title-editable">
                                             {item.name}
                                             <PencilSquare
@@ -480,21 +473,23 @@ export default function Note() {
                                                 onClick={(e) => handleEditClick(e, item)}
                                             />
                                         </Card.Title>
+
+                                        {/* [수정] 날짜는 원래대로 'item.created'를 표시합니다. */}
                                         <p style={{ fontSize: '0.95rem', color: '#6c757d' }}>{item.created}</p>
                                     </>
                                 )}
                                 {/* --- 이름 수정 UI 끝 --- */}
 
                                 <div className="mt-3 flex-grow-1">
-                                    {/* 👇 [수정] item.members가 '...'이 아닐 때만 렌더링 (또는 다른 조건) */}
-                                    {item.members && item.members !== '...' ? (
+                                    {/* [수정] 참가자 렌더링 로직 (이제 '참가자 없음' 또는 실제 이름이 표시됨) */}
+                                    {item.members && item.members !== '...' && item.members !== '참가자 없음' ? (
                                         item.members.split(' ').map((member, index) => (
                                             <p key={index} style={{ marginBottom: '0.25rem', fontWeight: '500' }}>
                                                 {member}
                                             </p>
                                         ))
                                     ) : (
-                                        // '...' 이거나, '참가자 없음'이거나, '멤버 조회 실패'일 때
+                                        // '...', '참가자 없음', '멤버 조회 실패' 시
                                         <p style={{ fontStyle: 'italic', color: '#aaa' }}>{item.members}</p>
                                     )}
                                 </div>
@@ -516,6 +511,7 @@ export default function Note() {
 
     return (
         <>
+            {/* ... (Container, Pagination, Button 등 나머지 JSX 동일) ... */}
             <Container className="pt-3">
                 <h2 style={{ fontWeight: 'bold', color: '#333' }} className="mb-4">
                     <PencilSquare className="me-3" />

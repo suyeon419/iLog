@@ -6,13 +6,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import MemberModal from './MemberModal';
 
-import { getProjectDetails, getProjectMembers, getNoteDetails } from '../../api/note';
+import { getProjectDetails, getProjectMembers } from '../../api/note';
 
 export default function NoteDetail() {
     const navigate = useNavigate();
     const { id } = useParams(); // 현재 프로젝트(폴더) ID
 
-    // ... (모든 state 선언은 동일) ...
+    // ... (state 선언 동일) ...
     const [project, setProject] = useState(null);
     const [subMeetings, setSubMeetings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -31,16 +31,27 @@ export default function NoteDetail() {
             const data = await getProjectDetails(projectId);
             setProject({ id: data.folderId, name: data.folderName });
 
-            // 👇 서버가 주는 순서를 그대로 사용
-            const meetings = (data.minutesList || []).map((minute) => ({
+            // [수정] 1. 원본 목록을 approachedAt (최종 접근/수정일) 기준으로 내림차순 정렬 (최신순)
+            const sortedMinutes = (data.minutesList || []).sort((a, b) => {
+                // b가 최신(값이 큼)이면 앞으로 오도록 (b - a)
+                // 날짜가 없는 경우 0으로 처리하여 오류 방지
+                return (
+                    (b.approachedAt ? new Date(b.approachedAt).getTime() : 0) -
+                    (a.approachedAt ? new Date(a.approachedAt).getTime() : 0)
+                );
+            });
+
+            // [수정] 2. 정렬된 목록(sortedMinutes)을 기반으로 매핑
+            const meetings = sortedMinutes.map((minute) => ({
                 id: minute.id,
                 name: minute.name || '제목 없음',
-                members: minute.members || '-', // 서버가 이 필드에 참가자 요약을 담는다면 그대로
+                members: minute.members || '-',
                 created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '날짜 없음',
+                // API 응답의 'approachedAt'을 'modified'로 사용
                 modified: minute.approachedAt ? new Date(minute.approachedAt).toLocaleDateString() : '날짜 없음',
             }));
 
-            setSubMeetings(meetings); // ✅ 한 번만 set
+            setSubMeetings(meetings);
             setLoading(false);
         } catch (err) {
             console.error('Failed to fetch details:', err);
@@ -85,10 +96,15 @@ export default function NoteDetail() {
 
     const handleCloseMemberModal = () => {
         setShowMemberModal(false);
-        setCurrentMembers([]);
-        setCurrentInviteLink('');
     };
 
+    const handleMemberUpdate = (updatedData) => {
+        console.log('멤버 목록이 갱신되었습니다.', updatedData);
+        setCurrentMembers(updatedData.participants || []);
+        setCurrentInviteLink(updatedData.inviteLink || '');
+    };
+
+    // ... (페이지네이션 관련 로직은 모두 동일) ...
     const totalPages = Math.ceil(subMeetings.length / ITEMS_PER_PAGE);
     const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
     const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
@@ -113,6 +129,7 @@ export default function NoteDetail() {
     };
     // ------------------------
 
+    // ... (loading, error 렌더링 부분은 모두 동일) ...
     if (loading) {
         return (
             <Container className="pt-3 text-center">
@@ -147,6 +164,7 @@ export default function NoteDetail() {
     return (
         <Container fluid className="pt-3 container-left">
             <div className="flex-grow-1">
+                {/* ... (상단 Row 동일) ... */}
                 <Row className="mb-3 mt-3 align-items-center">
                     <Col xs="auto" style={{ visibility: 'hidden' }}>
                         <PersonPlus size={24} />
@@ -164,7 +182,7 @@ export default function NoteDetail() {
                     </Col>
                 </Row>
 
-                {/* 하위 회의록 목록 테이블 */}
+                {/* ... (테이블 동일) ... */}
                 <Table className="align-middle">
                     <thead>
                         <tr>
@@ -177,6 +195,7 @@ export default function NoteDetail() {
                             <th>
                                 <CalendarCheck className="me-2" /> 생성일자
                             </th>
+                            {/* [수정] '접근일자' -> '수정일자'로 텍스트 변경 */}
                             <th>
                                 <CalendarPlus className="me-2" /> 수정일자
                             </th>
@@ -207,7 +226,7 @@ export default function NoteDetail() {
                 </Table>
             </div>
 
-            {/* 2. 하단 고정 영역 (페이지네이션 + 버튼) */}
+            {/* 2. 하단 고정 영역 (페이지네이션 + 버튼) (동일) */}
             <div>
                 <nav className="mt-3 pagination-nav">
                     <Pagination className="justify-content-center">
@@ -228,11 +247,14 @@ export default function NoteDetail() {
                 </Button>
             </div>
 
+            {/* 모달 (동일) */}
             <MemberModal
                 show={showMemberModal}
                 onHide={handleCloseMemberModal}
                 members={currentMembers}
                 inviteLink={currentInviteLink}
+                folderId={id}
+                onMemberUpdate={handleMemberUpdate}
             />
         </Container>
     );
