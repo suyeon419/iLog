@@ -207,14 +207,27 @@ export const getMeetingSummary = async (meetingId) => {
     return response.data;
 };
 
-// [✅ 신규] 메모 생성 (POST)
-// (NoteAISummary.jsx에서 '메모 저장' 시 사용)
+/**
+ * [신규] 메모 조회 (GET)
+ * (수정 불필요 - 이미 올바름)
+ * @returns {Promise<Array>} 메모 객체 배열
+ */
+export const getMemos = async (meetingId) => {
+    const response = await api.get(`/minutes/${meetingId}/memos`);
+    // 응답: { memos: [...] }
+    return response.data.memos; // memos 배열만 반환
+};
+
+/**
+ * [✅ 수정] 메모 생성 (POST)
+ * Postman 응답을 보면, 생성 후에도 { memos: [...] } 객체를 반환합니다.
+ * getMemos와 동일하게 memos 배열을 반환하도록 수정합니다.
+ * @returns {Promise<Array>} 최신 메모 객체 배열
+ */
 export const createMemo = async (meetingId, payload) => {
-    // payload 예: { content: "메모 내용", selection: "인용된 텍스트" }
-    // 실제 백엔드 API가 원하는 /memos 엔드포인트와 payload 형식으로 수정 필요
     const response = await api.post(`/minutes/${meetingId}/memos`, payload);
-    // 응답: 새로 생성된 메모 객체 (예: { id, person, note })
-    return response.data;
+    // 응답: { memos: [...] }
+    return response.data.memos; // memos 배열만 반환
 };
 
 // 9. 프로젝트(폴더) 참가자(조원) 목록 조회
