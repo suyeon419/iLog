@@ -127,14 +127,17 @@ export default function NoteMeetingDetail() {
     };
 
     /**
-     * ✅ 3. 메모 추가 함수 (페이지네이션 로직 추가)
+     * ✅ 3. 메모 추가 함수 (API 페이로드 수정)
      */
-    const handleAddMemo = async (memoContent) => {
+    const handleAddMemo = async (memoContent, startIndex, endIndex, selectedText) => {
         try {
-            // API가 요구하는 payload 형식
+            // ✅ API가 요구하는 최종 payload (백엔드 필드명에 맞춤)
             const payload = {
-                content: memoContent,
+                content: memoContent, // 사용자가 prompt에 최종 입력한 내용
                 memoType: 'SELF',
+                startIndex: startIndex, // 드래그 시작 위치
+                endIndex: endIndex, // 드래그 끝 위치
+                positionContent: selectedText, // 드래그한 원본 텍스트
             };
             console.log('📤 [메모 생성 요청] payload:', payload);
 
@@ -146,7 +149,7 @@ export default function NoteMeetingDetail() {
                 memos: updatedMemos, // API가 반환한 배열을 그대로 덮어쓰기
             }));
 
-            // ✅ (신규) 새 메모 추가 시 1페이지로 이동 (Note.jsx와 동일한 로직)
+            // ✅ (신규) 새 메모 추가 시 1페이지로 이동
             setMemoCurrentPage(1);
         } catch (error) {
             console.error('메모 생성 실패:', error);
@@ -154,7 +157,6 @@ export default function NoteMeetingDetail() {
             alert('메모 생성에 실패했습니다. (서버 오류)');
         }
     };
-
     /**
      * ✅ 4. 메모 수정 함수 (note.js의 updateMemo를 사용하도록 수정)
      */

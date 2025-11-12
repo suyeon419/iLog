@@ -1,6 +1,6 @@
-// NoteAISummary.jsx (형광펜 제거, Prompt 복구 -> 최종 수정)
+// NoteAISummary.jsx (최종본: 위치 기반 형광펜 + 양방향 호버)
 
-import React from 'react'; // ✅ useState 제거 (CSS hover로 대체)
+import React, { useState } from 'react'; // ✅ useState 다시 추가
 import { Row, Col, Card, Button, Pagination } from 'react-bootstrap';
 
 export default function NoteAISummary({
@@ -14,39 +14,114 @@ export default function NoteAISummary({
     onPageChange,
     memosPerPage,
 }) {
-    // ❌ [제거] const [hoveredMemoId, setHoveredMemoId] = useState(null);
-    // -> 형광펜 기능 및 state 기반 호버 제거
+    /**
+     * ✅ [복원] 현재 호버된 메모 ID (양방향 하이라이트)
+     */
+    const [hoveredMemoId, setHoveredMemoId] = useState(null);
 
     /**
-     * ✅ [수정] 텍스트 선택 시, prompt를 띄워 사용자 입력을 받음
-     * (사용자가 직접 입력해야 한다는 요구사항 반영)
+     * ✅ [수정] 텍스트 선택 시, 위치(index)를 계산하여 onMemoAdd로 전달
      */
     const handleTextSelection = (e) => {
         const selection = window.getSelection();
         if (!selection.rangeCount) return;
 
-        const selectedText = selection.toString().trim();
+        const range = selection.getRangeAt(0);
+        const selectedText = range.toString().trim();
 
         // 1. 선택된 텍스트가 있어야만 메모 기능 활성화
         if (selectedText) {
-            // 2. [수정] confirm -> prompt로 변경
-            //    드래그한 텍스트(selectedText)를 기본값으로 제공
+            const preNode = e.currentTarget; // <pre> 태그
+
+            // 2. <pre> 태그 시작부터 드래그 시작점까지의 범위를 만들어 길이를 계산
+            const preSelectionRange = document.createRange();
+            preSelectionRange.selectNodeContents(preNode);
+            preSelectionRange.setEnd(range.startContainer, range.startOffset);
+
+            // 3. 시작점과 끝점 계산
+            const startIndex = preSelectionRange.toString().length;
+            const endIndex = startIndex + selectedText.length;
+
+            // 4. [유지] prompt로 사용자 입력 받기
             const memoContent = prompt('추가할 메모 내용을 입력하세요:', selectedText);
 
-            // 3. [수정] 사용자가 '확인'을 누르고, 내용이 비어있지 않을 때만
+            // 5. [수정] 사용자가 '확인'을 누르면 5개 인자 전달
             if (memoContent && memoContent.trim() !== '') {
-                // 부모 컴포넌트의 onMemoAdd 함수 호출 (사용자가 입력한 최종 텍스트 전달)
-                onMemoAdd(memoContent.trim());
+                onMemoAdd(
+                    memoContent.trim(), // 1. 최종 메모 내용
+                    startIndex, // 2. 시작 위치
+                    endIndex, // 3. 끝 위치
+                    selectedText // 4. 원본 텍스트 (positionContent)
+                );
             }
 
-            // 4. 텍스트 선택 상태 해제
+            // 6. 텍스트 선택 상태 해제
             selection.removeAllRanges();
         }
     };
 
-    // ❌ [제거] renderSummaryWithHighlights() 함수 전체 삭제
-    // -> (문제 1) "잘못된 위치 하이라이트" 버그의 원인
-    // -> (문제 2) "직접 입력(prompt)" 기능과 호환 불가
+    /**
+     * ✅ [신규] 위치(startIndex) 기반으로 형광펜 렌더링
+     * (중복 단어 버그 완벽 해결)
+     */
+    const renderSummaryWithHighlights = () => {
+        if (!initialMemos || initialMemos.length === 0 || !summaryText) {
+            return summaryText;
+        }
+
+        // 1. 위치 정보가 있고, 유효한 메모만 필터링 후 시작 순서로 정렬
+        const sortedMemos = initialMemos
+            .filter(
+                (memo) =>
+                    memo.startIndex != null && // null, undefined 체크
+                    memo.endIndex != null &&
+                    memo.endIndex > memo.startIndex &&
+                    memo.endIndex <= summaryText.length // 텍스트 길이 초과 방지
+            )
+            .sort((a, b) => a.startIndex - b.startIndex);
+
+        if (sortedMemos.length === 0) {
+            return summaryText;
+        }
+
+        let lastIndex = 0;
+        const parts = []; // React 요소 + 문자열 배열
+
+        // 2. 정렬된 메모를 순회하며 텍스트 조각내기
+        sortedMemos.forEach((memo) => {
+            // (겹치는 메모 방지)
+            if (memo.startIndex < lastIndex) {
+                return;
+            }
+
+            // 1. 형광펜 이전의 일반 텍스트
+            if (memo.startIndex > lastIndex) {
+                parts.push(summaryText.substring(lastIndex, memo.startIndex));
+            }
+
+            // 2. 형광펜 <span>
+            parts.push(
+                <span
+                    key={memo.id}
+                    className={`highlighted-text ${memo.id === hoveredMemoId ? 'hovered' : ''}`}
+                    onMouseEnter={() => setHoveredMemoId(memo.id)}
+                    onMouseLeave={() => setHoveredMemoId(null)}
+                >
+                    {summaryText.substring(memo.startIndex, memo.endIndex)}
+                </span>
+            );
+
+            // 3. 다음 시작 위치 업데이트
+            lastIndex = memo.endIndex;
+        });
+
+        // 4. 마지막 형광펜 이후의 나머지 텍스트
+        if (lastIndex < summaryText.length) {
+            parts.push(summaryText.substring(lastIndex));
+        }
+
+        return parts;
+    };
 
     // ==========================================================
     // ✅ 페이지네이션 로직 (변경 없음)
@@ -80,21 +155,27 @@ export default function NoteAISummary({
 
     return (
         <>
-            {/* ✅ [수정] CSS 수정: 
-                1. .highlighted-text 관련 규칙 모두 제거 (형광펜 제거)
-                2. .memo-card에 :hover 규칙 추가 (갈색 테두리)
-            */}
+            {/* ✅ [복원] 형광펜 + 갈색 테두리 CSS */}
             <style>
                 {`
+                .highlighted-text {
+                    background-color: #fcf8e3; /* 연한 노란색 (형광펜) */
+                    cursor: pointer;
+                    transition: background-color 0.2s, font-weight 0.2s;
+                    border-radius: 3px;
+                    padding: 0 2px;
+                }
+                
+                .highlighted-text.hovered {
+                    background-color: #f7e6a0; /* 더 진한 노란색 (hover) */
+                    font-weight: 600;
+                }
+                
                 .memo-card {
                     transition: border 0.2s, box-shadow 0.2s;
                 }
-
-                /* 마우스를 올린 메모 카드만 갈색 테두리 적용 */
-                .memo-card:hover {
-                    border: 2px solid #8B4513; /* SaddleBrown */
-                    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-                }
+                
+                /* :hover 대신 state로 제어 (양방향) */
                 `}
             </style>
 
@@ -112,11 +193,10 @@ export default function NoteAISummary({
                             fontSize: 'inherit',
                             cursor: 'text',
                         }}
-                        // ✅ [유지] 텍스트 선택 완료 시 이벤트 발생
-                        onMouseUp={handleTextSelection}
+                        onMouseUp={handleTextSelection} // ✅ 수정된 핸들러 연결
                     >
-                        {/* ✅ [수정] 형광펜 함수 대신 원본 텍스트(summaryText) 렌더링 */}
-                        {summaryText}
+                        {/* ✅ [복원] 하이라이트 함수 호출 */}
+                        {renderSummaryWithHighlights()}
                     </pre>
                 </Col>
 
@@ -131,9 +211,19 @@ export default function NoteAISummary({
                             {currentMemos.map((memo) => (
                                 <Card
                                     key={memo.id}
-                                    className="mb-2 memo-card" // ✅ memo-card 클래스
-                                    // ❌ [제거] onMouseEnter, onMouseLeave, style prop
-                                    // -> CSS :hover로 대체
+                                    className="mb-2 memo-card"
+                                    // ✅ [복원] 양방향 호버 이벤트
+                                    onMouseEnter={() => setHoveredMemoId(memo.id)}
+                                    onMouseLeave={() => setHoveredMemoId(null)}
+                                    // ✅ [복원] state에 따른 갈색 테두리
+                                    style={
+                                        memo.id === hoveredMemoId
+                                            ? {
+                                                  border: '2px solid #8B4513',
+                                                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                                              }
+                                            : {}
+                                    }
                                 >
                                     <Card.Body>
                                         <Card.Subtitle className="mb-2 text-muted">
@@ -150,7 +240,7 @@ export default function NoteAISummary({
                                                         memo.content
                                                     );
                                                     if (newContent && newContent.trim() !== '') {
-                                                        // ✅ [유지] 메모 수정 기능
+                                                        // ⚡ 중요: 수정 시 형광펜 연결은 유지됩니다!
                                                         onMemoUpdate(memo.id, newContent.trim());
                                                     }
                                                 }}
@@ -169,7 +259,7 @@ export default function NoteAISummary({
                                 </Card>
                             ))}
 
-                            {/* 페이지네이션 UI (변경 없음) */}
+                            {/* 페이지네이션 (변경 없음) */}
                             {totalPages > 1 && (
                                 <nav className="mt-3 pagination-nav">
                                     <Pagination className="justify-content-center">
