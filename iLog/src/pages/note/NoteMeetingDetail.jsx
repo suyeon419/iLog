@@ -1,15 +1,24 @@
-// NoteMeetingDetail.jsx (최종 수정본)
+// NoteMeetingDetail.jsx (전체 코드)
 
 import React, { useState, useEffect } from 'react';
+// ✅ Pagination 임포트는 NoteAISummary.jsx에서 하므로 여기선 필요 없습니다.
 import { Container, Button, Row, Col, Dropdown, Spinner, Alert } from 'react-bootstrap';
 import { PencilSquare, People, CalendarCheck, CalendarPlus, ThreeDotsVertical, Trash } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import NoteAISummary from './NoteAISummary';
 
-// API 함수들을 임포트합니다.
-// ✅ 1. 'createMemo' 함수를 API 임포트 목록에 추가합니다.
-// (경로는 실제 파일 위치 /api/note.js 또는 /api/memoApi.js 에 맞게 확인하세요)
-import { getNoteDetails, deleteNote, getMeetingSummary, getMeetingMembers, createMemo } from '../../api/note';
+import {
+    getNoteDetails,
+    deleteNote,
+    getMeetingSummary,
+    getMeetingMembers,
+    createMemo,
+    updateMemo,
+    deleteMemo,
+} from '../../api/note';
+
+// ✅ (신규) 한 페이지에 보여줄 메모 개수
+const MEMOS_PER_PAGE = 3;
 
 export default function NoteMeetingDetail() {
     const [meeting, setMeeting] = useState(null); // 회의록 본문 정보
@@ -20,6 +29,9 @@ export default function NoteMeetingDetail() {
     const [showAiSummary, setShowAiSummary] = useState(false);
     const [aiData, setAiData] = useState(null); // AI 요약/메모 데이터 { summary, memos }
     const [aiLoading, setAiLoading] = useState(false); // AI 요약 로딩 상태
+
+    // ✅ (신규) 메모 목록의 현재 페이지 state
+    const [memoCurrentPage, setMemoCurrentPage] = useState(1);
 
     const { meetingId } = useParams();
     const navigate = useNavigate();
@@ -115,7 +127,7 @@ export default function NoteMeetingDetail() {
     };
 
     /**
-     * ✅ 2. (신규) NoteAISummary가 호출할 메모 추가 함수
+     * ✅ 3. 메모 추가 함수 (페이지네이션 로직 추가)
      */
     const handleAddMemo = async (memoContent) => {
         try {
@@ -126,8 +138,6 @@ export default function NoteMeetingDetail() {
             };
             console.log('📤 [메모 생성 요청] payload:', payload);
 
-            // createMemo API 호출 (Postman에서 확인한 POST)
-            // (이전 답변에서 createMemo가 '최신 메모 배열'을 반환하도록 수정했음)
             const updatedMemos = await createMemo(meetingId, payload);
 
             // aiData 상태를 API가 반환한 최신 메모 목록으로 업데이트
@@ -135,10 +145,72 @@ export default function NoteMeetingDetail() {
                 ...prevData,
                 memos: updatedMemos, // API가 반환한 배열을 그대로 덮어쓰기
             }));
+
+            // ✅ (신규) 새 메모 추가 시 1페이지로 이동 (Note.jsx와 동일한 로직)
+            setMemoCurrentPage(1);
         } catch (error) {
             console.error('메모 생성 실패:', error);
             // 500 에러 등 API 실패 시 알림
             alert('메모 생성에 실패했습니다. (서버 오류)');
+        }
+    };
+
+    /**
+     * ✅ 4. 메모 수정 함수 (note.js의 updateMemo를 사용하도록 수정)
+     */
+    const handleUpdateMemo = async (memoId, newContent) => {
+        try {
+            // ⚡ note.js의 updateMemo 함수 호출
+            // ⚡ meetingId는 이 컴포넌트의 useParams()에서 가져온 값을 사용
+            const updatedMemos = await updateMemo(meetingId, memoId, newContent);
+
+            // ⚡ aiData 상태를 API가 반환한 최신 메모 목록으로 업데이트
+            setAiData((prevData) => ({
+                ...prevData,
+                memos: updatedMemos, // API가 반환한 배열로 덮어쓰기
+            }));
+        } catch (error) {
+            console.error('메모 수정 실패:', error);
+            alert('메모 수정에 실패했습니다. (서버 오류)');
+        }
+    };
+
+    /**
+     * ✅ 5. 메모 삭제 함수 (페이지네이션 로직 추가)
+     */
+    const handleDeleteMemo = async (memoId) => {
+        if (window.confirm('정말로 이 메모를 삭제하시겠습니까?')) {
+            try {
+                // 1. API 호출
+                await deleteMemo(meetingId, memoId);
+
+                // 2. state 수동 업데이트 (이전 답변에서 수정된 내용)
+                setAiData((prev) => {
+                    // 3. 기존 메모 목록에서 삭제한 ID 필터링
+                    const newMemos = prev.memos.filter((memo) => memo.id !== memoId);
+
+                    // ✅ (신규) 페이지네이션 보정 로직 (Note.jsx와 동일)
+                    const newTotalPages = Math.ceil(newMemos.length / MEMOS_PER_PAGE);
+
+                    if (memoCurrentPage > newTotalPages && newTotalPages > 0) {
+                        // 마지막 페이지의 마지막 항목을 지웠을 경우
+                        setMemoCurrentPage(newTotalPages);
+                    } else if (newMemos.length === 0) {
+                        // 모든 항목을 지웠을 경우
+                        setMemoCurrentPage(1);
+                    }
+                    // --- 페이지네이션 로직 끝 ---
+
+                    // 5. 필터링된 새 배열로 state 덮어쓰기
+                    return {
+                        ...prev,
+                        memos: newMemos,
+                    };
+                });
+            } catch (err) {
+                console.error('메모 삭제 실패:', err);
+                alert('메모 삭제에 실패했습니다.');
+            }
         }
     };
 
@@ -264,8 +336,13 @@ export default function NoteMeetingDetail() {
                                     summaryText={aiData.summary}
                                     initialMemos={aiData.memos}
                                     meetingId={meetingId} // 메모 생성을 위해 ID 전달
-                                    // ✅ 3. 오류 해결! onMemoAdd prop을 전달합니다.
                                     onMemoAdd={handleAddMemo}
+                                    onMemoUpdate={handleUpdateMemo} // ✅ 수정된 핸들러 전달
+                                    onMemoDelete={handleDeleteMemo} // ✅ (변경 없음)
+                                    // ✅ (신규) 페이지네이션 props 전달
+                                    currentPage={memoCurrentPage}
+                                    onPageChange={setMemoCurrentPage}
+                                    memosPerPage={MEMOS_PER_PAGE}
                                 />
                             )
                         )}

@@ -99,14 +99,47 @@ export const deleteProject = async (folderId) => {
     }
 };
 
+/**
+ * [✅] RAG 인덱싱을 위해 회의록 텍스트 전송
+ * POST /rag/index
+ * (createNote, updateNote 내부에서 호출됩니다)
+ */
+export const indexNoteForRAG = async (meetingId, text) => {
+    const payload = {
+        meetingId: String(meetingId),
+        text: text,
+    };
+    console.group(`🤖 [indexNoteForRAG] (ID: ${meetingId}) RAG 인덱싱 요청`);
+    try {
+        const headers = {
+            'Content-Type': 'application/json',
+            ...getAuthHeader(),
+        };
+        const response = await api.post('/rag/index', payload, { headers });
+        console.log('✅ RAG 인덱싱 성공:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ (ID: ${meetingId}) RAG 인덱싱 실패:`, error.response?.data || error.message);
+        throw error; // 에러를 던져서 호출한 쪽(createNote)에서 잡도록 함
+    } finally {
+        console.groupEnd();
+    }
+};
+
 /* ==========================
  * 회의록 생성 (로그인 필요)
+ * [✅] RAG 인덱싱 로직 포함
  * ========================== */
 export const createNote = async (folderId, data) => {
-    console.group('🧾 [createNote] 회의록 생성 요청 디버그 로그');
+    // 로그 메시지 수정
+    console.group('🧾 [createNote] 회의록 생성 및 인덱싱');
     console.log('📁 폴더 ID:', folderId);
     console.log('📝 요청 데이터:', data);
+
+    let createdNoteData; // 생성된 회의록 데이터를 저장할 변수
+
     try {
+        // --- 1. (기존) 회의록 생성 시도 ---
         const headers = {
             ...defaultHeaders,
             ...getAuthHeader(),
@@ -114,9 +147,9 @@ export const createNote = async (folderId, data) => {
 
         const res = await api.post(`/minutes/${folderId}`, data, { headers });
         console.log('✅ 회의록 생성 성공:', res.data);
-
-        return res.data;
+        createdNoteData = res.data; // 성공 시 데이터 저장
     } catch (err) {
+        // --- 2. (기존) 회의록 생성 실패 시 ---
         if (err.response) {
             console.error('❌ 회의록 생성 실패:', {
                 status: err.response.status,
@@ -127,10 +160,26 @@ export const createNote = async (folderId, data) => {
         } else {
             console.error('⚙️ 요청 설정 오류:', err.message);
         }
-        throw err;
-    } finally {
-        console.groupEnd();
+        console.groupEnd(); // 실패 시에도 groupEnd
+        throw err; // 🚨 생성 실패는 에러를 던져서 컴포넌트가 알게 함
     }
+
+    // --- 3. [신규] 회의록 생성 성공 시, RAG 인덱싱 시도 ---
+    if (createdNoteData && createdNoteData.id) {
+        try {
+            const textToIndex = data.content; // 요청 본문에 있던 content
+            await indexNoteForRAG(createdNoteData.id, textToIndex);
+        } catch (ragError) {
+            // 🚨 중요: RAG 인덱싱이 실패해도, 회의록 생성은 성공한 것!
+            // 에러를 throw하지 않고, 콘솔에만 기록합니다.
+            console.error('⚠️ RAG 인덱싱 실패 (그러나 회의록 생성은 성공함):', ragError);
+        }
+    } else {
+        console.error('⚠️ RAG 인덱싱 스킵: 생성된 회의록 ID를 응답에서 찾을 수 없습니다.');
+    }
+
+    console.groupEnd(); // 모든 작업 완료 후 groupEnd
+    return createdNoteData; // 생성된 회의록 데이터 반환
 };
 
 // [추가] 프로젝트 이름 수정 API
@@ -165,26 +214,51 @@ export const getNoteDetails = async (minuteId) => {
 
 /**
  * 7. 개별 회의록 수정
- * (가정) PATCH /minutes/{minuteId}
+ * [✅ 수정] RAG 인덱싱 로직 포함
  */
 export const updateNote = async (minuteId, data) => {
-    console.group(`🧾 [updateNote] (ID: ${minuteId}) 회의록 수정 요청`);
+    // 로그 메시지 수정
+    console.group(`🧾 [updateNote] (ID: ${minuteId}) 회의록 수정 및 인덱싱`);
     console.log('📝 수정 데이터:', data);
+
+    let updatedNoteData; // 수정된 회의록 데이터를 저장할 변수
+
     try {
+        // --- 1. (기존) 회의록 수정 시도 ---
         const headers = {
             'Content-Type': 'application/json',
             ...getAuthHeader(), // ✅ 토큰 추가
         };
         const response = await api.patch(`/minutes/${minuteId}`, data, { headers });
         console.log('✅ 회의록 수정 성공:', response.data);
-        return response.data;
+        updatedNoteData = response.data; // 성공 시 데이터 저장
     } catch (error) {
+        // --- 2. (기존) 회의록 수정 실패 시 ---
         console.error(`❌ (ID: ${minuteId}) 회의록 수정 실패:`, error);
-        throw error;
-    } finally {
-        console.groupEnd();
+        console.groupEnd(); // 실패 시에도 groupEnd
+        throw error; // 🚨 수정 실패는 에러를 던져서 컴포넌트가 알게 함
     }
+
+    // --- 3. [신규] 회의록 수정 성공 시, RAG 인덱싱 시도 ---
+    try {
+        // payload로 받은 data 객체에서 content를 가져옴
+        const textToIndex = data.content;
+        if (textToIndex !== undefined) {
+            // content가 payload에 있을 때만 실행
+            await indexNoteForRAG(minuteId, textToIndex);
+        } else {
+            console.log('⚠️ RAG 인덱싱 스킵: 수정 요청에 content 필드가 없습니다.');
+        }
+    } catch (ragError) {
+        // 🚨 중요: RAG 인덱싱이 실패해도, 회의록 수정은 성공한 것!
+        // 에러를 throw하지 않고, 콘솔에만 기록합니다.
+        console.error('⚠️ RAG 인덱싱 실패 (그러나 회의록 수정은 성공함):', ragError);
+    }
+
+    console.groupEnd(); // 모든 작업 완료 후 groupEnd
+    return updatedNoteData; // 수정된 회의록 데이터 반환
 };
+
 /**
  * 8. 개별 회의록 삭제
  * (가정) DELETE /minutes/{minuteId}
@@ -247,6 +321,60 @@ export const createMemo = async (meetingId, payload) => {
     }
 };
 
+// [신규] 메모 수정 (PATCH /minutes/{meetingId}/memos)
+// ⚡ Postman(image_491ad6.png) 기준 수정
+export const updateMemo = async (meetingId, memoId, newContent) => {
+    try {
+        const headers = {
+            'Content-Type': 'application/json',
+            ...getAuthHeader(),
+        };
+
+        // ⚡ Postman 요청 본문을 기준으로 payload 수정
+        const payload = {
+            id: memoId,
+            content: newContent,
+            memoType: 'SELF', // Postman 요청 본문에 있던 'memoType' 추가
+        };
+
+        // ⚡ URL에서 memoId 제거, payload를 JSON.stringify
+        const response = await api.patch(
+            `/minutes/${meetingId}/memos`, // URL에서 {memoId} 제거
+            JSON.stringify(payload), // 수정된 payload 사용
+            { headers }
+        );
+
+        console.log('✅ 메모 수정 성공:', response.data);
+        return response.data.memos; // 최신 메모 목록 반환
+    } catch (error) {
+        console.error('❌ 메모 수정 실패:', error.response?.data || error.message);
+        throw error;
+    }
+};
+
+// [신규] 메모 삭제 (DELETE /minutes/{meetingId}/memos)
+export const deleteMemo = async (meetingId, memoId) => {
+    try {
+        const headers = {
+            ...getAuthHeader(),
+        };
+
+        const response = await api.delete(`/minutes/${meetingId}/memos`, {
+            headers: headers,
+            params: {
+                deleteId: memoId,
+            },
+        });
+
+        console.log('✅ 메모 삭제 성공:', response.data);
+
+        // ⚡ Postman(image_491af8.png) 응답이 '1'이므로 .memos를 제거합니다.
+        return response.data; // '1' 또는 성공 여부를 반환
+    } catch (error) {
+        console.error('❌ 메모 삭제 실패:', error.response?.data || error.message);
+        throw error;
+    }
+};
 // 9. 프로젝트(폴더) 참가자(조원) 목록 조회
 // [수정] NoteDetail에서 멤버 목록(participants)과 초대 링크(inviteLink)가
 //       모두 필요하므로, 응답 객체 전체(response.data)를 반환합니다.
