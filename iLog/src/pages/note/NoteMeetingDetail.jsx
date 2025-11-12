@@ -6,6 +6,8 @@ import { Container, Button, Row, Col, Dropdown, Spinner, Alert } from 'react-boo
 import { PencilSquare, People, CalendarCheck, CalendarPlus, ThreeDotsVertical, Trash } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import NoteAISummary from './NoteAISummary';
+import FloatingChatButton from '../../components/chatbot/FloatingChatButton';
+import ChatbotPanel from '../../components/chatbot/ChatbotPanel';
 
 import {
     getNoteDetails,
@@ -29,6 +31,9 @@ export default function NoteMeetingDetail() {
     const [showAiSummary, setShowAiSummary] = useState(false);
     const [aiData, setAiData] = useState(null); // AI 요약/메모 데이터 { summary, memos }
     const [aiLoading, setAiLoading] = useState(false); // AI 요약 로딩 상태
+
+    // 챗봇을 위한 state입니데이
+    const [showChatbot, setShowChatbot] = useState(false);
 
     // ✅ (신규) 메모 목록의 현재 페이지 state
     const [memoCurrentPage, setMemoCurrentPage] = useState(1);
@@ -364,6 +369,8 @@ export default function NoteMeetingDetail() {
                     {aiLoading ? '로딩 중...' : showAiSummary ? '회의록 본문 보기' : 'AI 요약본 보기'}
                 </Button>
             </div>
+            {showChatbot && <ChatbotPanel onClose={() => setShowChatbot(false)} meetingId={meetingId} />}
+            <FloatingChatButton onClick={() => setShowChatbot(!showChatbot)} />
         </Container>
     );
 }

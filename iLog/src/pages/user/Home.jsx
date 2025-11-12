@@ -3,6 +3,8 @@ import { Button, Container, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { getUserById } from '../../api/user';
 import { jwtDecode } from 'jwt-decode';
+import FloatingChatButton from '../../components/chatbot/FloatingChatButton';
+import ChatbotPanel from '../../components/chatbot/ChatbotPanel';
 
 export default function Home() {
     const navigate = useNavigate();

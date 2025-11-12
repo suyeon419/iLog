@@ -1,0 +1,132 @@
+.floating-chat-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: none;
+    background: #f6f6f6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.floating-chat-btn:hover {
+    background: #ebebeb;
+    transform: translateY(-2px);
+}
+
+.chatbot-panel {
+    position: fixed;
+    bottom: 90px;
+    right: 24px;
+    width: 360px;
+    height: 480px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1001;
+    animation: fadeIn 0.2s ease;
+}
+
+.chatbot-header {
+    background: #f5f1ec;
+    border-bottom: 1px solid #f5f1ec;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+}
+
+.chatbot-messages {
+    flex: 1;
+    padding: 10px 14px;
+    overflow-y: auto;
+    background: #fafafa;
+}
+
+.chatbot-input {
+    display: flex;
+    border-top: 1px solid #ddd;
+    min-height: 50px;
+}
+
+.chatbot-input input {
+    flex: 1;
+    border: none;
+    padding: 10px;
+    outline: none;
+    font-size: 14px;
+}
+
+.chatbot-input button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 12px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chat-msg {
+    display: flex;
+    margin: 6px 0;
+}
+
+.chat-msg.user {
+    justify-content: flex-end;
+}
+
+.chat-msg.user .bubble {
+    background: #b66e03;
+    color: white;
+    border-radius: 16px 16px 0 16px;
+}
+
+.chat-msg.bot {
+    justify-content: flex-start;
+}
+
+.chat-msg.bot .bubble {
+    background: #f5f1ec;
+    color: #333;
+    border-radius: 16px 16px 16px 0;
+}
+
+.bubble {
+    padding: 10px 14px;
+    max-width: 75%;
+    word-break: break-word;
+    font-size: 14px;
+}
+
+.x-btn {
+    background: none !important;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333 !important;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.x-btn:hover {
+    color: #000;
+}
