@@ -81,23 +81,6 @@ export default function MemberModal({
         }
     };
 
-    // ... (handleCopyLink 함수는 동일) ...
-    const handleCopyLink = () => {
-        if (!inviteLink) {
-            alert('초대 링크가 없습니다.');
-            return;
-        }
-        navigator.clipboard
-            .writeText(inviteLink)
-            .then(() => {
-                setShowCopiedTooltip(true);
-                setTimeout(() => {
-                    setShowCopiedTooltip(false);
-                }, 2000);
-            })
-            .catch((err) => console.error('Failed to copy: ', err));
-    };
-
     // 모달이 닫힐 때 입력값 초기화
     const handleModalHide = () => {
         setEmail('');
@@ -112,32 +95,7 @@ export default function MemberModal({
                 <Modal.Title className="fw-bold">참가자 관리</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                {/* 1. 초대 링크 */}
-                <Form.Group className="mb-3">
-                    <Form.Label>초대 링크</Form.Label>
-                    <div className="d-flex gap-2">
-                        <Form.Control
-                            className="form-modal"
-                            type="text"
-                            value={inviteLink || '초대 링크 정보가 없습니다.'}
-                            readOnly
-                        />
-                        <OverlayTrigger
-                            placement="top"
-                            overlay={<Tooltip id="tooltip-copy">{showCopiedTooltip ? '복사됨!' : '복사하기'}</Tooltip>}
-                        >
-                            <Button
-                                variant={showCopiedTooltip ? 'outline-secondary' : 'secondary'}
-                                onClick={handleCopyLink}
-                                disabled={!inviteLink} // 링크 없으면 비활성화
-                            >
-                                복사
-                            </Button>
-                        </OverlayTrigger>
-                    </div>
-                </Form.Group>
-
-                {/* 2. 이메일로 초대 */}
+                {/* 1. 이메일로 초대 */}
                 <Form.Group className="mb-3">
                     <Form.Label>이메일</Form.Label>
                     <div className="d-flex gap-2">
