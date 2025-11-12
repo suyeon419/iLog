@@ -299,3 +299,68 @@ btn-outline-primary:hover i {
     white-space: pre-wrap;
     word-break: break-word;
 }
+
+/* 캘린더 */
+.react-calendar {
+    width: 650px !important;
+    max-width: 100%;
+    background: #fff;
+    border: 2px solid #b66e03;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(182, 110, 3, 0.15);
+    font-family: 'Pretendard', sans-serif;
+    line-height: 1.125em;
+    color: #333;
+}
+
+/* 선택된 날짜 */
+.react-calendar__tile--active {
+    background: #b66e03 !important;
+    color: #f5f1ec !important;
+    border-radius: 8px;
+}
+
+/* 오늘 날짜 강조 */
+.react-calendar__tile--now {
+    background: #f5f1ec !important;
+    border: 1px solid #b66e03;
+    color: #b66e03 !important;
+    border-radius: 8px;
+}
+
+/* 상단 네비게이션 (월/연도 전환 버튼) */
+.react-calendar__navigation button {
+    color: #b66e03;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.react-calendar__navigation button:enabled:hover {
+    background-color: #f5f1ec;
+    border-radius: 6px;
+}
+
+/* 요일 라벨 */
+.react-calendar__month-view__weekdays__weekday abbr {
+    text-decoration: none;
+    font-weight: 600;
+    color: #b66e03;
+}
+
+/* 일반 날짜 타일 */
+.react-calendar__tile {
+    height: 60px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+/* hover 시 */
+.react-calendar__tile:enabled:hover {
+    background: #f5f1ec;
+    color: #b66e03;
+}
+
+/* 이전/다음 달 날짜 흐리게 */
+.react-calendar__month-view__days__day--neighboringMonth {
+    color: #bbb !important;
+}
