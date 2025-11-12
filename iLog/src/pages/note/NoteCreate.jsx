@@ -126,7 +126,7 @@ export default function NoteCreate() {
                         className="mini-btn fw-bold"
                         disabled={isSaving || isLoadingUser}
                     >
-                        {isSaving ? '저장 중...' : '생성'}
+                        {isSaving ? '저장' : '생성'}
                     </Button>
                 </Col>
             </Row>
