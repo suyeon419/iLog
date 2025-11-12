@@ -159,7 +159,7 @@ export default function NoteAISummary({
             <style>
                 {`
                 .highlighted-text {
-                    background-color: #fcf8e3; /* 연한 노란색 (형광펜) */
+                    background-color: #fcf8e3; /* f5f1ec 이건 너무 연하구 */
                     cursor: pointer;
                     transition: background-color 0.2s, font-weight 0.2s;
                     border-radius: 3px;
@@ -167,7 +167,7 @@ export default function NoteAISummary({
                 }
                 
                 .highlighted-text.hovered {
-                    background-color: #f7e6a0; /* 더 진한 노란색 (hover) */
+                    background-color: #f7e6a0; /* b66e03 갈색 하니까 너무 진해 */
                     font-weight: 600;
                 }
                 
