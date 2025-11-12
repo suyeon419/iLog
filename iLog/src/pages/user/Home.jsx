@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Container, Spinner } from 'react-bootstrap';
+import { Button, Card, Col, Container, ListGroup, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { getUserById } from '../../api/user';
 import { jwtDecode } from 'jwt-decode';
 import FloatingChatButton from '../../components/chatbot/FloatingChatButton';
 import ChatbotPanel from '../../components/chatbot/ChatbotPanel';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 
 export default function Home() {
     const navigate = useNavigate();
@@ -12,6 +14,20 @@ export default function Home() {
     const [isLogin, setIsLogin] = useState(false);
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const [selectedDate, setSelectedDate] = useState(new Date());
+
+    // ✅ 더미 회의 데이터
+    const dummyMeetings = [
+        { id: 1, title: '팀 회의 - 프론트 UI 리뷰', date: '2025-11-12' },
+        { id: 2, title: '백엔드 API 구조 논의', date: '2025-11-13' },
+        { id: 3, title: 'iLog 디자인 피드백 회의', date: '2025-11-12' },
+        { id: 4, title: '전체 회의 - Sprint 5 마감', date: '2025-11-15' },
+    ];
+
+    const eventsOnSelectedDate = dummyMeetings.filter(
+        (m) => new Date(m.date).toDateString() === selectedDate.toDateString()
+    );
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
@@ -66,12 +82,8 @@ export default function Home() {
             <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ width: '200px' }} /> <br />
             {isLogin ? (
                 <>
-                    <Button variant="primary" style={{ borderRadius: '20px', width: '300px' }}>
-                        내가 참여한 회의를 정리해주는 AI
-                    </Button>
-                    <p>
-                        환영합니다. <span className="signup-link">{user?.name}</span>님!
-                    </p>
+                    <h3 className="fw-bold mb-4">나의 스케줄</h3>
+                    <Calendar onChange={setSelectedDate} value={selectedDate} calendarType="gregory" />
                 </>
             ) : (
                 <>
