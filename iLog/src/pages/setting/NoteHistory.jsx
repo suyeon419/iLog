@@ -111,7 +111,7 @@ export default function NoteHistory() {
                                 <tr key={meeting.id}>
                                     <td>{meeting.id}</td>
                                     <td>{meeting.status}</td>
-                                    <td>{meeting.created64}</td>
+                                    <td>{meeting.createdAt.slice(0, 10).replace(/-/g, '. ') + '.'}</td>
                                 </tr>
                             ))
                         )}
