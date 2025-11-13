@@ -127,10 +127,9 @@ export default function MeetingHistory() {
                                     onClick={() => handleRowClick(meeting.id)}
                                     style={{ cursor: 'pointer' }}
                                 >
-                                    {/* [수정] API 응답 키(id, status, created64)에 맞게 수정 */}
                                     <td>{meeting.id}</td>
                                     <td>{meeting.status}</td>
-                                    <td>{meeting.created64}</td>
+                                    <td>{meeting.createdAt.slice(0, 10).replace(/-/g, '. ') + '.'}</td>
                                 </tr>
                             ))
                         )}
