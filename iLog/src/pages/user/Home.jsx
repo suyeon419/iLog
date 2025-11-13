@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Card, Col, Container, ListGroup, Row, Spinner } from 'react-bootstrap';
+import { Button, Container, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { getUserById } from '../../api/user';
+import { getUserById, getNoteHistory } from '../../api/user';
 import { jwtDecode } from 'jwt-decode';
-import FloatingChatButton from '../../components/chatbot/FloatingChatButton';
-import ChatbotPanel from '../../components/chatbot/ChatbotPanel';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { getNoteHistory } from '../../api/user';
-import { getNoteDetails, getProjectDetails, getProjects } from '../../api/note';
 
 export default function Home() {
     const navigate = useNavigate();
@@ -17,19 +13,18 @@ export default function Home() {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    //회의록 이력
     const [noteHistory, setNoteHistory] = useState([]);
-
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedNotes, setSelectedNotes] = useState([]);
-    const [isPanelOpen, setIsPanelOpen] = useState(false);
 
-    const [allProjects, setAllProjects] = useState(null);
+    useEffect(() => {
+        if (noteHistory.length > 0) {
+            handleDateClick(new Date());
+        }
+    }, [noteHistory]);
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
-        // console.log('🧩 [Home] 디코딩된 사용자 ID:', userId);
-        console.log(token);
 
         if (!token) {
             setIsLoading(false);
@@ -42,17 +37,12 @@ export default function Home() {
             const decoded = jwtDecode(token);
             const userId = decoded.id;
 
-            Promise.all([
-                getUserById(userId),
-                getNoteHistory(),
-                getProjects(), // root + 전체 프로젝트 구조
-            ])
-                .then(([userData, noteLogs, projects]) => {
+            Promise.all([getUserById(userId), getNoteHistory()])
+                .then(([userData, noteLogs]) => {
                     setUser(userData);
                     setNoteHistory(noteLogs);
-                    setAllProjects(projects);
                 })
-                .catch((err) => {
+                .catch(() => {
                     localStorage.removeItem('accessToken');
                     setIsLogin(false);
                 })
@@ -66,48 +56,23 @@ export default function Home() {
         }
     }, []);
 
-    // ---------------------------
-    // 날짜 클릭 → 해당 회의록 상세 목록 만들기
-    // ---------------------------
-    const handleDateClick = async (date) => {
+    const handleDateClick = (date) => {
         setSelectedDate(date);
 
-        if (!allProjects) return;
+        const logs = noteHistory.filter(
+            (n) => n.status === 'CREATE' && new Date(n.createdAt).toDateString() === date.toDateString()
+        );
 
-        // 해당 날짜 회의록 ID 리스트
-        const logs = noteHistory.filter((n) => new Date(n.createdAt).toDateString() === date.toDateString());
-
-        const detailed = [];
-
-        for (const log of logs) {
-            let foundNote = null;
-            let foundFolder = null;
-
-            // 모든 폴더에서 minutesList를 탐색
-            for (const folder of allProjects.childFolders) {
-                const minutes = folder.minutesList || [];
-                const match = minutes.find((m) => m.id === log.id);
-
-                if (match) {
-                    foundNote = match;
-                    foundFolder = folder;
-                    break;
-                }
-            }
-
-            // 매칭된 회의록만 저장
-            if (foundNote && foundFolder) {
-                detailed.push({
-                    id: foundNote.id,
-                    title: foundNote.name,
-                    folderName: foundFolder.folderName,
-                    createdAt: log.createdAt,
-                });
-            }
-        }
+        // 제목만 표시
+        const detailed = logs
+            .filter((log) => log.minutesTitle) // null 제외
+            .map((log) => ({
+                id: log.id,
+                title: log.minutesTitle,
+                createdAt: log.createdAt,
+            }));
 
         setSelectedNotes(detailed);
-        setIsPanelOpen(true);
     };
 
     if (isLoading) {
@@ -130,7 +95,7 @@ export default function Home() {
                     <h3 className="fw-bold mb-4">나의 스케줄</h3>
 
                     <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
-                        {/* 왼쪽: 캘린더 */}
+                        {/* 캘린더 */}
                         <div>
                             <Calendar
                                 onClickDay={handleDateClick}
@@ -167,7 +132,7 @@ export default function Home() {
                             />
                         </div>
 
-                        {/* 오른쪽: 고정 박스 */}
+                        {/* 오른쪽 박스 */}
                         <div
                             style={{
                                 width: '350px',
@@ -187,14 +152,32 @@ export default function Home() {
                                     <div
                                         key={note.id}
                                         style={{
-                                            marginBottom: '20px',
-                                            borderBottom: '1px solid #eee',
-                                            paddingBottom: '10px',
+                                            background: '#f5f1ec',
+                                            padding: '12px 15px',
+                                            borderRadius: '10px',
+                                            border: '1px solid #eee',
+                                            marginBottom: '12px',
+                                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                                         }}
                                     >
-                                        <div style={{ fontSize: '17px', fontWeight: 700 }}>{note.title}</div>
-                                        <div style={{ fontSize: '13px', color: '#b66e03', marginTop: '3px' }}>
-                                            {note.folderName}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <i
+                                                className="bi bi-file-earmark-text"
+                                                style={{ fontSize: '20px', color: '#b66e03' }}
+                                            ></i>
+                                            <span style={{ fontSize: '14px', color: '#b66e03', fontWeight: 600 }}>
+                                                회의록
+                                            </span>
+                                        </div>
+
+                                        <div
+                                            style={{
+                                                fontSize: '15px',
+                                                fontWeight: 600,
+                                                color: '#333',
+                                            }}
+                                        >
+                                            {note.title}
                                         </div>
                                     </div>
                                 ))

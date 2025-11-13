@@ -2304,8 +2304,11 @@ const Meeting = () => {
                     const data = await getProjects();
                     console.log('📡 [getProjects] 응답 원본:', data);
 
-                    // childFolders가 있으면 그것을 폴더 리스트로 사용
-                    const folders = Array.isArray(data) ? data : data.childFolders || [];
+                    let rawFolders = Array.isArray(data) ? data : data.childFolders || [];
+                    console.log('🔍 childFolders 내용:', rawFolders);
+
+                    // 🔥 Root 라는 이름의 폴더 제거
+                    const folders = rawFolders.filter((f) => (f.folderName ?? f.name) !== 'Root');
 
                     console.log('📦 [정제된 folders 배열]:', folders);
                     setFolderResults(folders);
