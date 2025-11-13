@@ -306,7 +306,7 @@ btn-outline-primary:hover i {
     max-width: 100%;
     background: #fff;
     border: 2px solid #b66e03;
-    border-radius: 12px;
+    border-radius: 10px;
     box-shadow: 0 2px 10px rgba(182, 110, 3, 0.15);
     font-family: 'Pretendard', sans-serif;
     line-height: 1.125em;
@@ -317,15 +317,14 @@ btn-outline-primary:hover i {
 .react-calendar__tile--active {
     background: #b66e03 !important;
     color: #f5f1ec !important;
-    border-radius: 8px;
 }
 
 /* 오늘 날짜 강조 */
 .react-calendar__tile--now {
     background: #f5f1ec !important;
-    border: 1px solid #b66e03;
+    border: 1px solid #b66e03 !important;
     color: #b66e03 !important;
-    border-radius: 8px;
+    border-radius: 10px;
 }
 
 /* 상단 네비게이션 (월/연도 전환 버튼) */
@@ -337,7 +336,7 @@ btn-outline-primary:hover i {
 
 .react-calendar__navigation button:enabled:hover {
     background-color: #f5f1ec;
-    border-radius: 6px;
+    border-radius: 10px;
 }
 
 /* 요일 라벨 */
@@ -350,7 +349,7 @@ btn-outline-primary:hover i {
 /* 일반 날짜 타일 */
 .react-calendar__tile {
     height: 60px;
-    border-radius: 8px;
+    border-radius: 10px;
     transition: background-color 0.2s ease;
 }
 
@@ -362,5 +361,6 @@ btn-outline-primary:hover i {
 
 /* 이전/다음 달 날짜 흐리게 */
 .react-calendar__month-view__days__day--neighboringMonth {
-    color: #bbb !important;
+    color: #d0d0d0 !important;
+    opacity: 0.6 !important;
 }
