@@ -68,6 +68,8 @@ export default function NoteDetail() {
             const data = await getProjectDetails(projectId);
             setProject({ id: data.folderId, name: data.folderName });
 
+            console.log('✅ [NoteDetail] getProjectDetails 응답 (원본 데이터):', data);
+
             // [1] 회의 목록을 최신순으로 정렬
             const sortedMinutes = (data.minutesList || []).sort((a, b) => {
                 return (
@@ -81,6 +83,7 @@ export default function NoteDetail() {
                 sortedMinutes.map(async (minute) => {
                     try {
                         const memberRes = await getMeetingMembers(minute.id); // ✅ 회의록 참가자 API 호출
+                        console.log(`✅ [NoteDetail] 회의록 ID [${minute.id}]의 참가자 정보:`, memberRes);
                         const memberNames =
                             (memberRes.participants || [])
                                 .map((p) => p.participantName)
@@ -111,6 +114,7 @@ export default function NoteDetail() {
                 })
             );
 
+            console.log('✅ [NoteDetail] 최종 가공된 회의록 목록 (subMeetings에 저장될 값):', meetings);
             // [3] 상태 업데이트
             setSubMeetings(meetings);
             setLoading(false);
