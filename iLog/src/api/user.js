@@ -43,9 +43,11 @@ export const registerUser = async (userData) => {
  * 로그인 (비로그인 접근)
  * ========================== */
 export const loginUser = async (data) => {
+    console.log('🟦 [STEP 1] loginUser 함수 호출됨');
     console.group('🧩 [loginUser] 요청 디버그 로그');
     console.log('📤 요청 데이터:', data);
     try {
+        console.log('🟦 [STEP 3] axios.post 실행 직전');
         const res = await api.post('/auth/login', data, { headers: { 'Content-Type': 'application/json' } });
         console.log('✅ 응답 상태 코드:', res.status);
         console.log('✅ 응답 데이터:', res.data);
