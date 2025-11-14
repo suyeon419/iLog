@@ -39,6 +39,8 @@ export default function NoteMeetingDetail() {
 
     // 1. (API 1) 회의록 본문 정보 로드 (변경 없음)
     useEffect(() => {
+        window.scrollTo(0, 0);
+
         const fetchMeeting = async () => {
             setLoading(true);
             setError('');
@@ -280,12 +282,15 @@ export default function NoteMeetingDetail() {
                             <span>{meeting.created}</span>
                         </div>
                     </Col>
-                    <Col md={6}>
+                    <Col md={5}>
                         <div className="d-flex align-items-center">
                             <CalendarPlus className="me-2" />
                             <span className="me-2 fw-bold">수정일자</span>
                             <span>{meeting.modified}</span>
                         </div>
+                    </Col>
+                    <Col md={1} className="text-end">
+                        <i className="bi bi-clock-history fs-4 fw-bold"></i>
                     </Col>
                 </Row>
 
