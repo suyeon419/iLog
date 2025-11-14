@@ -481,3 +481,83 @@ btn-outline-primary:hover i {
 .w-35 {
     width: 35% !important;
 }
+
+/* === 히스토리 페이지 전체 === */
+
+/* 페이지 제목 */
+.history-title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 50px;
+}
+
+/* === 타임라인 === */
+.timeline {
+    position: relative;
+    padding-left: 40px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background-color: #b66e03;
+    opacity: 0.4;
+}
+
+/* 날짜 제목 */
+.timeline-date {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #b66e03;
+}
+
+/* 하나의 히스토리 항목 */
+.timeline-item {
+    position: relative;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: flex-start;
+}
+
+/* 히스토리 동그라미 */
+.timeline-dot {
+    position: absolute;
+    left: -4px;
+    top: 10px;
+    width: 12px;
+    height: 12px;
+    background-color: #b66e03;
+    border-radius: 50%;
+}
+
+/* 히스토리 카드 */
+.timeline-card {
+    margin-left: 25px;
+    background: #fff;
+    border: 2px solid #b66e03;
+    border-radius: 10px;
+    padding: 15px 20px;
+    min-width: 350px;
+    max-width: 700px;
+    box-shadow: 0 4px 10px rgba(182, 110, 3, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 카드 텍스트 */
+.timeline-card .card-title {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.timeline-card .card-time {
+    font-size: 0.85rem;
+    color: #555;
+}
