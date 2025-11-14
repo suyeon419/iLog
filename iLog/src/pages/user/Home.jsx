@@ -25,7 +25,6 @@ export default function Home() {
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
-        console.log(token);
 
         if (!token) {
             setIsLoading(false);
@@ -201,6 +200,12 @@ export default function Home() {
                             회원가입
                         </a>
                     </p>
+                    <div className="driving-car-container">
+                        <div className="car-content">
+                            <span>아이로구 회의록 입니다 ~</span>
+                            <img src="/images/car.png" alt="움직이는 아이로구 자동차" className="custom-car-img" />
+                        </div>
+                    </div>
                 </>
             )}
         </Container>
