@@ -567,3 +567,80 @@ export const getNoteHistory = async (minuteId) => {
         throw error;
     }
 };
+
+/**
+ * [신규] 15. 락 상태 조회 (편집 버튼 활성/비활성)
+ * GET /minutes/{id}/lock
+ */
+export const getLockStatus = async (minuteId) => {
+    try {
+        const response = await api.get(`/minutes/${minuteId}/lock`);
+        // 응답 예: { locked: true }
+        return response.data;
+    } catch (error) {
+        console.error(`❌ (ID: ${minuteId}) 락 상태 조회 실패:`, error);
+        throw error;
+    }
+};
+
+/**
+ * [신규] 16. 락 획득 (편집 시작 시)
+ * POST /minutes/{id}/lock
+ */
+export const acquireLock = async (minuteId) => {
+    try {
+        const headers = { ...getAuthHeader() };
+        // 본문(body) 없이 POST 요청
+        const response = await api.post(`/minutes/${minuteId}/lock`, {}, { headers });
+        // 응답 예: { token: "uuid-..." }
+        console.log(`🔒 (ID: ${minuteId}) 락 획득 성공`);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ (ID: ${minuteId}) 락 획득 실패:`, error.response?.data || error);
+        // 403 LOCK_DENIED 등
+        throw error;
+    }
+};
+
+/**
+ * [신규] 17. 락 갱신 (편집 중)
+ * POST /minutes/{id}/lock/refresh
+ */
+export const refreshLock = async (minuteId, token) => {
+    try {
+        const payload = { token: token };
+        const headers = {
+            'Content-Type': 'application/json',
+            ...getAuthHeader(),
+        };
+        const response = await api.post(`/minutes/${minuteId}/lock/refresh`, payload, { headers });
+        console.log(`🔄 (ID: ${minuteId}) 락 갱신 성공`);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ (ID: ${minuteId}) 락 갱신 실패:`, error);
+        throw error;
+    }
+};
+
+/**
+ * [신규] 18. 락 해제 (페이지 이탈 시)
+ * DELETE /minutes/{id}/lock
+ */
+export const releaseLock = async (minuteId, token) => {
+    try {
+        const headers = { ...getAuthHeader() };
+        const payload = { token: token };
+
+        // Axios
+        const response = await api.delete(`/minutes/${minuteId}/lock`, {
+            headers: headers,
+            data: payload, // 👈 DELETE 요청에 body를 포함하는 방법
+        });
+
+        console.log(`🔓 (ID: ${minuteId}) 락 해제 성공`);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ (ID: ${minuteId}) 락 해제 실패:`, error);
+        throw error;
+    }
+};
