@@ -65,7 +65,7 @@ export default function NoteHistory() {
     // ---------------------------------------------
 
     return (
-        <Container fluid className="pt-3 container-left">
+        <Container fluid className="pt-3">
             <div className="flex-grow-1">
                 <Row className="mb-3 mt-3 align-items-center">
                     <Col>

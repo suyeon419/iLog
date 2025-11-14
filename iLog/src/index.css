@@ -46,6 +46,15 @@ btn-outline-primary:hover i {
     border-color: #ffa2a2 !important;
     color: #333 !important;
 }
+.btn-outline-danger {
+    border-color: #ffa2a2 !important;
+    color: #333 !important;
+}
+.btn-outline-danger:hover {
+    background-color: #ffa2a2 !important;
+    border-color: #ffa2a2 !important;
+    color: #333 !important;
+}
 
 .user-btn {
     width: 350px;
@@ -363,4 +372,50 @@ btn-outline-primary:hover i {
 .react-calendar__month-view__days__day--neighboringMonth {
     color: #d0d0d0 !important;
     opacity: 0.6 !important;
+}
+
+/* 메모 관련 */
+.highlighted-text {
+    background-color: #b66e03;
+    cursor: pointer;
+    transition: background-color 0.2s, font-weight 0.2s;
+    border-radius: 3px;
+    padding: 0 2px;
+}
+
+.highlighted-text.hovered {
+    background-color: #b66e03;
+    font-weight: 600;
+}
+
+.memo-card {
+    border: none;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    position: relative;
+    z-index: 1;
+    background-color: #fff !important;
+}
+
+.memo-card.hovered {
+    border: 2px solid #b66e03;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    transform: translateY(-2px);
+}
+
+.memo-list-container {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.form-control:focus {
+    border-color: #b66e03;
+    box-shadow: none; /* 메모 생성 창 파란색 그림자(glow) 제거 */
+}
+
+.cardHeader-memo {
+    border-bottom: 2px solid #b66e03;
+    padding-bottom: 8px;
+    margin: 0px;
 }
