@@ -101,11 +101,6 @@ export default function Login() {
                     로그인
                 </Button>
             </Form>
-            <div className="driving-car-container">
-                <div className="car-content">
-                    <img src="/images/car.png" alt="움직이는 아이로구 자동차" className="custom-car-img" />
-                </div>
-            </div>
         </Container>
     );
 }
