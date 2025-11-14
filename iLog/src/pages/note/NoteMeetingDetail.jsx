@@ -27,6 +27,7 @@ import {
     updateMemo,
     deleteMemo,
     getNoteHistory,
+    getLockStatus, // [✅ 락_1] getLockStatus API 임포트
 } from '../../api/note';
 
 // [✅ 추가] 페이지네이션 설정: 한 페이지에 보여줄 히스토리 개수
@@ -50,7 +51,7 @@ export default function NoteMeetingDetail() {
     const { meetingId } = useParams();
     const navigate = useNavigate();
 
-    // ( ... useEffect, handleEdit, handleDelete, handleGoToList, handleToggleAiSummary ... )
+    // ( ... useEffect, handleDelete, handleGoToList, handleToggleAiSummary ... )
     // 1. (API 1) 회의록 본문 정보 로드 (변경 없음)
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -86,12 +87,26 @@ export default function NoteMeetingDetail() {
         fetchMeeting();
     }, [meetingId]);
 
-    // '수정' 버튼 클릭 (변경 없음)
-    const handleEdit = () => {
-        navigate(`/notes/meeting/${meetingId}/edit`);
+    // [✅ 락_2] '수정' 버튼 클릭 시 락 상태 확인 로직 추가
+    const handleEdit = async () => {
+        try {
+            // 1. 락 상태를 *먼저* 조회합니다.
+            const lockData = await getLockStatus(meetingId);
+
+            if (lockData.locked) {
+                // 2. 락이 걸려있으면 (true) 경고만 띄웁니다.
+                alert('다른 사용자가 수정 중입니다. 잠시 후 다시 시도해 주세요.');
+            } else {
+                // 3. 락이 안 걸려있으면 (false) 편집 페이지로 이동시킵니다.
+                navigate(`/notes/meeting/${meetingId}/edit`);
+            }
+        } catch (error) {
+            console.error('락 상태 조회 실패:', error);
+            alert('락 상태를 확인하는 중 오류가 발생했습니다.');
+        }
     };
 
-    // 히스토리 목록으로 감
+    // 히스토리 목록으로 감 (변경 없음)
     const handleHistroy = () => {
         navigate(`/notes/meeting/${meetingId}/history`);
     };
@@ -252,6 +267,7 @@ export default function NoteMeetingDetail() {
                                 <ThreeDotsVertical size={24} />
                             </Dropdown.Toggle>
                             <Dropdown.Menu style={{ backgroundColor: '#f5f1ec' }}>
+                                {/* [✅ 락_3] 수정된 handleEdit 함수가 여기 연결됩니다. */}
                                 <Dropdown.Item onClick={handleEdit}>
                                     <PencilSquare className="me-2" /> 수정하기
                                 </Dropdown.Item>

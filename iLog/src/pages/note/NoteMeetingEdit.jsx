@@ -7,7 +7,7 @@ import { PencilSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'r
 import { useNavigate, useParams } from 'react-router-dom';
 import MemberModal from './MemberModal';
 
-// [✅ 락_2] note.js에서 '락 API' 함수 3개 임포트
+// [✅ 락_2] note.js에서 '락 API' 함수 3개 임포트 (getLockStatus는 필요 없음)
 import {
     getNoteDetails,
     updateNote,
@@ -84,15 +84,17 @@ export default function NoteMeetingEdit() {
                 }
 
                 // --- 3. [✅ 락_5] 락 획득 시도 ---
+                // (상세 페이지에서 1차 체크했더라도, 여기서 2차(최종) 획득 시도)
                 try {
-                    const lockData = await acquireLock(meetingId);
+                    const lockData = await acquireLock(meetingId); //
                     if (lockData.token) {
                         setLockToken(lockData.token);
                         console.log('🔒 락 획득 성공:', lockData.token);
                     }
                 } catch (lockErr) {
+                    // (여기서 락 획득 실패 시 = 경합 상태에서 패배)
                     console.error('❌ 락 획득 실패:', lockErr.response?.data || lockErr.message);
-                    setLockError('다른 사용자가 수정 중입니다. (읽기 전용)');
+                    setLockError('다른 사용자가 수정 중입니다. (읽기 전용)'); //
                     setIsReadOnly(true); // 락 획득 실패 시 읽기 전용
                 }
             } catch (err) {

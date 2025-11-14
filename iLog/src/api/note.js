@@ -571,11 +571,12 @@ export const getNoteHistory = async (minuteId) => {
 /**
  * [신규] 15. 락 상태 조회 (편집 버튼 활성/비활성)
  * GET /minutes/{id}/lock
+ * (이 함수가 '방법 2'의 핵심입니다.)
  */
 export const getLockStatus = async (minuteId) => {
     try {
         const response = await api.get(`/minutes/${minuteId}/lock`);
-        // 응답 예: { locked: true }
+        // 응답 예: { locked: true } 또는 { locked: false }
         return response.data;
     } catch (error) {
         console.error(`❌ (ID: ${minuteId}) 락 상태 조회 실패:`, error);
@@ -628,19 +629,16 @@ export const refreshLock = async (minuteId, token) => {
  */
 export const releaseLock = async (minuteId, token) => {
     try {
-        const headers = { ...getAuthHeader() };
         const payload = { token: token };
-
-        // Axios
-        const response = await api.delete(`/minutes/${minuteId}/lock`, {
-            headers: headers,
-            data: payload, // 👈 DELETE 요청에 body를 포함하는 방법
-        });
-
-        console.log(`🔓 (ID: ${minuteId}) 락 해제 성공`);
+        const headers = {
+            'Content-Type': 'application/json',
+            ...getAuthHeader(),
+        };
+        const response = await api.post(`/minutes/${minuteId}/lock/refresh`, payload, { headers });
+        console.log(`🔄 (ID: ${minuteId}) 락 갱신 성공`);
         return response.data;
     } catch (error) {
-        console.error(`❌ (ID: ${minuteId}) 락 해제 실패:`, error);
+        console.error(`❌ (ID: ${minuteId}) 락 갱신 실패:`, error);
         throw error;
     }
 };
