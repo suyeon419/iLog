@@ -57,7 +57,7 @@ export default function Login() {
 
     return (
         <Container>
-            <img src="./images/iLogLogo.png" alt="iLog Logo" style={{ width: '150px' }} /> <br />
+            <img className="w-35" src="./images/ko.ilo9.png" alt="iLog Logo" /> <br />
             {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleSubmit}>
                 <Form.Group>
