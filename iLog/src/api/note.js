@@ -550,3 +550,20 @@ export const deleteMeetingMember = async (minutesId, participantId) => {
         }
     }
 };
+
+/**
+ * [✅ 신규] 회의록 수정 히스토리 조회
+ * GET /minutes/{minuteId}/history
+ * (image_374a21.png 참고)
+ */
+export const getNoteHistory = async (minuteId) => {
+    try {
+        const response = await api.get(`/minutes/${minuteId}/history`);
+        console.log(`✅ (ID: ${minuteId}) 회의록 히스토리 로드 성공:`, response.data);
+        // Postman에서 배열 [ { ... } ]을 반환하므로 response.data를 그대로 반환
+        return response.data;
+    } catch (error) {
+        console.error(`❌ (ID: ${minuteId}) 회의록 히스토리 로드 실패:`, error);
+        throw error;
+    }
+};
