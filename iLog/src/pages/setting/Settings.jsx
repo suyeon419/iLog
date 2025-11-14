@@ -147,7 +147,9 @@ export default function Settings() {
             {/* ... (이하 나머지 코드는 동일) ... */}
 
             <section>
-                <h2>🔐 내 계정 관리</h2>
+                <h2>
+                    <i class="bi bi-lock"></i> 내 계정 관리
+                </h2>
                 <hr className="brownHr" />
                 <ul className="list-unstyled mt-2 ms-3">
                     <li>
@@ -160,7 +162,9 @@ export default function Settings() {
             </section>
 
             <section>
-                <h2>📘 내 활동</h2>
+                <h2>
+                    <i class="bi bi-journal-text"></i> 내 활동
+                </h2>
                 <hr className="brownHr" />
                 <ul className="list-unstyled mt-2 ms-3">
                     <li>
