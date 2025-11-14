@@ -104,8 +104,8 @@ export default function CreateMeeting() {
             <Card className="meetingcard">
                 {/* 헤더 부분 */}
                 <Card.Header className="cardHeader">
-                    <span className="mini-logo">
-                        <img src="/images/iLogLogo.png" alt="iLog Logo" style={{ height: '20px' }} />
+                    <span className="mini-logo pt-1">
+                        <img src="/images/iLo9-white.png" alt="iLog Logo" />
                     </span>
                 </Card.Header>
 

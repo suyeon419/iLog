@@ -182,10 +182,16 @@ btn-outline-primary:hover i {
 }
 
 .mini-logo {
-    background-color: #f5f1ec;
-    padding: 3px;
-    margin: 0px;
-    border-radius: 10px;
+    height: 30px;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.mini-logo img {
+    width: 100%;
+    height: 100%;
+    object-position: center;
+    margin: 0 auto;
 }
 
 /* --- MemberModal 커스텀 스타일 --- */
