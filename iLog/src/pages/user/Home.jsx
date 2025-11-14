@@ -25,6 +25,7 @@ export default function Home() {
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
+        console.log(token);
 
         if (!token) {
             setIsLoading(false);
