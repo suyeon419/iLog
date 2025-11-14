@@ -5,7 +5,7 @@ import { Container, Form, Button, Row, Col, Alert } from 'react-bootstrap';
 import { PencilSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MemberModal from './MemberModal';
-import { createNote } from '../../api/note';
+import { createNote, getProjectDetails } from '../../api/note';
 
 import { getUserById } from '../../api/user';
 import { jwtDecode } from 'jwt-decode';
@@ -55,6 +55,29 @@ export default function NoteCreate() {
         }
     }, []);
 
+    // 🚀 회의록 제목 중복 체크 → (1), (2) 붙이기
+    const getUniqueTitle = async (parentId, originalTitle) => {
+        // 현재 폴더의 기존 회의록 가져오기
+        const project = await getProjectDetails(parentId);
+
+        // 기존 회의록의 name 목록 추출
+        const existingNames = project.minutesList.map((m) => m.name);
+
+        // 동일 제목 없으면 그대로 사용
+        if (!existingNames.includes(originalTitle)) return originalTitle;
+
+        // (1)부터 증가시키며 새로운 제목 찾기
+        let counter = 1;
+        let newTitle = `${originalTitle} (${counter})`;
+
+        while (existingNames.includes(newTitle)) {
+            counter++;
+            newTitle = `${originalTitle} (${counter})`;
+        }
+
+        return newTitle;
+    };
+
     const handleSave = async () => {
         if (!parentId) {
             setError('상위 폴더 ID가 없습니다. 프로젝트 페이지에서 다시 시도해 주세요.');
@@ -73,13 +96,15 @@ export default function NoteCreate() {
         setIsSaving(true);
         setError('');
 
-        const payload = {
-            title: title || '제목 없음',
-            content: content,
-            members: [user?.name || '참가자'],
-        };
-
         try {
+            const finalTitle = await getUniqueTitle(parentId, title.trim());
+
+            const payload = {
+                title: finalTitle || '제목 없음',
+                content: content,
+                members: [user?.name || '참가자'],
+            };
+
             console.log(`[NoteCreate] API 호출: POST /folders/${parentId}/minutes`);
             const data = await createNote(parentId, payload);
 

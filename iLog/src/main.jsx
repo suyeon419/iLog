@@ -56,8 +56,8 @@ createRoot(document.getElementById('root')).render(
                 <Route path="/edit-profile" element={<EditProfile />} />
                 <Route path="/confirm-password" element={<ConfirmPw />} />
                 <Route path="login-history" element={<LoginHistory />} />
-                <Route path="/meeting-history" element={<MeetingHistory />} />
-                <Route path="/note-history" element={<NoteHistory />} />
+                <Route path="/history-meeting" element={<MeetingHistory />} />
+                <Route path="/history-note" element={<NoteHistory />} />
             </Route>
         </Routes>
     </BrowserRouter>

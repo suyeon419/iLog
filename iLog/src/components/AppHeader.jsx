@@ -22,7 +22,7 @@ export default function AppHeader() {
     );
     const isNotesActive = ['/notes'].some((path) => location.pathname.startsWith(path));
     const isMeetingActive = ['/meeting'].some((path) => location.pathname.startsWith(path));
-    const isSettingsActive = ['/settings'].some((path) => location.pathname.startsWith(path));
+    const isSettingsActive = ['/settings', '/history'].some((path) => location.pathname.startsWith(path));
 
     return (
         <Navbar expand="lg" fixed="top" style={{ backgroundColor: '#F5F1EC' }}>
