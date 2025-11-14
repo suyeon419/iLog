@@ -93,7 +93,7 @@ export default function NoteMeetingDetailHistoryDetail() {
                     {/* 오른쪽 버튼 */}
                     <Col xs="auto" className="d-flex align-items-center">
                         <Button variant="outline-primary" className="fw-bold me-1 mini-btn" onClick={handleGoBack}>
-                            뒤로
+                            목록
                         </Button>
                     </Col>
                 </Row>
