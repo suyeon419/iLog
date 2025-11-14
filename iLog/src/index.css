@@ -483,8 +483,6 @@ btn-outline-primary:hover i {
 }
 
 /* === 히스토리 페이지 전체 === */
-
-/* 페이지 제목 */
 .history-title {
     text-align: center;
     font-size: 2rem;
@@ -492,72 +490,66 @@ btn-outline-primary:hover i {
     margin-bottom: 50px;
 }
 
-/* === 타임라인 === */
+/* 타임라인 전체 */
 .timeline {
     position: relative;
-    padding-left: 40px;
+    padding-bottom: 50px;
 }
 
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 14px;
-    top: 0;
-    width: 2px;
-    height: 100%;
-    background-color: #b66e03;
-    opacity: 0.4;
-}
-
-/* 날짜 제목 */
-.timeline-date {
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: #b66e03;
-}
-
-/* 하나의 히스토리 항목 */
-.timeline-item {
+/* 날짜 그룹 */
+.timeline-date-block {
     position: relative;
-    margin-bottom: 25px;
-    display: flex;
-    align-items: flex-start;
+    margin-bottom: 50px;
+    padding-left: 30px;
 }
 
-/* 히스토리 동그라미 */
-.timeline-dot {
+/* 날짜 큰 동그라미 */
+.timeline-date-dot {
     position: absolute;
-    left: -4px;
-    top: 10px;
-    width: 12px;
-    height: 12px;
+    left: -18px; /* 정확히 선 중심으로 */
+    top: 4px;
+    width: 14px;
+    height: 14px;
     background-color: #b66e03;
     border-radius: 50%;
+    z-index: 3;
 }
 
-/* 히스토리 카드 */
+/* 날짜 텍스트 */
+.timeline-date {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #b66e03;
+    margin-bottom: 15px;
+}
+
+/* 날짜 아래로 내려가는 수직선 */
+.timeline-date-line {
+    position: absolute;
+    left: -12px; /* 도트와 완전 정렬 */
+    top: 20px;
+    width: 2px;
+    height: calc(100% - 5px);
+    background-color: #b66e03;
+    opacity: 0.4;
+    z-index: 1;
+}
+
+/* 히스토리 아이템 */
+.timeline-item {
+    margin-bottom: 20px;
+    margin-left: 20px; /* 선 → 카드 간격 */
+}
+
+/* 카드 스타일 */
 .timeline-card {
-    margin-left: 25px;
     background: #fff;
     border: 2px solid #b66e03;
     border-radius: 10px;
-    padding: 15px 20px;
-    min-width: 350px;
-    max-width: 700px;
-    box-shadow: 0 4px 10px rgba(182, 110, 3, 0.1);
+    padding: 14px 18px;
+    width: 520px;
+    box-shadow: 0 4px 12px rgba(182, 110, 3, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-/* 카드 텍스트 */
-.timeline-card .card-title {
-    font-weight: 600;
-    font-size: 1rem;
-}
-
-.timeline-card .card-time {
-    font-size: 0.85rem;
-    color: #555;
 }
