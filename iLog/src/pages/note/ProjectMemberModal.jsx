@@ -1,46 +1,39 @@
-// MemberModal.jsx
+// ProjectMemberModal.jsx
+// [목적] 프로젝트(폴더) 레벨의 조원을 관리 (추가/삭제)
 
 import React, { useState } from 'react';
-import { Modal, Button, Form, Badge, ListGroup, OverlayTrigger, Tooltip, Spinner } from 'react-bootstrap';
+import { Modal, Button, Form, Badge, ListGroup, Spinner } from 'react-bootstrap';
 
-// ❗ note.js의 API 함수를 여기서 직접 임포트하지 않습니다.
-// 대신 props로 받아옵니다.
-
-export default function MemberModal({
+export default function ProjectMemberModal({
     show,
     onHide,
-    members = [],
-    inviteLink = '',
+    members = [], // ✅ 프로젝트 조원 목록
     onMemberUpdate, // 부모 상태 업데이트용 콜백
 
-    // [✅ 1. 재사용을 위한 Props]
-    entityId, // 폴더 ID(folderId) 또는 회의록 ID(meetingId)
-    addMemberApi, // 멤버 추가 API 함수 (e.g., addProjectMemberByEmail)
-    deleteMemberApi, // 멤버 삭제 API 함수 (e.g., deleteProjectMember)
+    // API Props
+    entityId, // ✅ folderId
+    addMemberApi, // ✅ addProjectMemberByEmail
+    deleteMemberApi, // ✅ deleteProjectMember
 }) {
     const [email, setEmail] = useState('');
     const [isInviting, setIsInviting] = useState(false);
-    const [showCopiedTooltip, setShowCopiedTooltip] = useState(false);
     const [isDeletingId, setIsDeletingId] = useState(null);
 
-    // [✅ 2. props로 받은 API 함수 사용하도록 수정]
+    // 1. 이메일로 프로젝트에 조원 초대
     const handleInviteByEmail = async () => {
         if (!email) {
             alert('이메일을 입력해주세요.');
             return;
         }
-        // entityId와 addMemberApi 함수가 있는지 확인
         if (!entityId || typeof addMemberApi !== 'function') {
             console.error('필수 props(entityId, addMemberApi)가 없습니다.');
-            alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            alert('오류가 발생했습니다.');
             return;
         }
 
         setIsInviting(true);
         try {
-            // props로 받은 API 함수 호출
-            const updatedData = await addMemberApi(entityId, email);
-
+            const updatedData = await addMemberApi(entityId, email); // folderId, email
             if (onMemberUpdate) {
                 onMemberUpdate(updatedData); // 부모 컴포넌트 상태 업데이트
             }
@@ -53,40 +46,37 @@ export default function MemberModal({
         }
     };
 
-    // [✅ 3. props로 받은 API 함수 사용하도록 수정]
+    // 2. 프로젝트에서 조원 삭제
     const handleRemoveMember = async (participantId) => {
         if (!window.confirm('정말로 이 멤버를 삭제하시겠습니까?')) {
             return;
         }
-        // entityId와 deleteMemberApi 함수가 있는지 확인
         if (!entityId || typeof deleteMemberApi !== 'function') {
             console.error('필수 props(entityId, deleteMemberApi)가 없습니다.');
             alert('오류가 발생했습니다.');
             return;
         }
 
-        setIsDeletingId(participantId); // 해당 멤버 삭제 로딩 시작
+        setIsDeletingId(participantId);
         try {
-            // props로 받은 API 함수 호출
-            const updatedData = await deleteMemberApi(entityId, participantId);
-
+            const updatedData = await deleteMemberApi(entityId, participantId); // folderId, participantId
             if (onMemberUpdate) {
-                onMemberUpdate(updatedData); // 부모 컴포넌트 상태 업데이트
+                onMemberUpdate(updatedData);
             }
         } catch (error) {
             console.error('Failed to remove member:', error);
             alert(error.message || '멤버 삭제에 실패했습니다.');
         } finally {
-            setIsDeletingId(null); // 로딩 종료
+            setIsDeletingId(null);
         }
     };
 
-    // 모달이 닫힐 때 입력값 초기화
+    // 모달 닫힐 때 상태 초기화
     const handleModalHide = () => {
         setEmail('');
         setIsInviting(false);
         setIsDeletingId(null);
-        onHide(); // 부모의 onHide 함수 호출
+        onHide();
     };
 
     return (
@@ -108,24 +98,24 @@ export default function MemberModal({
                             disabled={isInviting}
                         />
                         <Button variant="secondary" onClick={handleInviteByEmail} disabled={isInviting}>
-                            {isInviting ? <Spinner as="span" animation="border" size="sm" role="status" /> : '추가'}
+                            {isInviting ? <Spinner as="span" animation="border" size="sm" /> : '추가'}
                         </Button>
                     </div>
                 </Form.Group>
 
-                {/* 3. 조원 목록 */}
+                {/* 2. 조원 목록 (단일 목록) */}
                 <hr className="brownHr my-1" />
 
                 <ListGroup variant="flush" style={{ overflowY: 'auto' }}>
                     {Array.isArray(members) && members.length > 0 ? (
                         members.map((member) => (
-                            <React.Fragment key={member.id}>
+                            <React.Fragment key={member.participantId}>
                                 <ListGroup.Item
                                     className="d-flex align-items-center justify-content-between px-0"
                                     style={{ backgroundColor: 'transparent' }}
                                 >
                                     <div className="d-flex align-items-center">
-                                        {/* ... (프로필 이미지 렌더링) ... */}
+                                        {/* (프로필 이미지 렌더링) */}
                                         {member.participantImage ? (
                                             <img
                                                 src={member.participantImage}
@@ -133,7 +123,7 @@ export default function MemberModal({
                                                 className="rounded-circle me-3"
                                                 style={{ width: '40px', height: '40px', objectFit: 'cover' }}
                                                 onError={(e) => {
-                                                    e.target.src = '/default-profile.png'; // 기본 이미지
+                                                    e.target.src = '/default-profile.png';
                                                 }}
                                             />
                                         ) : (
@@ -142,7 +132,6 @@ export default function MemberModal({
                                                 style={{ width: '40px', height: '40px', backgroundColor: '#e0e0e0' }}
                                             ></div>
                                         )}
-
                                         <div>
                                             <span className="fw-semibold">{member.participantName}</span>
                                             {member.leader && <Badge className="ms-2 badge-leader">팀장</Badge>}
@@ -151,10 +140,11 @@ export default function MemberModal({
                                         </div>
                                     </div>
 
-                                    {/* 삭제 버튼 로직 */}
+                                    {/* 삭제 버튼 */}
                                     {!member.leader && (
                                         <Button
                                             variant="danger"
+                                            size="sm"
                                             onClick={() => handleRemoveMember(member.participantId)}
                                             disabled={isDeletingId === member.participantId}
                                         >
