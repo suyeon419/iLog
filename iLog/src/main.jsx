@@ -28,6 +28,7 @@ import LoginHistory from './pages/setting/LoginHistory.jsx';
 import ConfirmPw from './pages/setting/ConfirmPw.jsx';
 import MeetingHistory from './pages/setting/MeetingHistory.jsx';
 import NoteHistory from './pages/setting/NoteHistory.jsx';
+import NoteMeetingDetailHistory from './pages/note/NoteMeetingDetailHistory.jsx';
 
 createRoot(document.getElementById('root')).render(
     // <React.StrictMode>
@@ -47,6 +48,7 @@ createRoot(document.getElementById('root')).render(
                 <Route path="/notes/:id" element={<NoteDetail />} />
                 <Route path="/notes/meeting/:meetingId" element={<NoteMeetingDetail />} />
                 <Route path="/notes/meeting/:meetingId/edit" element={<NoteMeetingEdit />} />
+                <Route path="/notes/meeting/:meetingId/history" element={<NoteMeetingDetailHistory />} />
 
                 <Route path="/meeting" element={<JoinMeeting />} />
                 <Route path="/meeting/create" element={<CreateMeeting />} />

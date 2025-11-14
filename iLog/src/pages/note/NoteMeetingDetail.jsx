@@ -44,10 +44,7 @@ export default function NoteMeetingDetail() {
     const [showChatbot, setShowChatbot] = useState(false);
 
     // [✅ 수정] 히스토리 모달 관련 state
-    const [showHistoryModal, setShowHistoryModal] = useState(false);
-    const [historyData, setHistoryData] = useState(null);
-    const [historyLoading, setHistoryLoading] = useState(false);
-    const [historyError, setHistoryError] = useState('');
+
     const [historyCurrentPage, setHistoryCurrentPage] = useState(1); // [✅ 추가] 히스토리 현재 페이지 state
 
     const { meetingId } = useParams();
@@ -94,6 +91,11 @@ export default function NoteMeetingDetail() {
         navigate(`/notes/meeting/${meetingId}/edit`);
     };
 
+    // 히스토리 목록으로 감
+    const handleHistroy = () => {
+        navigate(`/notes/meeting/${meetingId}/history`);
+    };
+
     // '삭제' 버튼 클릭 (변경 없음)
     const handleDelete = async () => {
         if (window.confirm('정말로 이 회의록을 삭제하시겠습니까?')) {
@@ -134,27 +136,6 @@ export default function NoteMeetingDetail() {
             } finally {
                 setAiLoading(false);
             }
-        }
-    };
-
-    /**
-     * [✅ 수정] 히스토리 아이콘 클릭 핸들러
-     */
-    const handleShowHistory = async () => {
-        setShowHistoryModal(true); // 모달을 먼저 엽니다.
-        setHistoryLoading(true);
-        setHistoryError('');
-        setHistoryData(null); // 이전 데이터를 비웁니다.
-        setHistoryCurrentPage(1); // [✅ 추가] 모달 열 때 1페이지로 리셋
-
-        try {
-            const data = await getNoteHistory(meetingId);
-            setHistoryData(data); // API는 배열을 반환
-        } catch (err) {
-            console.error('Failed to fetch history:', err);
-            setHistoryError('히스토리 로드에 실패했습니다.');
-        } finally {
-            setHistoryLoading(false);
         }
     };
 
@@ -248,27 +229,6 @@ export default function NoteMeetingDetail() {
         );
     }
 
-    // [✅ 추가] 페이지네이션 계산 로직
-    const totalHistoryItems = historyData ? historyData.length : 0;
-    const totalPages = Math.ceil(totalHistoryItems / ITEMS_PER_PAGE);
-    const lastIndex = historyCurrentPage * ITEMS_PER_PAGE;
-    const firstIndex = lastIndex - ITEMS_PER_PAGE;
-    const currentHistoryItems = historyData ? historyData.slice(firstIndex, lastIndex) : [];
-
-    // [✅ 추가] 페이지네이션 아이템 렌더링
-    let paginationItems = [];
-    for (let number = 1; number <= totalPages; number++) {
-        paginationItems.push(
-            <Pagination.Item
-                key={number}
-                active={number === historyCurrentPage}
-                onClick={() => setHistoryCurrentPage(number)}
-            >
-                {number}
-            </Pagination.Item>
-        );
-    }
-
     // (정상 렌더링)
     return (
         <Container fluid className="pt-3 container-left">
@@ -333,9 +293,9 @@ export default function NoteMeetingDetail() {
                     <Col md={1} className="text-end">
                         <i
                             className="bi bi-clock-history fs-4 fw-bold"
-                            onClick={handleShowHistory}
                             style={{ cursor: 'pointer' }}
                             title="수정 히스토리 보기"
+                            onClick={handleHistroy}
                         ></i>
                     </Col>
                 </Row>
@@ -386,59 +346,6 @@ export default function NoteMeetingDetail() {
             {/* 챗봇 관련 (변경 없음) */}
             {showChatbot && <ChatbotPanel onClose={() => setShowChatbot(false)} meetingId={meetingId} />}
             <FloatingChatButton onClick={() => setShowChatbot(!showChatbot)} />
-
-            {/* [✅ 수정] 히스토리 조회 모달 (Body, Footer 수정) */}
-            <Modal show={showHistoryModal} onHide={() => setShowHistoryModal(false)} size="lg" centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>회의록 수정 히스토리</Modal.Title>
-                </Modal.Header>
-                <Modal.Body style={{ minHeight: '40vh', overflowY: 'auto' }}>
-                    {/* [✅ 수정] minHeight 추가 */}
-                    {historyLoading ? (
-                        <div className="text-center">
-                            <Spinner animation="border" />
-                            <p className="mt-2">히스토리를 불러오는 중...</p>
-                        </div>
-                    ) : historyError ? (
-                        <Alert variant="danger">{historyError}</Alert>
-                    ) : currentHistoryItems && currentHistoryItems.length > 0 ? ( // [✅ 수정] historyData -> currentHistoryItems
-                        currentHistoryItems.map(
-                            (
-                                item // [✅ 수정] historyData -> currentHistoryItems
-                            ) => (
-                                <div key={item.historyId} className="mb-3 border-bottom pb-3">
-                                    <h5 className="mb-2">{item.title}</h5>
-                                    <p className="text-muted mb-2">
-                                        수정일: {new Date(item.updatedAt).toLocaleString()}
-                                    </p>
-                                    <pre
-                                        className="border p-3 rounded bg-light"
-                                        style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
-                                    >
-                                        {item.content.replace(/\\\\n/g, '\n').replace(/\\n/g, '\n').trim()}
-                                    </pre>
-                                </div>
-                            )
-                        )
-                    ) : (
-                        // 로딩이 끝났는데 데이터가 없는 경우
-                        <Alert variant="info">수정 히스토리가 없습니다.</Alert>
-                    )}
-                </Modal.Body>
-                <Modal.Footer className="d-flex justify-content-between align-items-center">
-                    {' '}
-                    {/* [✅ 수정] d-flex 추가 */}
-                    {/* [✅ 추가] 페이지네이션 컴포넌트 */}
-                    {totalPages > 1 ? (
-                        <Pagination className="mb-0">{paginationItems}</Pagination>
-                    ) : (
-                        <div></div> // 페이지네이션 없을 때 레이아웃 유지를 위한 빈 div
-                    )}
-                    <Button variant="secondary" onClick={() => setShowHistoryModal(false)}>
-                        닫기
-                    </Button>
-                </Modal.Footer>
-            </Modal>
         </Container>
     );
 }
