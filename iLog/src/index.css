@@ -113,6 +113,7 @@ btn-outline-primary:hover i {
     background: white;
     min-height: 88vh !important;
     font-family: 'Pretendard', sans-serif;
+    padding: 30px;
 }
 .container-left {
     display: flex;
