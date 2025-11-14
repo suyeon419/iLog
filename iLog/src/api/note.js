@@ -634,11 +634,11 @@ export const releaseLock = async (minuteId, token) => {
             'Content-Type': 'application/json',
             ...getAuthHeader(),
         };
-        const response = await api.post(`/minutes/${minuteId}/lock/refresh`, payload, { headers });
-        console.log(`🔄 (ID: ${minuteId}) 락 갱신 성공`);
+        const response = await api.post(`/minutes/${minuteId}/lock/release`, payload, { headers });
+        console.log(`🔄 (ID: ${minuteId}) 락 해제 성공`);
         return response.data;
     } catch (error) {
-        console.error(`❌ (ID: ${minuteId}) 락 갱신 실패:`, error);
+        console.error(`❌ (ID: ${minuteId}) 락 해제 실패:`, error);
         throw error;
     }
 };
