@@ -154,6 +154,8 @@ export default function NoteMeetingEdit() {
 
     // '수정 완료' 버튼 클릭
     const handleSave = async () => {
+        console.log('TOKEN:', localStorage.getItem('token'));
+
         // [✅ 락_7] 읽기 전용이거나 락이 없으면 저장 불가
         if (isReadOnly || !lockToken) {
             alert(lockError || '수정 권한이 없습니다.');

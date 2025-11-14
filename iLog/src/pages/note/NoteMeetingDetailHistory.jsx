@@ -2,11 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Container, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { getNoteHistory } from '../../api/note';
+import { useNavigate } from 'react-router-dom';
 
 export default function NoteMeetingDetailHistory() {
     const { meetingId } = useParams();
     const [groupedHistory, setGroupedHistory] = useState({});
     const [loading, setLoading] = useState(true);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchHistory = async () => {
@@ -19,6 +22,10 @@ export default function NoteMeetingDetailHistory() {
                     acc[date].push(item);
                     return acc;
                 }, {});
+
+                Object.keys(grouped).forEach((date) => {
+                    grouped[date].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+                });
 
                 const sorted = Object.keys(grouped)
                     .sort((a, b) => new Date(b) - new Date(a))
@@ -39,7 +46,7 @@ export default function NoteMeetingDetailHistory() {
 
     if (loading) {
         return (
-            <Container className="history-container text-center mt-4">
+            <Container className="text-center mt-4">
                 <Spinner />
             </Container>
         );
@@ -51,14 +58,24 @@ export default function NoteMeetingDetailHistory() {
 
             <div className="timeline">
                 {Object.keys(groupedHistory).map((date) => (
-                    <div key={date} className="timeline-group">
+                    <div key={date} className="timeline-date-block">
+                        {/* 날짜 dot */}
+                        <div className="timeline-date-dot"></div>
+
+                        {/* 날짜 아래로 이어지는 세로선 */}
+                        <div className="timeline-date-line"></div>
+
+                        {/* 날짜 텍스트 */}
                         <div className="timeline-date">{date}</div>
 
+                        {/* 아이템들 */}
                         {groupedHistory[date].map((item) => (
                             <div key={item.id} className="timeline-item">
-                                <div className="timeline-dot"></div>
-
-                                <div className="timeline-card">
+                                {/* 아이템 카드 */}
+                                <div
+                                    className="timeline-card"
+                                    onClick={() => navigate(`/notes/meeting/${item.minutesId}/history/${item.id}`)}
+                                >
                                     <div className="card-title">{item.title}</div>
                                     <div className="card-time">
                                         {new Date(item.updatedAt).toLocaleTimeString([], {
