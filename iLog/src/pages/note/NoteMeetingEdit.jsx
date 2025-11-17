@@ -388,7 +388,7 @@ export default function NoteMeetingEdit() {
                 projectMembers={projectMembers} // ← 이거 넣어야 한다
                 meetingMembers={meetingMembers} // ← 이것도
                 addMemberApi={addMeetingMember}
-                deleteMemberApi={deleteMeetingMember}
+                deleteMeetingMember={deleteMeetingMember}
                 onMemberUpdate={(updated) => {
                     // updated 구조 그대로 meetingMembers 다시 세팅
                     setMeetingMembers(updated.participants);
