@@ -1,7 +1,8 @@
-// NoteAISummary.jsx (스크롤, 인라인 폼, *메모 목록 정렬* 적용)
+// NoteAISummary.jsx (마크다운 렌더링 및 기존 기능 유지)
 
 import React, { useState } from 'react';
 import { Row, Col, Card, Button, Form } from 'react-bootstrap';
+import { marked } from 'marked'; // [1. 수정] marked 라이브러리 임포트
 
 export default function NoteAISummary({
     summaryText,
@@ -19,6 +20,7 @@ export default function NoteAISummary({
 
     // ... (handleTextSelection, handleSaveNewMemo, handleCancelNewMemo 함수 변경 없음) ...
     const handleTextSelection = (e) => {
+        //
         const selection = window.getSelection();
         if (!selection.rangeCount) return;
 
@@ -26,13 +28,14 @@ export default function NoteAISummary({
         const selectedText = range.toString().trim();
 
         if (selectedText) {
-            const preNode = e.currentTarget;
+            // [2. 수정] <pre>가 아닌 <div>이므로 'preNode' -> 'containerNode'로 변수명 변경 (기능 동일)
+            const containerNode = e.currentTarget; //
 
             const preSelectionRange = document.createRange();
-            preSelectionRange.selectNodeContents(preNode);
+            preSelectionRange.selectNodeContents(containerNode);
             preSelectionRange.setEnd(range.startContainer, range.startOffset);
 
-            const startIndex = preSelectionRange.toString().length;
+            const startIndex = preSelectionRange.toString().length; //
             const endIndex = startIndex + selectedText.length;
 
             setPendingMemo({
@@ -47,6 +50,7 @@ export default function NoteAISummary({
     };
 
     const handleSaveNewMemo = () => {
+        //
         if (!pendingMemo || !newMemoContent.trim()) {
             handleCancelNewMemo();
             return;
@@ -56,17 +60,22 @@ export default function NoteAISummary({
     };
 
     const handleCancelNewMemo = () => {
+        //
         setPendingMemo(null);
         setNewMemoContent('');
     };
 
-    // ... (renderSummaryWithHighlights 함수 변경 없음) ...
+    // [3. 수정] 마크다운을 렌더링하도록 함수 수정
     const renderSummaryWithHighlights = () => {
-        if (!initialMemos || initialMemos.length === 0 || !summaryText) {
-            return summaryText;
+        //
+        if (!summaryText) return null;
+
+        // 메모가 없으면 전체 텍스트를 마크다운으로 변환
+        if (!initialMemos || initialMemos.length === 0) {
+            // marked.parse()는 전체 문서를 파싱 (예: <p> 태그 등 생성)
+            return <div dangerouslySetInnerHTML={{ __html: marked.parse(summaryText) }} />;
         }
 
-        // ⚠️ 참고: 이 함수는 '형광펜'을 그리기 위한 정렬 (이미 startIndex 기준)
         const sortedMemos = initialMemos
             .filter(
                 (memo) =>
@@ -75,10 +84,10 @@ export default function NoteAISummary({
                     memo.endIndex > memo.startIndex &&
                     memo.endIndex <= summaryText.length
             )
-            .sort((a, b) => a.startIndex - b.startIndex);
+            .sort((a, b) => a.startIndex - b.startIndex); //
 
         if (sortedMemos.length === 0) {
-            return summaryText;
+            return <div dangerouslySetInnerHTML={{ __html: marked.parse(summaryText) }} />;
         }
 
         let lastIndex = 0;
@@ -90,9 +99,19 @@ export default function NoteAISummary({
             }
 
             if (memo.startIndex > lastIndex) {
-                parts.push(summaryText.substring(lastIndex, memo.startIndex));
+                // 하이라이트 아닌 부분 (마크다운 *인라인*으로 변환)
+                const textPart = summaryText.substring(lastIndex, memo.startIndex);
+                // marked.parseInline()은 <p> 같은 블록 태그를 만들지 않아 문장 흐름에 적합
+                parts.push(
+                    <span
+                        key={`part-${lastIndex}`}
+                        dangerouslySetInnerHTML={{ __html: marked.parseInline(textPart) }}
+                    />
+                );
             }
 
+            // 하이라이트 된 부분 (마크다운 *인라인*으로 변환)
+            const highlightedTextPart = summaryText.substring(memo.startIndex, memo.endIndex);
             parts.push(
                 <span
                     key={memo.id}
@@ -100,7 +119,7 @@ export default function NoteAISummary({
                     onMouseEnter={() => setHoveredMemoId(memo.id)}
                     onMouseLeave={() => setHoveredMemoId(null)}
                 >
-                    {summaryText.substring(memo.startIndex, memo.endIndex)}
+                    <span dangerouslySetInnerHTML={{ __html: marked.parseInline(highlightedTextPart) }} />
                 </span>
             );
 
@@ -108,7 +127,14 @@ export default function NoteAISummary({
         });
 
         if (lastIndex < summaryText.length) {
-            parts.push(summaryText.substring(lastIndex));
+            // 마지막 남은 부분 (마크다운 *인라인*으로 변환)
+            const lastTextPart = summaryText.substring(lastIndex);
+            parts.push(
+                <span
+                    key={`part-${lastIndex}`}
+                    dangerouslySetInnerHTML={{ __html: marked.parseInline(lastTextPart) }}
+                />
+            );
         }
 
         return parts;
@@ -135,86 +161,47 @@ export default function NoteAISummary({
         setEditingMemoContent('');
     };
 
-    // ========================================================
-    // ✅ [신규] 1. '메모 목록'을 startIndex 기준으로 정렬
-    // ========================================================
-    // .sort()는 원본 배열(props)을 변경할 수 있으므로, .slice()로 복사본을 만들어 정렬합니다.
-    const sortedMemoList = initialMemos
-        .slice() // 원본 배열(props)을 변경하지 않기 위해 복사
-        .sort((a, b) => {
-            // startIndex가 없는 경우(null, undefined)를 대비해 맨 뒤로 보냅니다.
-            if (a.startIndex == null) return 1;
-            if (b.startIndex == null) return -1;
-            return a.startIndex - b.startIndex;
-        });
+    // ... (sortedMemoList 정렬 로직 변경 없음) ...
+    const sortedMemoList = initialMemos.slice().sort((a, b) => {
+        if (a.startIndex == null) return 1;
+        if (b.startIndex == null) return -1;
+        return a.startIndex - b.startIndex;
+    });
 
     return (
         <>
-            {/* <style> 태그 (변경 없음) */}
-            <style>
-                {`
-                .highlighted-text {
-                    background-color: #fcf8e3;
-                    cursor: pointer;
-                    transition: background-color 0.2s, font-weight 0.2s;
-                    border-radius: 3px;
-                    padding: 0 2px;
-                }
-                
-                .highlighted-text.hovered {
-                    background-color: #f7e6a0;
-                    font-weight: 600;
-                }
-                
-                .memo-card {
-                    border: none;
-                    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-                    position: relative;
-                    z-index: 1;
-                }
-                
-                .memo-card.hovered {
-                    border: 2px solid #b66e03;
-                    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-                    z-index: 10;
-                    transform: translateY(-2px);
-                }
-
-                .memo-list-container {
-                    max-height: 60vh; 
-                    overflow-y: auto;
-                    padding-right: 5px;
-                }
-                `}
-            </style>
             <Row>
-                {/* 1. AI 요약 본문 (변경 없음) */}
+                {/* 1. AI 요약 본문 */}
                 <Col md={8} className="ai-summary-content">
                     <h4 className="fw-bold mb-3">
                         <i className="bi bi-robot me-2"></i>AI 요약 피드백
                     </h4>
-                    <pre
-                        className="ai-summary-pre note-box"
+
+                    {/* [5. 수정] <pre> 태그를 <div>로 변경 */}
+                    <div
+                        className="ai-summary-box note-box" // 클래스명 변경 (CSS 적용 위함)
                         style={{
-                            fontFamily: 'inherit',
-                            fontSize: 'inherit',
                             cursor: 'text',
+                            whiteSpace: 'pre-wrap', // <pre>의 동작(줄바꿈 유지)을 CSS로 구현
+                            wordWrap: 'break-word', // 긴 단어 줄바꿈
+                            // fontFamily, fontSize는 note-box 클래스나 부모 스타일을 따름
                         }}
-                        onMouseUp={handleTextSelection}
+                        onMouseUp={handleTextSelection} //
                     >
                         {renderSummaryWithHighlights()}
-                    </pre>
+                    </div>
                 </Col>
 
-                {/* 2. 메모 목록 표시 영역 */}
+                {/* 2. 메모 목록 표시 영역 (변경 없음) */}
                 <Col md={4} style={{ backgroundColor: '#f5f1ec' }}>
+                    {/* ... (h4, pendingMemo 폼, memo-list-container 렌더링 로직 모두 동일) ... */}
                     <h4 className="fw-bold mb-3 mt-2">
                         <i className="bi bi-card-text me-2"></i>메모 목록
                     </h4>
 
-                    {/* '새 메모' 입력 폼 (변경 없음) */}
-                    {pendingMemo && (
+                    {pendingMemo && ( //
                         <Card className="mb-3 memo-card">
+                            {/* ... (새 메모 폼 내용) ... */}
                             <Card.Header className="bg-transparent border-bottom-0">
                                 <h5 className="cardHeader-memo">새 메모 추가</h5>
                             </Card.Header>
@@ -238,17 +225,14 @@ export default function NoteAISummary({
                             </Card.Body>
                         </Card>
                     )}
-                    {/* --- 새 메모 입력 폼 끝 --- */}
 
-                    {/* 기존 메모 목록 렌더링 */}
                     {initialMemos.length > 0 ? (
                         <div className="memo-list-container pt-2">
-                            {/* ✅ [수정] 2. initialMemos.map -> sortedMemoList.map */}
+                            {/* sortedMemoList.map을 사용 */}
                             {sortedMemoList.map((memo) =>
-                                // 현재 맵의 memo.id가 수정 중인 ID와 같다면,
                                 editingMemoId === memo.id ? (
-                                    /* --- '수정 폼' 렌더링 (변경 없음) --- */
                                     <Card key={memo.id} className="mb-2 memo-card">
+                                        {/* ... (수정 폼) ... */}
                                         <Card.Header className="bg-transparent border-bottom-0">
                                             <h5 className="cardHeader-memo">{memo.name || '참석자'}</h5>
                                         </Card.Header>
@@ -276,13 +260,13 @@ export default function NoteAISummary({
                                         </Card.Body>
                                     </Card>
                                 ) : (
-                                    /* --- '일반 메모 카드' 렌더링 (변경 없음) --- */
                                     <Card
                                         key={memo.id}
                                         className={`mb-2 memo-card ${memo.id === hoveredMemoId ? 'hovered' : ''}`}
                                         onMouseEnter={() => setHoveredMemoId(memo.id)}
                                         onMouseLeave={() => setHoveredMemoId(null)}
                                     >
+                                        {/* ... (일반 메모 카드) ... */}
                                         <Card.Header className="bg-transparent border-bottom-0">
                                             <h5 className="cardHeader-memo">{memo.name || '참석자'}</h5>
                                         </Card.Header>
