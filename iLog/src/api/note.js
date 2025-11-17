@@ -486,34 +486,20 @@ export const getMeetingMembers = async (minutesId) => {
 };
 
 /**
- * [✅ 신규] 13. 회의록 참가자 이메일로 추가
+ * [✅ 신규] 13. 회의록 참가자 추가
  * POST /minutes/{minutesId}/party
- * (Postman 스크린샷 기반)
  */
-export const addMeetingMemberByEmail = async (minutesId, email) => {
+export const addMeetingMember = async (minutesId, memberId) => {
+    const body = {
+        createMemberId: memberId,
+    };
+
     try {
-        const payload = {
-            createMemberEmail: email,
-        };
-        const headers = {
-            'Content-Type': 'application/json',
-            ...getAuthHeader(),
-        };
-        const response = await api.post(`/minutes/${minutesId}/party`, payload, { headers });
-        console.log(`✅ (Minute ID: ${minutesId}) 이메일(${email})로 회의록 참가자 추가 성공:`, response.data);
-        return response.data;
+        const res = await axios.post(`/minutes/${minutesId}/party`, body);
+        return res.data;
     } catch (error) {
-        console.error(`❌ (Minute ID: ${minutesId}) 이메일(${email})로 회의록 참가자 추가 실패:`, error);
-        if (error.response) {
-            console.error('Error data:', error.response.data);
-            throw new Error(error.response.data.message || '서버 처리 중 오류가 발생했습니다.');
-        } else if (error.request) {
-            console.error('No response received:', error.request);
-            throw new Error('서버에서 응답이 없습니다.');
-        } else {
-            console.error('Error setting up request:', error.message);
-            throw new Error('요청을 보내는 중 오류가 발생했습니다.');
-        }
+        console.error(`❌ (Minute ID: ${minutesId}) 참가자 추가 실패:`, error);
+        throw error;
     }
 };
 
