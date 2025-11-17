@@ -102,6 +102,9 @@ export default function Home() {
                                 onClickDay={handleDateClick}
                                 value={selectedDate}
                                 calendarType="gregory"
+                                style={{
+                                    border: '1px solid #b66e03',
+                                }}
                                 tileContent={({ date }) => {
                                     const hasNote = noteHistory.some(
                                         (item) => new Date(item.createdAt).toDateString() === date.toDateString()
@@ -139,12 +142,13 @@ export default function Home() {
                                 width: '350px',
                                 background: '#fff',
                                 height: '450px',
-                                boxShadow: '0 0 12px rgba(0,0,0,0.15)',
+                                border: '1px solid #b66e03',
                                 borderRadius: '10px',
                                 padding: '20px',
+                                boxShadow: '0 2px 10px rgba(182, 110, 3, 0.15)',
                             }}
                         >
-                            <h4>{selectedDate.toLocaleDateString('ko-KR')}</h4>
+                            <h4 className="mb-3">{selectedDate.toLocaleDateString('ko-KR')}</h4>
 
                             {selectedNotes.length === 0 ? (
                                 <p style={{ color: '#999' }}>이 날짜에는 회의록이 없습니다.</p>
