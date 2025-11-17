@@ -148,7 +148,7 @@ export default function Home() {
                                 boxShadow: '0 2px 10px rgba(182, 110, 3, 0.15)',
                             }}
                         >
-                            <h4>{selectedDate.toLocaleDateString('ko-KR')}</h4>
+                            <h4 className="mb-3">{selectedDate.toLocaleDateString('ko-KR')}</h4>
 
                             {selectedNotes.length === 0 ? (
                                 <p style={{ color: '#999' }}>이 날짜에는 회의록이 없습니다.</p>
