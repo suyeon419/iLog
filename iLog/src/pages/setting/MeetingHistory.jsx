@@ -1,12 +1,9 @@
-// MeetingHistory.jsx
+// MeetingHistory.jsx (타임라인 형식 - 중앙 정렬 수정)
 
 import React, { useState, useEffect } from 'react';
-// [수정] Alert, Spinner 추가 (혹은 Spinner 대신 간단한 텍스트 처리)
-import { Container, Table, Pagination, Row, Col, Alert } from 'react-bootstrap';
+// [수정] Row, Col, PencilSquare 제거
+import { Container, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-// [수정] 아이콘 변경 (API 응답에 맞게)
-import { PencilSquare, CheckSquare, CalendarCheck, ShieldLock } from 'react-bootstrap-icons';
-// [수정] API 함수 임포트
 import { getMeetingHistory } from '../../api/user';
 
 export default function MeetingHistory() {
@@ -16,16 +13,10 @@ export default function MeetingHistory() {
         console.log('Clicked meeting:', meetingId);
     };
 
-    // --- 페이지네이션 로직 ---
-    const [currentPage, setCurrentPage] = useState(1);
-    const [subMeetings, setSubMeetings] = useState([]);
-    const ITEMS_PER_PAGE = 7;
-
-    // [수정] 로딩 및 오류 상태 추가
+    const [groupedMeetings, setGroupedMeetings] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // [수정] 백엔드 연동 useEffect
     useEffect(() => {
         const fetchHistory = async () => {
             try {
@@ -33,12 +24,28 @@ export default function MeetingHistory() {
                 setError('');
                 console.log('[MeetingHistory] 화상회의 이력 로드 시작...');
 
-                // 1. API 호출
                 const data = await getMeetingHistory();
-
-                // 2. State 설정
-                setSubMeetings(data);
                 console.log('[MeetingHistory] 데이터 로드 성공:', data);
+
+                const grouped = data.reduce((acc, item) => {
+                    const date = item.createdAt.split('T')[0];
+                    if (!acc[date]) acc[date] = [];
+                    acc[date].push(item);
+                    return acc;
+                }, {});
+
+                Object.keys(grouped).forEach((date) => {
+                    grouped[date].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                });
+
+                const sorted = Object.keys(grouped)
+                    .sort((a, b) => new Date(b) - new Date(a))
+                    .reduce((obj, key) => {
+                        obj[key] = grouped[key];
+                        return obj;
+                    }, {});
+
+                setGroupedMeetings(sorted);
             } catch (err) {
                 console.error('❌ [MeetingHistory] 데이터 로드 실패:', err);
                 setError('데이터를 불러오는 데 실패했습니다.');
@@ -48,112 +55,64 @@ export default function MeetingHistory() {
         };
 
         fetchHistory();
-    }, []); // 페이지 로드 시 1회 실행
+    }, []);
 
-    const totalPages = Math.ceil(subMeetings.length / ITEMS_PER_PAGE);
-    const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
-    const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
-    const currentMeetings = subMeetings.slice(indexOfFirstItem, indexOfLastItem);
+    if (loading) {
+        return (
+            <Container className="pt-3 text-center">
+                <Spinner animation="border" />
+                <h5 className="mt-2">데이터를 불러오는 중입니다...</h5>
+            </Container>
+        );
+    }
 
-    const handlePageChange = (pageNumber) => {
-        const newPage = Math.max(1, Math.min(pageNumber, totalPages === 0 ? 1 : totalPages));
-        setCurrentPage(newPage);
-    };
-
-    const renderPaginationItems = () => {
-        let pageItems = [];
-        const total = totalPages === 0 ? 1 : totalPages;
-        for (let number = 1; number <= total; number++) {
-            pageItems.push(
-                <Pagination.Item key={number} active={number === currentPage} onClick={() => handlePageChange(number)}>
-                    {number}
-                </Pagination.Item>
-            );
-        }
-        return pageItems;
-    };
-    // ---------------------------------------------
+    if (error) {
+        return (
+            <Container className="pt-3 text-center">
+                <Alert variant="danger">{error}</Alert>
+            </Container>
+        );
+    }
 
     return (
-        <Container fluid className="pt-3 container-left">
-            <div className="flex-grow-1">
-                <Row className="mb-3 mt-3 align-items-center">
-                    <Col>
-                        <h2 className="fw-bold m-0">
-                            <PencilSquare className="me-3" />
-                            화상회의 이력
-                        </h2>
-                    </Col>
-                </Row>
+        // [수정] <Container fluid className="pt-3 container-left"> -> <Container className="pt-3">
+        <Container className="pt-3">
+            {/* [수정] Row/Col 구조 제거, history-title 클래스 적용 */}
+            <h3 className="history-title">화상회의 이력</h3>
 
-                {/* [수정] 에러 발생 시 Alert 표시 */}
-                {error && <Alert variant="danger">{error}</Alert>}
+            {Object.keys(groupedMeetings).length === 0 ? (
+                <div className="text-center p-4">화상회의 이력이 없습니다.</div>
+            ) : (
+                <div className="timeline">
+                    {Object.keys(groupedMeetings).map((date) => (
+                        <div key={date} className="timeline-date-block">
+                            <div className="timeline-date-dot"></div>
+                            <div className="timeline-date-line"></div>
+                            <div className="timeline-date">{date}</div>
 
-                <Table className="align-middle">
-                    {/* [수정] <thead>: API 응답에 맞게 헤더 변경 */}
-                    <thead>
-                        <tr>
-                            <th>
-                                <CheckSquare className="me-2" /> 회의 ID
-                            </th>
-                            <th>
-                                <ShieldLock className="me-2" /> 상태
-                            </th>
-                            <th>
-                                <CalendarCheck className="me-2" /> 생성일자
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {/* [수정] 로딩, 데이터 없음, 데이터 있음 3가지 상태 처리 */}
-                        {loading ? (
-                            <tr>
-                                {/* [수정] colSpan="3"로 변경 */}
-                                <td colSpan="3" className="text-center p-4">
-                                    데이터를 불러오는 중입니다...
-                                </td>
-                            </tr>
-                        ) : currentMeetings.length === 0 ? (
-                            <tr>
-                                {/* [수정] colSpan="3"로 변경 */}
-                                <td colSpan="3" className="text-center p-4">
-                                    화상회의 이력이 없습니다.
-                                </td>
-                            </tr>
-                        ) : (
-                            currentMeetings.map((meeting) => (
-                                <tr
-                                    key={meeting.id}
-                                    onClick={() => handleRowClick(meeting.id)}
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <td>{meeting.id}</td>
-                                    <td>{meeting.status}</td>
-                                    <td>{meeting.createdAt.slice(0, 10).replace(/-/g, '. ') + '.'}</td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </Table>
-            </div>
-
-            <div>
-                <nav className="mt-3 pagination-nav">
-                    <Pagination className="justify-content-center">
-                        <Pagination.Prev
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                        />
-
-                        {renderPaginationItems()}
-
-                        <Pagination.Next
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === (totalPages === 0 ? 1 : totalPages)}
-                        />
-                    </Pagination>
-                </nav>
-            </div>
+                            {groupedMeetings[date].map((item) => (
+                                <div key={item.id} className="timeline-item">
+                                    <div
+                                        className="timeline-card"
+                                        onClick={() => handleRowClick(item.id)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <div className="card-title">
+                                            회의 ID: {item.id} (상태: {item.status})
+                                        </div>
+                                        <div className="card-time">
+                                            {new Date(item.createdAt).toLocaleTimeString([], {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            )}
         </Container>
     );
 }
