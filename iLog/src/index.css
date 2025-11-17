@@ -156,6 +156,9 @@ btn-outline-primary:hover i {
     font-weight: bold;
 }
 
+.form-modal {
+    width: 400px;
+}
 /* 미팅용 */
 .card-project {
     border-radius: 10px !important;
