@@ -146,47 +146,62 @@ export default function Home() {
                                 borderRadius: '10px',
                                 padding: '20px',
                                 boxShadow: '0 2px 10px rgba(182, 110, 3, 0.15)',
+
+                                display: 'flex',
+                                flexDirection: 'column',
                             }}
                         >
-                            <h4 className="mb-3">{selectedDate.toLocaleDateString('ko-KR')}</h4>
+                            <div style={{ marginBottom: '10px', flexShrink: 0 }}>
+                                <h4 className="mb-0">{selectedDate.toLocaleDateString('ko-KR')}</h4>
+                            </div>
 
-                            {selectedNotes.length === 0 ? (
-                                <p style={{ color: '#999' }}>이 날짜에는 회의록이 없습니다.</p>
-                            ) : (
-                                selectedNotes.map((note) => (
-                                    <div
-                                        key={note.id}
-                                        style={{
-                                            background: '#f5f1ec',
-                                            padding: '12px 15px',
-                                            borderRadius: '10px',
-                                            border: '1px solid #eee',
-                                            marginBottom: '12px',
-                                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                                        }}
-                                    >
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <i
-                                                className="bi bi-file-earmark-text"
-                                                style={{ fontSize: '20px', color: '#b66e03' }}
-                                            ></i>
-                                            <span style={{ fontSize: '14px', color: '#b66e03', fontWeight: 600 }}>
-                                                회의록
-                                            </span>
-                                        </div>
-
+                            {/* 스크롤 영역 */}
+                            <div
+                                style={{
+                                    overflowY: 'auto',
+                                    flexGrow: 1,
+                                    paddingRight: '5px',
+                                    marginTop: '10px',
+                                }}
+                            >
+                                {selectedNotes.length === 0 ? (
+                                    <p style={{ color: '#999' }}>이 날짜에는 회의록이 없습니다.</p>
+                                ) : (
+                                    selectedNotes.map((note) => (
                                         <div
+                                            key={note.id}
                                             style={{
-                                                fontSize: '15px',
-                                                fontWeight: 600,
-                                                color: '#333',
+                                                background: '#f5f1ec',
+                                                padding: '12px 15px',
+                                                borderRadius: '10px',
+                                                border: '1px solid #eee',
+                                                marginBottom: '12px',
+                                                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                                             }}
                                         >
-                                            {note.title}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <i
+                                                    className="bi bi-file-earmark-text"
+                                                    style={{ fontSize: '20px', color: '#b66e03' }}
+                                                ></i>
+                                                <span style={{ fontSize: '14px', color: '#b66e03', fontWeight: 600 }}>
+                                                    회의록
+                                                </span>
+                                            </div>
+
+                                            <div
+                                                style={{
+                                                    fontSize: '15px',
+                                                    fontWeight: 600,
+                                                    color: '#333',
+                                                }}
+                                            >
+                                                {note.title}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
-                            )}
+                                    ))
+                                )}
+                            </div>
                         </div>
                     </div>
                 </>
