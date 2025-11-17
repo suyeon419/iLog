@@ -637,10 +637,8 @@ export default function Note() {
 
     return (
         <>
-            {/* ... (Container, Pagination, Button 등 나머지 JSX 동일) ... */}
             <Container className="pt-3">
                 <h2 style={{ fontWeight: 'bold', color: '#333' }} className="mb-4">
-                    <PencilSquare className="me-3" />
                     프로젝트
                 </h2>
 

@@ -130,7 +130,7 @@ export default function LoginHistory() {
                                 <div key={item.id} className="timeline-item">
                                     <div className="timeline-card">
                                         {/* [수정] '로그인' 텍스트 대신 IP 주소를 표시합니다. */}
-                                        <div className="card-title">{item.ip || 'IP 정보 없음'}</div>
+                                        <div className="card-title">{item.ipAddress || '자동 로그아웃'}</div>
                                         <div className="card-time">{formatTime(item.createdAt)}</div>
                                     </div>
                                 </div>
