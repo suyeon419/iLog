@@ -553,3 +553,9 @@ btn-outline-primary:hover i {
     justify-content: space-between;
     align-items: center;
 }
+
+/* 락 알림 모달 - 둥근 모서리 및 배경 (기존) */
+.lock-alert-modal-content {
+    border-radius: 10px;
+    overflow: hidden;
+}

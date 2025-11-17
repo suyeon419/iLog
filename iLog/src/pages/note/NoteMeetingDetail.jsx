@@ -1,4 +1,4 @@
-// NoteMeetingDetail.jsx (히스토리 모달 + 페이지네이션 기능 추가)
+// NoteMeetingDetail.jsx (회의록 상세 페이지)
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -9,8 +9,8 @@ import {
     Dropdown,
     Spinner,
     Alert,
-    Modal,
-    Pagination, // [✅ 추가] Pagination 컴포넌트 import
+    Modal, // [✅ 수정] Modal 컴포넌트 임포트
+    Pagination,
 } from 'react-bootstrap';
 import { PencilSquare, People, CalendarCheck, CalendarPlus, ThreeDotsVertical, Trash } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -27,10 +27,9 @@ import {
     updateMemo,
     deleteMemo,
     getNoteHistory,
-    getLockStatus, // [✅ 락_1] getLockStatus API 임포트
+    getLockStatus,
 } from '../../api/note';
 
-// [✅ 추가] 페이지네이션 설정: 한 페이지에 보여줄 히스토리 개수
 const ITEMS_PER_PAGE = 1;
 
 export default function NoteMeetingDetail() {
@@ -38,20 +37,19 @@ export default function NoteMeetingDetail() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // ( ... ai, chatbot 관련 state ... )
     const [showAiSummary, setShowAiSummary] = useState(false);
     const [aiData, setAiData] = useState(null);
     const [aiLoading, setAiLoading] = useState(false);
     const [showChatbot, setShowChatbot] = useState(false);
 
-    // [✅ 수정] 히스토리 모달 관련 state
+    const [historyCurrentPage, setHistoryCurrentPage] = useState(1);
 
-    const [historyCurrentPage, setHistoryCurrentPage] = useState(1); // [✅ 추가] 히스토리 현재 페이지 state
+    // [✅ 추가] 락 알림 모달 상태
+    const [showLockAlertModal, setShowLockAlertModal] = useState(false);
 
     const { meetingId } = useParams();
     const navigate = useNavigate();
 
-    // ( ... useEffect, handleDelete, handleGoToList, handleToggleAiSummary ... )
     // 1. (API 1) 회의록 본문 정보 로드 (변경 없음)
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -87,22 +85,20 @@ export default function NoteMeetingDetail() {
         fetchMeeting();
     }, [meetingId]);
 
-    // [✅ 락_2] '수정' 버튼 클릭 시 락 상태 확인 로직 추가
+    // [✅ 락_2] '수정' 버튼 클릭 시 락 상태 확인 로직 수정 (alert -> Modal)
     const handleEdit = async () => {
         try {
-            // 1. 락 상태를 *먼저* 조회합니다.
             const lockData = await getLockStatus(meetingId);
 
             if (lockData.locked) {
-                // 2. 락이 걸려있으면 (true) 경고만 띄웁니다.
-                alert('다른 사용자가 수정 중입니다. 잠시 후 다시 시도해 주세요.');
+                // 락이 걸려있으면 alert 대신 모달을 띄웁니다.
+                setShowLockAlertModal(true); // [✅ 수정] 모달 표시
             } else {
-                // 3. 락이 안 걸려있으면 (false) 편집 페이지로 이동시킵니다.
                 navigate(`/notes/meeting/${meetingId}/edit`);
             }
         } catch (error) {
             console.error('락 상태 조회 실패:', error);
-            alert('락 상태를 확인하는 중 오류가 발생했습니다.');
+            alert('락 상태를 확인하는 중 오류가 발생했습니다.'); // 이 에러는 기존 alert 유지
         }
     };
 
@@ -154,7 +150,6 @@ export default function NoteMeetingDetail() {
         }
     };
 
-    // ( ... handleAddMemo, handleUpdateMemo, handleDeleteMemo ... )
     // 메모 관련 핸들러 (변경 없음)
     const handleAddMemo = async (memoContent, startIndex, endIndex, selectedText) => {
         try {
@@ -212,7 +207,6 @@ export default function NoteMeetingDetail() {
     };
     // --- 렌더링 로직 ---
 
-    // (로딩, 에러, 데이터 없음 렌더링 로직은 변경 없음)
     if (loading) {
         return (
             <Container className="pt-3 text-center">
@@ -247,10 +241,7 @@ export default function NoteMeetingDetail() {
     // (정상 렌더링)
     return (
         <Container fluid className="pt-3 container-left">
-            {/* 1. 콘텐츠 영역 (변경 없음) */}
             <div className="flex-grow-1">
-                {/* ( ... 제목, 참가자, 날짜, 본문/AI요약 렌더링 ... ) */}
-                {/* 제목 및 목록/드롭다운 버튼 (변경 없음) */}
                 <Row className="mb-3 align-items-center">
                     <Col>
                         <div className="d-flex align-items-center">
@@ -280,7 +271,6 @@ export default function NoteMeetingDetail() {
                     </Col>
                 </Row>
 
-                {/* 참가자 (변경 없음) */}
                 <Row className="mb-2 align-items-center text-secondary">
                     <Col md={12}>
                         <div className="d-flex align-items-center">
@@ -290,7 +280,7 @@ export default function NoteMeetingDetail() {
                         </div>
                     </Col>
                 </Row>
-                {/* 생성/수정일자 (변경 없음 - 히스토리 아이콘 클릭 포함) */}
+
                 <Row className="mb-3 align-items-center text-secondary">
                     <Col md={6}>
                         <div className="d-flex align-items-center">
@@ -316,22 +306,18 @@ export default function NoteMeetingDetail() {
                     </Col>
                 </Row>
 
-                {/* 본문 또는 AI 요약 (변경 없음) */}
                 <Row>
                     <Col>
                         {!showAiSummary ? (
-                            // 1. 본문 보기 (변경 없음)
                             <pre className="border p-3 rounded text-break note-box">
                                 {meeting.content.replace(/\\\\n/g, '\n').replace(/\\n/g, '\n').trim()}
                             </pre>
                         ) : aiLoading ? (
-                            // 2. AI 요약 로딩 중 (변경 없음)
                             <div className="text-center p-5 ">
                                 <Spinner animation="border" />
                                 <h5 className="mt-2">AI 요약본을 불러오는 중...</h5>
                             </div>
                         ) : (
-                            // 3. AI 요약 보기 (aiData가 있을 때)
                             aiData && (
                                 <NoteAISummary
                                     summaryText={aiData.summary}
@@ -346,22 +332,44 @@ export default function NoteMeetingDetail() {
                     </Col>
                 </Row>
             </div>
-            {/* --------------------- flex-grow-1 div 끝 --------------------- */}
 
-            {/* 2. 하단 고정 영역 (버튼) (변경 없음) */}
             <div>
-                <Button
-                    variant="primary"
-                    className="w-100 mt-3"
-                    onClick={handleToggleAiSummary}
-                    disabled={aiLoading} // AI 로딩 중 버튼 비활성화
-                >
+                <Button variant="primary" className="w-100 mt-3" onClick={handleToggleAiSummary} disabled={aiLoading}>
                     {aiLoading ? '로딩 중...' : showAiSummary ? '회의록 본문 보기' : 'AI 요약본 보기'}
                 </Button>
             </div>
-            {/* 챗봇 관련 (변경 없음) */}
+
             {showChatbot && <ChatbotPanel onClose={() => setShowChatbot(false)} meetingId={meetingId} />}
             <FloatingChatButton onClick={() => setShowChatbot(!showChatbot)} />
+
+            {/* [✅ 추가] 락 알림 모달 컴포넌트 */}
+            <Modal
+                show={showLockAlertModal}
+                onHide={() => setShowLockAlertModal(false)}
+                centered
+                contentClassName="lock-alert-modal-content"
+            >
+                {/* [✅ 스타일_2] 헤더 스타일링 */}
+                <Modal.Header closeButton style={{ backgroundColor: '#f5f1ec', borderBottom: 'none' }}>
+                    <Modal.Title className="fw-bold" style={{ color: '#b66e03' }}>
+                        알림
+                    </Modal.Title>
+                </Modal.Header>
+                {/* [✅ 스타일_3] 바디 스타일링 */}
+                <Modal.Body className="text-center" style={{ backgroundColor: '#f5f1ec', color: '#333' }}>
+                    다른 사용자가 수정 중입니다. 잠시 후 다시 시도해 주세요.
+                </Modal.Body>
+                {/* [✅ 스타일_4] 푸터 스타일링 */}
+                <Modal.Footer style={{ backgroundColor: '#f5f1ec', borderTop: 'none' }}>
+                    <Button
+                        // [✅ 스타일_5] 버튼 스타일링
+                        style={{ backgroundColor: '#b66e03', borderColor: '#b66e03', color: 'white' }}
+                        onClick={() => setShowLockAlertModal(false)}
+                    >
+                        확인
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </Container>
     );
 }
