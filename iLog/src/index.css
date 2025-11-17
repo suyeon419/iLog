@@ -242,20 +242,116 @@ btn-outline-primary:hover i {
     box-shadow: none;
 }
 
-/* --- AI 요약 메모 카드 --- */
-.memo-card {
-    background-color: #f5f1ec !important; /* 1. 카드 배경을 베이지색으로 */
-    border: 2px solid #b66e03 !important; /* 2. 카드 테두리를 갈색으로 */
-    width: 100% !important; /* 3. 고정 너비(380px) 대신 100%로 변경 */
-    box-shadow: none;
+/* === AI 요약, 메모, 하이라이트 스타일 통합본 === */
+
+/* 1. AI 요약 마크다운 렌더링 스타일 (신규) */
+.ai-summary-box {
+    /* ai-summary-box 자체의 폰트 사이즈를 먼저 조정합니다. */
+    /* 이렇게 하면 내부 요소들이 기본적으로 이 사이즈를 따르게 됩니다. */
+    font-size: 0.95rem; /* 예시: 기본 폰트 크기를 조금 줄임. 원하시는 크기로 조정 */
+}
+
+.ai-summary-box > * {
+    margin-bottom: 0;
+    margin-top: 0;
+}
+.ai-summary-box p {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem; /* p 태그의 글씨 크기를 개별적으로 조정할 수 있습니다. */
+}
+.ai-summary-box ul,
+.ai-summary-box ol {
+    padding-left: 2rem;
+    margin-bottom: 0.5rem;
+}
+.ai-summary-box li {
+    /* 리스트 아이템 글씨 크기 조정 */
+    font-size: 0.95rem; /* ul, ol 안의 li 태그에 적용 */
+}
+
+/* 제목 태그들의 글씨 크기를 조정합니다. */
+/* 기본적으로 h1-h4는 크므로 원하는 만큼 줄여줍니다. */
+/* 제목 태그들의 글씨 크기와 여백을 조정합니다. */
+.ai-summary-box h1 {
+    margin-bottom: -0.5rem; /* margin 줄이기 */
+    margin-top: 0.5rem;
+    font-size: 1.8rem;
+}
+.ai-summary-box h2 {
+    margin-bottom: -0.5rem; /* [수정] 0.75rem -> 0.25rem (또는 더 작게) */
+    margin-top: 0.5rem;
+    font-size: 1.6rem;
+}
+.ai-summary-box h3 {
+    margin-bottom: -0.5rem; /* [수정] 0.75rem -> 0.25rem (또는 더 작게) */
+    margin-top: 0.5rem;
+    font-size: 1.4rem;
+}
+.ai-summary-box h4 {
+    margin-bottom: -0.5rem; /* [수정] 0.75rem -> 0.25rem (또는 더 작게) */
+    margin-top: 0.5rem;
+    font-size: 1.2rem;
 }
 
 .dropdown-toggle::after {
     display: none !important;
 }
+/* 2. 텍스트 하이라이트 스타일 */
+/* (기존 index.css의 어두운 #b66e03 대신 연한 노란색으로 수정) */
+.highlighted-text {
+    background-color: #fcf8e3 !important;
+    cursor: pointer;
+    transition: background-color 0.2s, font-weight 0.2s;
+    border-radius: 3px;
+    padding: 0 2px;
+}
+
+.highlighted-text.hovered {
+    background-color: #f7e6a0 !important; /* 호버 시 더 진한 노란색 */
+    font-weight: 600;
+}
+
+/* 3. 메모 카드 스타일 (오른쪽 패널) */
+/* (index.css의 268행 스타일을 기준으로 정리) */
+.memo-card {
+    background-color: #f5f1ec !important;
+    border: 2px solid #b66e03 !important;
+    width: 100% !important;
+    box-shadow: none;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    position: relative;
+    z-index: 1;
+}
+
+/* 4. 메모 카드 호버 스타일 */
+.memo-card.hovered {
+    /* border: 2px solid #b66e03; (이미 테두리가 있으므로 불필요) */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    transform: translateY(-2px);
+}
+
+/* 5. 메모 리스트 스크롤 컨테이너 */
+.memo-list-container {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* 6. 메모 카드 헤더 (이름 부분) */
+.cardHeader-memo {
+    border-bottom: 2px solid #b66e03;
+    padding-bottom: 8px;
+    margin: 0px;
+}
 
 /* --- Note.jsx 페이지네이션 커스텀 --- */
-
+/* NoteDetail.jsx의 내용을 80% 너비로 제한하고 중앙 정렬 */
+.content-wrapper-80 {
+    width: 80%; /* 요청하신 너비 80% */
+    max-width: 1400px; /* 화면이 아주 넓어도 1400px보단 안 커지게 */
+    margin: 0 auto; /* 좌우 여백을 자동으로 줘서 가운데 정렬 */
+}
 /* .pagination-nav 클래스를 <nav>에 추가하여 
   이 스타일이 Note.jsx에서만 적용되도록 합니다. 
 */
