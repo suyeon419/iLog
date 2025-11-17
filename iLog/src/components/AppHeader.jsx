@@ -11,8 +11,7 @@ export default function AppHeader() {
     useEffect(() => {
         const publicPaths = ['/', '/login', '/register', '/findPw', '/findEmail', '/findPw/changePw'];
         if (!isLoggedIn && !publicPaths.includes(location.pathname)) {
-            navigate('/'); // 홈으로 이동
-
+            navigate('/login');
             alert('로그인이 필요합니다.');
         }
     }, [isLoggedIn, location.pathname, navigate]);
