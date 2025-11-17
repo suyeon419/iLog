@@ -486,19 +486,32 @@ export const getMeetingMembers = async (minutesId) => {
 };
 
 /**
- * [✅ 신규] 13. 회의록 참가자 추가
+ * [정상 동작 버전] 회의록 참가자 추가
  * POST /minutes/{minutesId}/party
  */
+
 export const addMeetingMember = async (minutesId, memberId) => {
+    console.log('🔵 [addMeetingMember] 요청 준비됨');
+    console.log('➡ minutesId:', minutesId);
+    console.log('➡ createMemberId:', memberId);
+    console.log('➡ 최종 Body:', { createMemberId: memberId });
+
     const body = {
         createMemberId: memberId,
     };
 
     try {
-        const res = await axios.post(`/minutes/${minutesId}/party`, body);
+        const res = await api.post(`/minutes/${minutesId}/party`, body, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+        console.log('🟢 [addMeetingMember] 요청 성공:', res.data);
         return res.data;
     } catch (error) {
         console.error(`❌ (Minute ID: ${minutesId}) 참가자 추가 실패:`, error);
+        if (error.response) {
+            console.log('❌ 서버 응답 data:', error.response.data);
+            console.log('❌ 서버 응답 status:', error.response.status);
+        }
         throw error;
     }
 };

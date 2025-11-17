@@ -5,18 +5,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Container, Form, Button, Row, Col, Spinner, Alert } from 'react-bootstrap';
 import { PencilSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import MemberModal from './MemberModal';
+import NoteMemberModal from './NoteMemberModal';
 
 // [✅ 락_2] note.js에서 '락 API' 함수 3개 임포트 (getLockStatus는 필요 없음)
 import {
     getNoteDetails,
     updateNote,
     getMeetingMembers,
-    addMeetingMemberByEmail,
+    addMeetingMember,
     deleteMeetingMember,
     acquireLock, // 락 획득
     refreshLock, // 락 갱신
     releaseLock, // 락 해제
+    getProjects,
+    getProjectDetails,
+    getProjectMembers,
 } from '../../api/note';
 
 export default function NoteMeetingEdit() {
@@ -43,6 +46,56 @@ export default function NoteMeetingEdit() {
     const navigate = useNavigate();
     const { meetingId } = useParams();
 
+    const [projectMembers, setProjectMembers] = useState([]);
+    const [folderId, setFolderId] = useState(null);
+
+    // meetingId가 어떤 폴더에 속하는지 찾는 재귀 함수
+    // meetingId가 속한 project(folderId)를 찾는 함수
+    const findFolderIdByMeetingId = async (meetingId) => {
+        // 1. Root 폴더 가져오기
+        const root = await getProjects();
+
+        // 2. Root.childFolders 에는 폴더 목록만 존재
+        const folderIds = root.childFolders.map((f) => f.id);
+
+        // 3. 각 폴더의 상세 정보(GET /folders/{folderId})를 불러 minutesList 검사
+        for (const fid of folderIds) {
+            try {
+                const detail = await getProjectDetails(fid);
+
+                if (detail.minutesList?.some((m) => m.id === Number(meetingId))) {
+                    return fid; // 찾았다!
+                }
+            } catch (e) {
+                console.error(`❌ 폴더 ${fid} 상세 로드 실패`, e);
+            }
+        }
+
+        return null; // 못 찾음
+    };
+
+    useEffect(() => {
+        const loadFolderId = async () => {
+            const fid = await findFolderIdByMeetingId(meetingId);
+            console.log('📌 찾은 folderId:', fid);
+            setFolderId(fid);
+        };
+
+        loadFolderId();
+    }, [meetingId]);
+
+    useEffect(() => {
+        if (!folderId) return;
+
+        getProjectMembers(folderId).then((res) => {
+            setProjectMembers(res.participants);
+        });
+
+        getMeetingMembers(meetingId).then((res) => {
+            setMeetingMembers(res.participants);
+        });
+    }, [folderId, meetingId]);
+
     // [✅ 락_4] 컴포넌트 로드 시 '데이터 로드'와 '락 획득' 동시 수행
     useEffect(() => {
         // ref 업데이트 (useEffect cleanup에서 최신 토큰을 참조하기 위함)
@@ -62,6 +115,9 @@ export default function NoteMeetingEdit() {
                 const fetchedData = await getNoteDetails(meetingId);
                 setTitle(fetchedData.title || '제목 없음');
                 setContent(fetchedData.content || '');
+                console.log('📌 [DEBUG] fetchedData =', fetchedData);
+                console.log('📌 [DEBUG] fetchedData.folderId =', fetchedData.folderId);
+                setFolderId(fetchedData.folderId);
                 // ... (기존 formattedData 설정)
                 const formattedData = {
                     id: fetchedData.id,
@@ -324,15 +380,19 @@ export default function NoteMeetingEdit() {
             </Row>
 
             {/* 모달 */}
-            <MemberModal
+            <NoteMemberModal
                 show={showMemberModal}
                 onHide={handleCloseMemberModal}
-                entityId={meetingId}
-                members={meetingMembers}
-                inviteLink={meetingInviteLink}
-                onMemberUpdate={handleMemberUpdate}
-                addMemberApi={addMeetingMemberByEmail}
+                folderId={folderId}
+                meetingId={meetingId}
+                projectMembers={projectMembers} // ← 이거 넣어야 한다
+                meetingMembers={meetingMembers} // ← 이것도
+                addMemberApi={addMeetingMember}
                 deleteMemberApi={deleteMeetingMember}
+                onMemberUpdate={(updated) => {
+                    // updated 구조 그대로 meetingMembers 다시 세팅
+                    setMeetingMembers(updated.participants);
+                }}
             />
         </Container>
     );
