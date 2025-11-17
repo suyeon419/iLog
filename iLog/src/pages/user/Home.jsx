@@ -90,7 +90,7 @@ export default function Home() {
 
     return (
         <Container>
-            <img className="w-35" src="./images/ko.ilo9.png" alt="iLog Logo" /> <br />
+            <img className="w-25" src="./images/ko.ilo9.png" alt="iLog Logo" /> <br />
             {isLogin ? (
                 <>
                     <h3 className="fw-bold mb-4">나의 스케줄</h3>
