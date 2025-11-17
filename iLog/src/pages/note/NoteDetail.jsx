@@ -236,10 +236,7 @@ export default function NoteDetail() {
                     </Col>
 
                     <Col className="text-center">
-                        <h2 className="fw-bold m-0">
-                            <PencilSquare className="me-3" />
-                            {project ? project.name : '프로젝트 로딩 중...'}
-                        </h2>
+                        <h2 className="fw-bold m-0">{project ? project.name : '프로젝트 로딩 중...'}</h2>
                     </Col>
 
                     <Col xs="auto">

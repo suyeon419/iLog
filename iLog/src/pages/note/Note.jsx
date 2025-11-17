@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Button, Card, Row, Col, Pagination, Alert, Spinner, Form } from 'react-bootstrap';
-import { PencilSquare, CheckSquare } from 'react-bootstrap-icons';
+import { PencilSquare, CheckSquare, Folder } from 'react-bootstrap-icons';
 import {
     getProjects,
     createProject,
@@ -530,7 +530,7 @@ export default function Note() {
                                                   return <Spinner animation="border" size="sm" />;
                                               })()
                                             : (() => {
-                                                  return <span>사진을 추가해 주세요</span>;
+                                                  return <Folder size={60} color="#e0e0e0" />;
                                               })()}
                                     </div>
                                 )}
