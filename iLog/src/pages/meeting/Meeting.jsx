@@ -2372,13 +2372,12 @@ const Meeting = () => {
                         <Form.Label>제목</Form.Label>
                         <div className="d-flex gap-2">
                             <Form.Control
-                                className="form-modal"
+                                className="w-100"
                                 type="text"
                                 placeholder="제목을 입력하세요"
                                 value={noteTitle}
                                 onChange={(e) => setNoteTitle(e.target.value)}
                             />
-                            <Button variant="secondary">검색</Button>
                         </div>
                     </Form.Group>
 
