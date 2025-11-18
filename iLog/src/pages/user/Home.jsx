@@ -93,7 +93,7 @@ export default function Home() {
             <img className="w-25" src="./images/ko.ilo9.png" alt="iLog Logo" /> <br />
             {isLogin ? (
                 <>
-                    <h3 className="fw-bold mb-4">스케줄</h3>
+                    <h3 className="fw-bold mb-4">나의 스케줄</h3>
 
                     <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
                         {/* 캘린더 */}
