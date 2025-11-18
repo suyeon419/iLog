@@ -211,7 +211,6 @@ export default function NoteMeetingDetail() {
         return (
             <Container className="pt-3 text-center">
                 <LoadingSpinner animation="border" role="status" />
-                <h5 className="mt-2">로딩 중</h5>
             </Container>
         );
     }
