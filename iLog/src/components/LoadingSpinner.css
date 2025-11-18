@@ -1,0 +1,49 @@
+/* LoadingSpinner.css */
+
+/* "까딱"거리는 애니메이션 정의 */
+@keyframes scribble {
+    0% {
+        transform: rotate(0deg) translateY(0px);
+    }
+    25% {
+        /* 왼쪽으로 살짝 기울고 위로 */
+        transform: rotate(-5deg) translateY(-2px);
+    }
+    50% {
+        transform: rotate(0deg) translateY(0px);
+    }
+    75% {
+        /* 오른쪽으로 살짝 기울고 위로 */
+        transform: rotate(5deg) translateY(-2px);
+    }
+    100% {
+        transform: rotate(0deg) translateY(0px);
+    }
+}
+
+/* 로딩 아이콘에 애니메이션 적용 */
+.loading-icon {
+    width: 80px; /* 아이콘 크기 조절 */
+    height: 80px; /* 아이콘 크기 조절 */
+
+    /* * 'scribble' 애니메이션을 0.8초(800ms) 주기로, 
+     * 자연스럽게(ease-in-out), 
+     * 무한 반복(infinite)시킵니다.
+     */
+    animation: scribble 800ms ease-in-out infinite;
+}
+
+/* (선택) 텍스트와 아이콘 정렬 */
+.loading-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* 아이콘과 텍스트 사이 간격 */
+}
+
+.loading-wrapper p {
+    font-size: 16px;
+    color: #555;
+    /* 기존 '저장 중...' 텍스트 스타일 */
+}
