@@ -126,9 +126,9 @@ export default function MemberModal({
                                 >
                                     <div className="d-flex align-items-center">
                                         {/* ... (프로필 이미지 렌더링) ... */}
-                                        {member.participantImage ? (
+                                        {member.participantProfileImage ? (
                                             <img
-                                                src={member.participantImage}
+                                                src={`https://webkit-ilo9-api.duckdns.org${member.participantProfileImage}`}
                                                 alt="profile"
                                                 className="rounded-circle me-3"
                                                 style={{ width: '40px', height: '40px', objectFit: 'cover' }}
