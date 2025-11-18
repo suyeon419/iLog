@@ -2171,16 +2171,12 @@ const Meeting = () => {
         try {
             let jwtToken = null;
 
-            if (isHostRef.current) {
-                jwtToken = await startJitsiMeeting({
-                    roomName,
-                    userName: displayName,
-                    userEmail: userInfo.email,
-                });
-                console.log('🪙 받은 JWT 토큰:', jwtToken);
-            }
+            jwtToken = await startJitsiMeeting({
+                roomName,
+                userName: displayName,
+                userEmail: userInfo.email,
+            });
 
-            // 👇 JWT를 connectJitsi에 넘겨준다
             connectJitsi(roomName, displayName, userInfo.email, jwtToken);
         } catch (error) {
             console.error('❌ [Meeting.jsx] 회의 시작 중 오류:', error);
