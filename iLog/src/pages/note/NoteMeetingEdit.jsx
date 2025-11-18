@@ -2,11 +2,10 @@
 
 // [✅ 락_1] React에서 'useRef' 임포트
 import React, { useState, useEffect, useRef } from 'react';
-import { Container, Form, Button, Row, Col, Alert } from 'react-bootstrap';
+import { Container, Form, Button, Row, Col, Spinner, Alert } from 'react-bootstrap';
 import { PencilSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import NoteMemberModal from './NoteMemberModal';
-import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 // [✅ 락_2] note.js에서 '락 API' 함수 3개 임포트 (getLockStatus는 필요 없음)
 import {
@@ -258,7 +257,7 @@ export default function NoteMeetingEdit() {
         // ... (로딩 UI) ...
         return (
             <Container className="pt-3 text-center">
-                <LoadingSpinner animation="border" role="status" />
+                <Spinner animation="border" role="status" />
                 <h5 className="mt-2">원본 데이터 불러오는 중...</h5>
             </Container>
         );
