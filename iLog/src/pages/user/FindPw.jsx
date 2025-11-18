@@ -69,7 +69,7 @@ export default function FindPw() {
                     />
                 </Form.Group>
                 <Button type="submit" variant="primary user-btn">
-                    비밀번호 찾기
+                    비밀번호 변경
                 </Button>
             </Form>
         </Container>

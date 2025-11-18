@@ -21,13 +21,9 @@ export default function FindEmail() {
             const res = await findEmail(phone);
             console.log('이메일 조회 결과:', res);
 
-            // 서버가 문자열로 이메일을 주는 경우
-            if (typeof res === 'string') {
-                setEmail(res);
-            }
-            // 서버가 객체 형태로 응답하는 경우 (예: { email: "xxx@xxx.com" })
-            else if (res?.email) {
-                setEmail(res.email);
+            if (Array.isArray(res) && res.length > 0) {
+                const allEmails = res.map((item) => item.email).join(', ');
+                setEmail(allEmails);
             } else {
                 setEmail('등록된 이메일이 없습니다.');
             }
