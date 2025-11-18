@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, Button, Container, Form } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { resetPassword } from '../../api/user';

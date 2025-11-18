@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, Button, Container, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { findEmail } from '../../api/user';
@@ -62,7 +62,7 @@ export default function FindEmail() {
             <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-2">
                     <Form.Label className="mb-0">전화번호</Form.Label>
-                    <div className="d-flex align-items-end gap-2 mb-3">
+                    <div className="d-flex align-items-end gap-2">
                         <Form.Control
                             className="form"
                             type="text"
@@ -89,6 +89,16 @@ export default function FindEmail() {
                     placeholder="검색을 하시면 이메일이 나옵니다."
                 />
             </Form>
+            <Button
+                type="button"
+                variant="primary user-btn"
+                className="mt-2"
+                onClick={() => {
+                    navigate('/login');
+                }}
+            >
+                로그인 화면으로
+            </Button>
         </Container>
     );
 }
