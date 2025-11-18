@@ -69,8 +69,8 @@ export default function NoteMeetingDetail() {
                         membersData.participants?.length > 0
                             ? membersData.participants.map((m) => m.participantName).join(', ')
                             : '참가자 정보 없음',
-                    created: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '날짜 정보 없음',
-                    modified: data.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : '날짜 정보 없음',
+                    created: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '-',
+                    modified: data.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : `-`,
                 };
 
                 setMeeting(formattedData);
