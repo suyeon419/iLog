@@ -164,7 +164,6 @@ export default function Note() {
         fetchProjects();
     }, []);
 
-    // ... (이미지 핸들러, 이름 수정 핸들러 등은 모두 동일) ...
     // --- 이미지 핸들러 ---
     const handleTriggerFileInput = (e, id, name) => {
         e.stopPropagation();
@@ -381,7 +380,6 @@ export default function Note() {
                 {currentItems.map((item) => (
                     <Col md="auto" lg="auto" className="mb-4" key={item.id}>
                         <Card className="h-100 card-project">
-                            {/* ... (이미지 영역 (동일)) ... */}
                             <div className="card-image-container">
                                 {item.blobUrl ? (
                                     (() => {
@@ -443,7 +441,6 @@ export default function Note() {
                                 style={{ cursor: editingItemId === item.id ? 'default' : 'pointer' }}
                                 className="text-center d-flex flex-column"
                             >
-                                {/* ... (이름 수정 UI (동일)) ... */}
                                 {editingItemId === item.id ? (
                                     <>
                                         <div className="d-flex align-items-center">

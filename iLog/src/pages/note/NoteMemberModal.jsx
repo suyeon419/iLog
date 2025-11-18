@@ -1,7 +1,5 @@
-// NoteMemberModal.jsx
 import React, { useState } from 'react';
-import { Modal, ListGroup, Badge, Button } from 'react-bootstrap';
-import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { Modal, ListGroup, Spinner } from 'react-bootstrap';
 
 export default function NoteMemberModal({
     show,
@@ -10,11 +8,12 @@ export default function NoteMemberModal({
     folderId,
     meetingId,
 
-    projectMembers = [],
-    meetingMembers = [],
+    projectMembers = [], // 위쪽 리스트
+    meetingMembers = [], // 아래 리스트
 
-    addMemberApi, // 프로젝트 → 회의로 추가
-    deleteMeetingMember, // 회의 → 프로젝트로 회수할 때 필요하면 사용, 지금은 버튼 없음
+    addMemberApi, // 회의 참석자로 내려보내기
+    deleteMemberApi, // 회의 참석자에서 위로 올리기
+
     onMemberUpdate,
 }) {
     const [loadingId, setLoadingId] = useState(null);
@@ -29,61 +28,17 @@ export default function NoteMemberModal({
         }
     };
 
-    // UI 렌더링 공통 함수
-    const renderMemberRow = (member, showButton = false, onClickAction = null) => (
-        <React.Fragment key={member.participantId}>
-            <ListGroup.Item
-                className="d-flex align-items-center justify-content-between px-0"
-                style={{ backgroundColor: 'transparent' }}
-            >
-                <div className="d-flex align-items-center">
-                    {/* 프로필 이미지 */}
-                    {member.participantProfileImage ? (
-                        <img
-                            src={`https://webkit-ilo9-api.duckdns.org${member.participantProfileImage}`}
-                            alt="profile"
-                            className="rounded-circle me-3"
-                            style={{ width: '40px', height: '40px', objectFit: 'cover' }}
-                            onError={(e) => (e.target.src = '/default-profile.png')}
-                        />
-                    ) : (
-                        <div
-                            className="rounded-circle me-3"
-                            style={{
-                                width: '40px',
-                                height: '40px',
-                                backgroundColor: '#e0e0e0',
-                            }}
-                        />
-                    )}
+    const handleRemoveFromMeeting = async (member) => {
+        setLoadingId(member.participantId);
+        try {
+            const updated = await deleteMemberApi(meetingId, member.participantId);
+            onMemberUpdate(updated);
+        } finally {
+            setLoadingId(null);
+        }
+    };
 
-                    <div>
-                        <span className="fw-semibold">{member.participantName}</span>
-                        {member.leader && <Badge className="ms-2 badge-leader">팀장</Badge>}
-                        <br />
-                        <small className="text-muted">{member.participantEmail}</small>
-                    </div>
-                </div>
-
-                {/* 버튼 필요할 때만 */}
-                {showButton && (
-                    <Button
-                        variant="primary"
-                        onClick={() => onClickAction(member)}
-                        disabled={loadingId === member.participantId}
-                    >
-                        {loadingId === member.participantId ? (
-                            <LoadingSpinner as="span" animation="border" size="sm" />
-                        ) : (
-                            '추가'
-                        )}
-                    </Button>
-                )}
-            </ListGroup.Item>
-
-            <hr className="brownHr my-1" />
-        </React.Fragment>
-    );
+    const isInMeeting = (id) => meetingMembers.some((m) => m.participantId === id);
 
     return (
         <Modal show={show} onHide={onHide} centered>
@@ -92,19 +47,43 @@ export default function NoteMemberModal({
             </Modal.Header>
 
             <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-                {/* 프로젝트 멤버 → 추가 가능 */}
+                {/* 프로젝트 참가자 */}
                 <h6 className="fw-bold mb-2">프로젝트 참가자</h6>
                 <ListGroup variant="flush" className="mb-3">
                     {projectMembers
-                        .filter((pm) => !meetingMembers.some((m) => m.participantId === pm.participantId))
-                        .map((member) => renderMemberRow(member, true, handleAddFromProject))}
+                        .filter((pm) => !isInMeeting(pm.participantId))
+                        .map((member) => (
+                            <ListGroup.Item
+                                key={member.participantId}
+                                as="div"
+                                className="d-flex align-items-center justify-content-between px-0"
+                                style={{ background: 'transparent', cursor: 'pointer' }}
+                                onClick={() => !isInMeeting(member.participantId) && handleAddFromProject(member)}
+                            >
+                                <span>{member.participantName}</span>
+                                {loadingId === member.participantId && <Spinner animation="border" size="sm" />}
+                            </ListGroup.Item>
+                        ))}
                 </ListGroup>
 
                 <hr className="brownHr my-2" />
 
-                {/* 회의 참석자 → 버튼 없이 목록만 */}
+                {/* 회의 참석자 */}
                 <h6 className="fw-bold mb-2">회의 참석자</h6>
-                <ListGroup variant="flush">{meetingMembers.map((member) => renderMemberRow(member))}</ListGroup>
+                <ListGroup variant="flush">
+                    {meetingMembers.map((member) => (
+                        <ListGroup.Item
+                            key={member.participantId}
+                            as="div"
+                            className="d-flex align-items-center justify-content-between px-0"
+                            style={{ background: 'transparent', cursor: 'pointer' }}
+                            onClick={() => handleRemoveFromMeeting(member)}
+                        >
+                            <span>{member.participantName}</span>
+                            {loadingId === member.participantId && <Spinner animation="border" size="sm" />}
+                        </ListGroup.Item>
+                    ))}
+                </ListGroup>
             </Modal.Body>
         </Modal>
     );

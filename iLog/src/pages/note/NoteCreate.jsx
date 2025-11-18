@@ -120,7 +120,7 @@ export default function NoteCreate() {
     const handleShowMemberModal = () => setShowMemberModal(true);
     const handleCloseMemberModal = () => setShowMemberModal(false);
 
-    const currentUserName = isLoadingUser ? '로딩 중...' : user?.name || '정보 없음';
+    const currentUserName = isLoadingUser ? '' : user?.name || '정보 없음';
 
     return (
         <Container fluid className="pt-3 container-left">

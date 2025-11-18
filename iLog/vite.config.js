@@ -5,6 +5,8 @@ import https from 'https'; // ✅ ESM import로 변경
 export default defineConfig({
     plugins: [react()],
     server: {
+        host: true,
+        allowedHosts: ['webkit-ilo9.duckdns.org'],
         proxy: {
             '/api': {
                 target: 'https://webkit-ilo9-api.duckdns.org',
