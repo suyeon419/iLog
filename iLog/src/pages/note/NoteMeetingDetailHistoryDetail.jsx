@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Button, Spinner, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Button, Alert } from 'react-bootstrap';
 import { PencilSquare, CalendarCheck, CalendarPlus } from 'react-bootstrap-icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getNoteHistory } from '../../api/note';
 import NoteAISummary from './NoteAISummary';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 export default function NoteMeetingDetailHistoryDetail() {
     const { meetingId, historyId } = useParams();
@@ -59,8 +60,7 @@ export default function NoteMeetingDetailHistoryDetail() {
     if (loading) {
         return (
             <Container className="pt-3 text-center">
-                <Spinner animation="border" />
-                <h5 className="mt-2">불러오는 중...</h5>
+                <LoadingSpinner animation="border" />
             </Container>
         );
     }

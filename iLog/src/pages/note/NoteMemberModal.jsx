@@ -1,6 +1,7 @@
 // NoteMemberModal.jsx
 import React, { useState } from 'react';
-import { Modal, ListGroup, Badge, Spinner, Button } from 'react-bootstrap';
+import { Modal, ListGroup, Badge, Button } from 'react-bootstrap';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 export default function NoteMemberModal({
     show,
@@ -72,7 +73,7 @@ export default function NoteMemberModal({
                         disabled={loadingId === member.participantId}
                     >
                         {loadingId === member.participantId ? (
-                            <Spinner as="span" animation="border" size="sm" />
+                            <LoadingSpinner as="span" animation="border" size="sm" />
                         ) : (
                             '추가'
                         )}

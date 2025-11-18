@@ -11,6 +11,7 @@ export const LoadingSpinner = () => {
                 alt="로딩 중"
                 className="loading-icon" // 이 클래스에 애니메이션을 적용합니다.
             />
+            <p>로딩 중</p>
         </div>
     );
 };

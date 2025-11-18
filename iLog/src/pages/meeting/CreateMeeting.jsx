@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Button, Card, Container, Spinner } from 'react-bootstrap';
+import { Form, Button, Card, Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { getUserById } from '../../api/user';
 import { startJitsiMeeting } from '../../api/jitsi';
 import axiosInstance from '../../api/axios';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 export default function CreateMeeting() {
     const navigate = useNavigate();
@@ -93,8 +94,7 @@ export default function CreateMeeting() {
                 className="d-flex flex-column justify-content-center align-items-center"
                 style={{ height: '100vh' }}
             >
-                <Spinner animation="border" variant="primary" />
-                <p className="mt-3">회원 정보를 불러오는 중입니다...</p>
+                <LoadingSpinner animation="border" variant="primary" />
             </Container>
         );
     }

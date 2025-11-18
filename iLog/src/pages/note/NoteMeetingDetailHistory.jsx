@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Spinner } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { getNoteHistory } from '../../api/note';
 import { useNavigate } from 'react-router-dom';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 export default function NoteMeetingDetailHistory() {
     const { meetingId } = useParams();
@@ -47,7 +48,7 @@ export default function NoteMeetingDetailHistory() {
     if (loading) {
         return (
             <Container className="text-center mt-4">
-                <Spinner />
+                <LoadingSpinner />
             </Container>
         );
     }

@@ -7,11 +7,11 @@ import {
     Row,
     Col,
     Dropdown,
-    Spinner,
     Alert,
     Modal, // [✅ 수정] Modal 컴포넌트 임포트
     Pagination,
 } from 'react-bootstrap';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { PencilSquare, People, CalendarCheck, CalendarPlus, ThreeDotsVertical, Trash } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import NoteAISummary from './NoteAISummary';
@@ -210,8 +210,8 @@ export default function NoteMeetingDetail() {
     if (loading) {
         return (
             <Container className="pt-3 text-center">
-                <Spinner animation="border" role="status" />
-                <h5 className="mt-2">저장 중...</h5>
+                <LoadingSpinner animation="border" role="status" />
+                <h5 className="mt-2">로딩 중</h5>
             </Container>
         );
     }
@@ -314,8 +314,7 @@ export default function NoteMeetingDetail() {
                             </pre>
                         ) : aiLoading ? (
                             <div className="text-center p-5 ">
-                                <Spinner animation="border" />
-                                <h5 className="mt-2">AI 요약본을 불러오는 중...</h5>
+                                <LoadingSpinner animation="border" />
                             </div>
                         ) : (
                             aiData && (
@@ -335,7 +334,7 @@ export default function NoteMeetingDetail() {
 
             <div>
                 <Button variant="primary" className="w-100 mt-3" onClick={handleToggleAiSummary} disabled={aiLoading}>
-                    {aiLoading ? '로딩 중...' : showAiSummary ? '회의록 본문 보기' : 'AI 요약본 보기'}
+                    {aiLoading ? '' : showAiSummary ? '회의록 본문 보기' : 'AI 요약본 보기'}
                 </Button>
             </div>
 

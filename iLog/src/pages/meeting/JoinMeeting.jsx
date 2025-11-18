@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Form, Button, Card, Spinner } from 'react-bootstrap';
+import { Container, Form, Button, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { getUserById } from '../../api/user';
 import { jwtDecode } from 'jwt-decode';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 export default function JoinMeeting() {
     const navigate = useNavigate();
@@ -75,8 +76,7 @@ export default function JoinMeeting() {
                 className="d-flex flex-column justify-content-center align-items-center"
                 style={{ height: '100vh' }}
             >
-                <Spinner animation="border" variant="primary" />
-                <p className="mt-3">회원 정보를 불러오는 중입니다...</p>
+                <LoadingSpinner animation="border" variant="primary" />
             </Container>
         );
     }

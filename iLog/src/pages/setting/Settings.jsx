@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Container, Row, Col, Spinner } from 'react-bootstrap';
+import { Button, Container, Row, Col } from 'react-bootstrap';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { Link, useNavigate } from 'react-router-dom';
 import { deleteUser, getUserById, loginUser } from '../../api/user';
 import { jwtDecode } from 'jwt-decode';
@@ -100,8 +101,7 @@ export default function Settings() {
                 className="d-flex flex-column justify-content-center align-items-center"
                 style={{ height: '100vh' }}
             >
-                <Spinner animation="border" variant="primary" />
-                <p className="mt-3">회원 정보를 불러오는 중입니다...</p>
+                <LoadingSpinner animation="border" variant="primary" />
             </Container>
         );
     }
@@ -143,8 +143,6 @@ export default function Settings() {
                 </div>
                 <hr className="beigeHr" />
             </section>
-
-            {/* ... (이하 나머지 코드는 동일) ... */}
 
             <section>
                 <h2>

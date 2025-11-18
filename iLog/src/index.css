@@ -399,8 +399,8 @@ btn-outline-primary:hover i {
     border: none;
 }
 
-/* spinner */
-.spinner-border {
+/* LoadingSpinner */
+.LoadingSpinner-border {
     color: #b66e03 !important; /* 기본 border 색상 */
     border-color: #b66e03 !important;
     border-right-color: transparent !important; /* 회전 시 투명 부분 */

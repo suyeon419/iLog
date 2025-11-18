@@ -2488,9 +2488,8 @@ const Meeting = () => {
                 <Container className="container-black">
                     {meetingState === 'idle' ? (
                         <>
-                            회의 준비 중...
                             <div
-                                className="spinner"
+                                className="LoadingSpinner"
                                 style={{
                                     width: '24px',
                                     height: '24px',

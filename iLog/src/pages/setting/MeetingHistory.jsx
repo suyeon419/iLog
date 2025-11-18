@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 // [수정] Row, Col, PencilSquare 제거
-import { Container, Alert, Spinner } from 'react-bootstrap';
+import { Container, Alert } from 'react-bootstrap';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
 import { getMeetingHistory } from '../../api/user';
 
@@ -22,10 +23,8 @@ export default function MeetingHistory() {
             try {
                 setLoading(true);
                 setError('');
-                console.log('[MeetingHistory] 화상회의 이력 로드 시작...');
 
                 const data = await getMeetingHistory();
-                console.log('[MeetingHistory] 데이터 로드 성공:', data);
 
                 const grouped = data.reduce((acc, item) => {
                     const date = item.createdAt.split('T')[0];
@@ -60,8 +59,7 @@ export default function MeetingHistory() {
     if (loading) {
         return (
             <Container className="pt-3 text-center">
-                <Spinner animation="border" />
-                <h5 className="mt-2">데이터를 불러오는 중입니다...</h5>
+                <LoadingSpinner animation="border" />
             </Container>
         );
     }

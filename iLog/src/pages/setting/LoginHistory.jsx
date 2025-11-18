@@ -1,7 +1,8 @@
 // LoginHistory.jsx (타임라인 + 페이지네이션 + IP 주소 적용)
 
 import React, { useState, useEffect } from 'react';
-import { Container, Pagination, Button, Spinner, Alert } from 'react-bootstrap';
+import { Container, Pagination, Button, Alert } from 'react-bootstrap';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
 import { getLoginHistory } from '../../api/user';
 
@@ -104,7 +105,7 @@ export default function LoginHistory() {
 
             {loading && (
                 <div className="text-center p-5">
-                    <Spinner animation="border" />
+                    <LoadingSpinner animation="border" />
                 </div>
             )}
 

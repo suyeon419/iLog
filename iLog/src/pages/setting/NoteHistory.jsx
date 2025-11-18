@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 // [수정] Row, Col, PencilSquare 제거
-import { Container, Alert, Spinner } from 'react-bootstrap';
+import { Container, Alert } from 'react-bootstrap';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { getNoteHistory } from '../../api/user';
 
 export default function NoteHistory() {
@@ -15,10 +16,8 @@ export default function NoteHistory() {
             try {
                 setLoading(true);
                 setError('');
-                console.log('[NoteHistory] 회의록 이력 로드 시작...');
 
                 const data = await getNoteHistory();
-                console.log('[NoteHistory] 데이터 로드 성공:', data);
 
                 const grouped = data.reduce((acc, item) => {
                     const date = item.createdAt.split('T')[0];
@@ -53,8 +52,7 @@ export default function NoteHistory() {
     if (loading) {
         return (
             <Container className="pt-3 text-center">
-                <Spinner animation="border" />
-                <h5 className="mt-2">데이터를 불러오는 중입니다...</h5>
+                <LoadingSpinner animation="border" />
             </Container>
         );
     }

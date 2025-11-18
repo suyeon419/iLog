@@ -1,7 +1,8 @@
 // MemberModal.jsx
 
 import React, { useState } from 'react';
-import { Modal, Button, Form, Badge, ListGroup, OverlayTrigger, Tooltip, Spinner } from 'react-bootstrap';
+import { Modal, Button, Form, Badge, ListGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 // ❗ note.js의 API 함수를 여기서 직접 임포트하지 않습니다.
 // 대신 props로 받아옵니다.
@@ -108,7 +109,11 @@ export default function MemberModal({
                             disabled={isInviting}
                         />
                         <Button variant="secondary" onClick={handleInviteByEmail} disabled={isInviting}>
-                            {isInviting ? <Spinner as="span" animation="border" size="sm" role="status" /> : '추가'}
+                            {isInviting ? (
+                                <LoadingSpinner as="span" animation="border" size="sm" role="status" />
+                            ) : (
+                                '추가'
+                            )}
                         </Button>
                     </div>
                 </Form.Group>
@@ -125,7 +130,6 @@ export default function MemberModal({
                                     style={{ backgroundColor: 'transparent' }}
                                 >
                                     <div className="d-flex align-items-center">
-                                        {/* ... (프로필 이미지 렌더링) ... */}
                                         {member.participantProfileImage ? (
                                             <img
                                                 src={`https://webkit-ilo9-api.duckdns.org${member.participantProfileImage}`}
@@ -133,7 +137,7 @@ export default function MemberModal({
                                                 className="rounded-circle me-3"
                                                 style={{ width: '40px', height: '40px', objectFit: 'cover' }}
                                                 onError={(e) => {
-                                                    e.target.src = '/default-profile.png'; // 기본 이미지
+                                                    e.target.src = '/default-profile.png';
                                                 }}
                                             />
                                         ) : (
@@ -159,7 +163,7 @@ export default function MemberModal({
                                             disabled={isDeletingId === member.participantId}
                                         >
                                             {isDeletingId === member.participantId ? (
-                                                <Spinner as="span" animation="border" size="sm" />
+                                                <LoadingSpinner as="span" animation="border" size="sm" />
                                             ) : (
                                                 '삭제'
                                             )}

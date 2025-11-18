@@ -1,18 +1,18 @@
 // NoteDetail.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Container, Table, Button, Row, Col, Pagination, Spinner, Alert } from 'react-bootstrap';
+import { Container, Table, Button, Row, Col, Pagination, Alert } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import MemberModal from './MemberModal';
 
 import { getProjectDetails, getProjectMembers, addProjectMemberByEmail, getMeetingMembers } from '../../api/note';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 export default function NoteDetail() {
     const navigate = useNavigate();
     const { id } = useParams(); // 현재 프로젝트(폴더) ID
 
-    // ... (state 선언 동일) ...
     const [project, setProject] = useState(null);
     const [subMeetings, setSubMeetings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -169,7 +169,6 @@ export default function NoteDetail() {
         setCurrentInviteLink(updatedData.inviteLink || '');
     };
 
-    // ... (페이지네이션 관련 로직은 모두 동일) ...
     const totalPages = Math.ceil(subMeetings.length / ITEMS_PER_PAGE);
     const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
     const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
@@ -194,12 +193,10 @@ export default function NoteDetail() {
     };
     // ------------------------
 
-    // ... (loading, error 렌더링 부분은 모두 동일) ...
     if (loading) {
         return (
             <Container className="pt-3 text-center">
-                <Spinner animation="border" role="status" />
-                <h5 className="mt-2">로딩 중...</h5>
+                <LoadingSpinner animation="border" role="status" />
             </Container>
         );
     }
@@ -229,14 +226,13 @@ export default function NoteDetail() {
     return (
         <Container fluid className="pt-3 container-left">
             <div className="flex-grow-1">
-                {/* ... (상단 Row 동일) ... */}
                 <Row className="mb-3 mt-3 align-items-center">
                     <Col xs="auto" style={{ visibility: 'hidden' }}>
                         <PersonPlus size={24} />
                     </Col>
 
                     <Col className="text-center">
-                        <h2 className="fw-bold m-0">{project ? project.name : '프로젝트 로딩 중...'}</h2>
+                        <h2 className="fw-bold m-0">{project ? project.name : ''}</h2>
                     </Col>
 
                     <Col xs="auto">
@@ -244,7 +240,6 @@ export default function NoteDetail() {
                     </Col>
                 </Row>
 
-                {/* ... (테이블 동일) ... */}
                 <Table className="align-middle">
                     <thead>
                         <tr>

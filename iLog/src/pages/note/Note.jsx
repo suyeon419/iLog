@@ -2,8 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Button, Card, Row, Col, Pagination, Alert, Spinner, Form } from 'react-bootstrap';
+import { Container, Button, Card, Row, Col, Pagination, Alert, Form, Spinner } from 'react-bootstrap';
 import { PencilSquare, CheckSquare, Folder } from 'react-bootstrap-icons';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 import {
     getProjects,
     createProject,
@@ -37,133 +38,6 @@ export default function Note() {
 
     const [editingItemId, setEditingItemId] = useState(null);
     const [editingItemName, setEditingItemName] = useState('');
-
-    // ==================================================================
-    // [1. 목록 조회] useEffect
-    // ==================================================================
-    // useEffect(() => {
-    //     const fetchProjects = async () => {
-    //         let initialItems = [];
-    //         try {
-    //             setLoading(true);
-    //             setError('');
-
-    //             // 1. 프로젝트 목록(텍스트) 우선 가져오기
-    //             const rootFolderData = await getProjects();
-    //             setRootFolderId(rootFolderData.folderId);
-
-    //             initialItems = rootFolderData.childFolders
-    //                 .map((project) => ({
-    //                     id: project.id,
-    //                     name: project.name,
-    //                     imagePath: project.folderImage,
-    //                     blobUrl: null,
-
-    //                     // [수정] 날짜는 원래대로 'createdAt'을 사용합니다.
-    //                     created: project.createdAt
-    //                         ? new Date(project.createdAt).toLocaleDateString()
-    //                         : '날짜 정보 없음',
-
-    //                     members: project.members || '...',
-    //                 }))
-    //                 .reverse();
-
-    //             setItems(initialItems);
-    //             setLoading(false);
-    //         } catch (err) {
-    //             console.error('❌ [Note] 데이터 로드 실패:', err);
-    //             setError('프로젝트를 불러오는 데 실패했습니다.');
-    //             setLoading(false);
-    //             return;
-    //         }
-
-    //         // --- 3. Blob 이미지 및 참가자 로딩 ---
-    //         try {
-    //             console.log(`💡 [Note] 2. 총 ${initialItems.length}개 아이템 순회 시작.`);
-
-    //             for (const itemToLoad of initialItems) {
-    //                 // ... (이미지 로드 로직은 동일) ...
-    //                 if (itemToLoad.imagePath) {
-    //                     console.log(
-    //                         `💡 [Note] 3. (ID: ${itemToLoad.id}) 이미지 로드 필요. 경로: ${itemToLoad.imagePath}`
-    //                     );
-    //                     try {
-    //                         const imageUrl = `${SERVER_BASE_URL}${itemToLoad.imagePath}`;
-    //                         console.log(`💡 [Note] 4. (ID: ${itemToLoad.id}) 다음 URL로 GET 요청 시도: ${imageUrl}`);
-    //                         const res = await api.get(imageUrl, {
-    //                             responseType: 'blob',
-    //                         });
-    //                         const blobUrl = URL.createObjectURL(res.data);
-    //                         console.log(`✅ [Note] 5. (ID: ${itemToLoad.id}) 이미지 로드 성공. Blob URL 생성됨.`);
-    //                         setItems((prevItems) =>
-    //                             prevItems.map((item) =>
-    //                                 item.id === itemToLoad.id ? { ...item, blobUrl: blobUrl } : item
-    //                             )
-    //                         );
-    //                     } catch (err) {
-    //                         console.error(
-    //                             `❌ [Note] 7. (ID: ${itemToLoad.id}) 이미지 로드 실패:`,
-    //                             err.response || err.message
-    //                         );
-    //                         setItems((prevItems) =>
-    //                             prevItems.map((item) =>
-    //                                 item.id === itemToLoad.id ? { ...item, imagePath: null } : item
-    //                             )
-    //                         );
-    //                     }
-    //                 } else {
-    //                     console.log(`💡 [Note] (ID: ${itemToLoad.id}) imagePath가 없으므로 건너뜁니다.`);
-    //                 }
-
-    //                 // ==========================================================
-    //                 // 👇👇👇 [수정] 참가자 로드 로직 (여기부터) 👇👇👇
-    //                 // ==========================================================
-    //                 try {
-    //                     // 1. 참가자 API 호출
-    //                     // (getProjectMembers는 { participants: [...] } 객체를 반환)
-    //                     const membersData = await getProjectMembers(itemToLoad.id);
-    //                     let membersString = '참가자 없음'; // 기본값
-
-    //                     // [수정] membersData는 객체이므로, membersData.participants 배열로 확인
-    //                     if (membersData.participants && membersData.participants.length > 0) {
-    //                         // [수정] m.participantName을 사용합니다.
-    //                         membersString = membersData.participants.map((m) => m.participantName).join(' '); // 렌더링 코드와 맞추기 위해 띄어쓰기로 join
-    //                     }
-
-    //                     console.log(`✅ [Note] (ID: ${itemToLoad.id}) 참가자 로드 성공.`);
-
-    //                     // 3. state 업데이트
-    //                     setItems((prevItems) =>
-    //                         prevItems.map((item) =>
-    //                             item.id === itemToLoad.id ? { ...item, members: membersString } : item
-    //                         )
-    //                     );
-    //                 } catch (err) {
-    //                     console.error(
-    //                         `❌ [Note] (ID: ${itemToLoad.id}) 참가자 로드 실패:`,
-    //                         err.response || err.message
-    //                     );
-    //                     setItems((prevItems) =>
-    //                         prevItems.map((item) =>
-    //                             item.id === itemToLoad.id ? { ...item, members: '멤버 조회 실패' } : item
-    //                         )
-    //                     );
-    //                 }
-    //                 // ==========================================================
-    //                 // 👆👆👆 [수정] 참가자 로드 로직 (여기까지) 👆👆👆
-    //                 // ==========================================================
-    //             }
-    //             console.log('💡 [Note] 9. 이미지/멤버 로드 순회 완료.');
-    //         } catch (err) {
-    //             console.error('❌ [Note] Blob 이미지/멤버 로딩 순회 중 전체 오류:', err);
-    //         }
-    //     };
-
-    //     fetchProjects();
-    // }, []);
-    // ==================================================================
-    // useEffect 끝
-    // ==================================================================
 
     useEffect(() => {
         const fetchProjects = async () => {
@@ -482,14 +356,11 @@ export default function Note() {
         return pageItems;
     };
     // ------------------------
-
-    // ... (로딩 및 에러 UI 처리 (동일)) ...
     const renderContent = () => {
         if (loading) {
             return (
                 <div className="text-center p-5">
-                    <Spinner animation="border" role="status" />
-                    <p className="mt-2">프로젝트를 불러오는 중입니다...</p>
+                    <LoadingSpinner animation="border" role="status" />
                 </div>
             );
         }
