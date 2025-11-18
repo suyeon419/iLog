@@ -43,6 +43,9 @@ export default function FindPw() {
         setPhoneNumber(value);
     };
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    });
     return (
         <Container>
             <h2 className="fw-bold text-center my-4">비밀번호 찾기</h2>

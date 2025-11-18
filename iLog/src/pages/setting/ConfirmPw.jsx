@@ -11,6 +11,10 @@ export default function ConfirmPw() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    });
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');

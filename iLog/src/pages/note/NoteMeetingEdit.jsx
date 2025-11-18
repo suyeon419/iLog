@@ -75,6 +75,7 @@ export default function NoteMeetingEdit() {
     };
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         const loadFolderId = async () => {
             const fid = await findFolderIdByMeetingId(meetingId);
             console.log('📌 찾은 folderId:', fid);

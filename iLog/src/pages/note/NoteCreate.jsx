@@ -27,6 +27,7 @@ export default function NoteCreate() {
     const today = new Date().toISOString().split('T')[0].replace(/-/g, '.') + '.';
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         const token = localStorage.getItem('accessToken');
         if (token) {
             try {

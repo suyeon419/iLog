@@ -36,6 +36,9 @@ export default function FindEmail() {
         }
     };
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    });
     const handlePhoneChange = (e) => {
         let value = e.target.value.replace(/[^0-9]/g, ''); // 숫자만 남기기
 

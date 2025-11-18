@@ -40,6 +40,8 @@ export default function Note() {
     const [editingItemName, setEditingItemName] = useState('');
 
     useEffect(() => {
+        window.scrollTo(0, 0);
+
         const fetchProjects = async () => {
             try {
                 setLoading(true);

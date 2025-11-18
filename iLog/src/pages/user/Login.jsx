@@ -55,6 +55,10 @@ export default function Login() {
         }
     };
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    });
+
     return (
         <Container>
             <img className="w-25" src="./images/ko.ilo9.png" alt="iLog Logo" /> <br />

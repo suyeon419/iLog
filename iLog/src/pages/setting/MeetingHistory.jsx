@@ -19,6 +19,7 @@ export default function MeetingHistory() {
     const [error, setError] = useState('');
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         const fetchHistory = async () => {
             try {
                 setLoading(true);

@@ -38,6 +38,7 @@ export default function LoginHistory() {
     };
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         const fetchHistory = async () => {
             try {
                 setLoading(true);

@@ -13,6 +13,7 @@ export default function NoteMeetingDetailHistory() {
     const navigate = useNavigate();
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         const fetchHistory = async () => {
             try {
                 const data = await getNoteHistory(meetingId);

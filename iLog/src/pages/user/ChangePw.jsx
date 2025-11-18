@@ -13,6 +13,10 @@ export default function ChangePw() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    });
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 

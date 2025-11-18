@@ -19,6 +19,7 @@ export default function Home() {
     const [selectedNotes, setSelectedNotes] = useState([]);
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         if (noteHistory.length > 0) {
             handleDateClick(new Date());
         }

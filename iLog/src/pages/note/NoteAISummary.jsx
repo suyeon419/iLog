@@ -1,6 +1,6 @@
 // NoteAISummary.jsx (옵션 2: DOM 순회 및 직접 조작 방식)
 
-import React, { useState, useLayoutEffect, useRef } from 'react';
+import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import { Row, Col, Card, Button, Form } from 'react-bootstrap';
 import { marked } from 'marked';
 
@@ -21,6 +21,9 @@ export default function NoteAISummary({
     // AI 요약본문 <div>에 연결할 ref
     const summaryContainerRef = useRef(null);
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    });
     /**
      * [수정] 텍스트 선택(드래그)시 호출되는 핸들러
      * 복잡한 HTML 구조 안에서도 정확한 텍스트 인덱스를 계산합니다.

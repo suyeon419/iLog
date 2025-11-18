@@ -28,6 +28,7 @@ export default function EditProfile() {
     const [profileImageUrl, setProfileImageUrl] = useState(''); // 이미지 미리보기 URL
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         const token = localStorage.getItem('accessToken');
         if (token) {
             setIsLogin(true);

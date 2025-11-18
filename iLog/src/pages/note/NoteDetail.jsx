@@ -132,6 +132,7 @@ export default function NoteDetail() {
     };
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         fetchProjectDetails(id);
 
         const handleFocus = () => {
