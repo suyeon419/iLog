@@ -6,7 +6,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PencilSquare, CheckSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
 import MemberModal from './MemberModal';
 
-import { getProjectDetails, getProjectMembers, addProjectMemberByEmail, getMeetingMembers } from '../../api/note';
+import {
+    getProjectDetails,
+    getProjectMembers,
+    addProjectMemberByEmail,
+    getMeetingMembers,
+    deleteProjectMember,
+} from '../../api/note';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 export default function NoteDetail() {
@@ -313,6 +319,7 @@ export default function NoteDetail() {
                 entityId={id}
                 addMemberApi={addProjectMemberByEmail}
                 onMemberUpdate={handleMemberUpdate}
+                deleteMemberApi={deleteProjectMember}
             />
         </Container>
     );
