@@ -8,6 +8,7 @@ html,
 body {
     scrollbar-width: thin;
     scrollbar-color: #b66e03 #fff;
+    overflow-x: hidden;
 }
 
 /* 버튼 스타일 */
@@ -114,6 +115,7 @@ btn-outline-primary:hover i {
     min-height: 88vh !important;
     font-family: 'Pretendard', sans-serif;
     padding: 30px;
+    scrollbar-width: none;
 }
 .container-left {
     display: flex;
@@ -653,4 +655,57 @@ btn-outline-primary:hover i {
 .lock-alert-modal-content {
     border-radius: 10px;
     overflow: hidden;
+}
+
+/* 반응형 */
+@media (max-width: 992px) {
+    .container {
+        padding: 0px;
+    }
+    .container-left {
+        padding: 0px;
+    }
+    .navbar-collapse {
+        width: 100% !important;
+    }
+
+    .navbar-nav .nav-link {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+
+        padding: 12px 16px !important;
+        border-radius: 6px !important;
+
+        background: none !important;
+        border: none !important;
+
+        font-size: 16px !important;
+        color: #333 !important;
+    }
+
+    .navbar-nav .nav-link.active {
+        background-color: #ffffff !important;
+        border-left: 4px solid #b66e03 !important;
+        color: #b66e03 !important;
+    }
+
+    .nav-icon {
+        font-size: 18px;
+        margin-right: 8px;
+    }
+
+    .home-flex {
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+
+    .home-calendar {
+        width: 100% !important;
+    }
+
+    .home-right-box {
+        width: 100% !important;
+    }
 }

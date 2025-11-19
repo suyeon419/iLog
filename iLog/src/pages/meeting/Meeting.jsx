@@ -2271,6 +2271,23 @@ const Meeting = () => {
         }
     };
 
+    const isSummaryReady = () => {
+        const t = summaryText.trim();
+        if (!t) return false;
+
+        const blocked = [
+            '회의 서버에 연결 중',
+            '회의 녹음이 시작되었습니다',
+            '요약 생성 중',
+            '요약을 불러오는 중',
+            '최종 요약이 수행 중입니다',
+            '네트워크 오류',
+            '요약이 아직 비어있어요',
+        ];
+
+        return !blocked.some((msg) => t.includes(msg));
+    };
+
     // 결과 선택
     const handleSelectFolder = (folder) => {
         setSelectedFolder(folder);
@@ -2415,7 +2432,7 @@ const Meeting = () => {
                         className="w-75"
                         variant="primary"
                         onClick={handleCreateNoteThenGoHome}
-                        disabled={isCreatingNote}
+                        disabled={isCreatingNote || !isSummaryReady()}
                     >
                         메인으로
                     </Button>
