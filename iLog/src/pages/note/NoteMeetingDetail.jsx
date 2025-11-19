@@ -5,6 +5,7 @@ import { Container, Button, Row, Col, Dropdown, Alert, Modal, Pagination } from 
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { PencilSquare, People, CalendarCheck, CalendarPlus, ThreeDotsVertical, Trash } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 import NoteAISummary from './NoteAISummary';
 import FloatingChatButton from '../../components/chatbot/FloatingChatButton';
 import ChatbotPanel from '../../components/chatbot/ChatbotPanel';
@@ -315,9 +316,11 @@ export default function NoteMeetingDetail() {
                 <Row>
                     <Col>
                         {!showAiSummary ? (
-                            <pre className="border p-3 rounded text-break note-box">
-                                {meeting.content.replace(/\\\\n/g, '\n').replace(/\\n/g, '\n').trim()}
-                            </pre>
+                            <div className="border p-3 rounded text-break note-box">
+                                <ReactMarkdown>
+                                    {meeting.content.replace(/\\\\n/g, '\n').replace(/\\n/g, '\n').trim()}
+                                </ReactMarkdown>
+                            </div>
                         ) : aiLoading ? (
                             <div className="text-center p-5 ">
                                 <LoadingSpinner animation="border" />
