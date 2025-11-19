@@ -256,7 +256,7 @@ export default function NoteDetail() {
                             {project ? project.name : ''}
                         </h1>
                         <h6 className="ms-3">
-                            {members.length > 0 ? members.map((m) => m.participantName).join(', ') : ' '}
+                            {members?.length > 0 ? members.map((m) => m.participantName).join(', ') : ' '}
                         </h6>
                     </Col>
 
