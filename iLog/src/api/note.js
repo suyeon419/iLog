@@ -641,3 +641,24 @@ export const releaseLock = async (minuteId, token) => {
         throw error;
     }
 };
+
+/**
+ * 회의록 캘린더 조회
+ * GET /minutes/calendar
+ */
+
+export const getCalendarMinutes = async () => {
+    try {
+        const headers = {
+            ...defaultHeaders,
+            ...getAuthHeader(),
+        };
+        const response = await api.get('/minutes/calendar', { headers });
+
+        console.log('캘린더 용 회의록 목록 로드 성공: ', response.data);
+        return response.data;
+    } catch (err) {
+        console.error('캘린더 용 회의록 목록 로드 실패: ', err.response?.data || err);
+        throw err;
+    }
+};
