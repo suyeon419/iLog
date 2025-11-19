@@ -9,6 +9,7 @@ import api from '../../api/axios';
 import { createNote } from '../../api/note';
 import { startJitsiMeeting } from '../../api/jitsi';
 import { getProjects } from '../../api/note';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 // ******** 중간 요약 전송 간격 (ms 단위) ********
 const SEGMENT_DURATION_MS = 300000; // == 5분
@@ -213,6 +214,8 @@ const Meeting = () => {
     const [userInfo, setUserInfo] = useState({ name: '', email: '' }); //[sy]user정보 관리 위함
     const [isUserLoaded, setIsUserLoaded] = useState(false); //[sy] 서버에서 회원정보를 다 받아왔는지 확인하기 위함
     const [profileImageUrl, setProfileImageUrl] = useState(''); //[sy]회원 이미지
+
+    const [isFinalSummarizing, setIsFinalSummarizing] = useState(false); //[sy]
 
     // [sy] user 정보 받아옴
     useEffect(() => {
@@ -1016,6 +1019,7 @@ const Meeting = () => {
         }
 
         console.log('⏰ Segment finalization and aggregated send finished.');
+        setIsFinalSummarizing(false); //[sy] 스피너를 위해
     };
 
     /**
@@ -1675,7 +1679,8 @@ const Meeting = () => {
         // 2. (방장만) 최종 요약 청크를 집계하여 전송
         if (!isUnmounting && meetingState === 'active' && isHostRef.current) {
             console.log('[cleanUpConnection] Host detected. Starting final summary aggregation...');
-            setSummaryText('최종 요약이 수행 중입니다...');
+            setIsFinalSummarizing(true);
+            setSummaryText('');
 
             // 2.1. 최종 청크 수집을 위해 collector 비우기
             chunkCollectorRef.current = [];
@@ -1731,6 +1736,7 @@ const Meeting = () => {
                 // 2.5. 집계된 *최종* 폼을 전송하고, 요약이 완료될 때까지 대기
                 await sendAggregatedFormData(formData);
                 console.log('[cleanUpConnection] Final aggregated send finished.');
+                setIsFinalSummarizing(false); //[sy] 스피너를 위해
             } else {
                 console.log('[cleanUpConnection] No final chunks were collected to send.');
             }
@@ -2422,9 +2428,16 @@ const Meeting = () => {
                     </Form.Group>
 
                     <div className="summary-box" style={{ height: '30vh', overflowY: 'auto' }}>
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {summaryText || '요약을 불러오는 중입니다...'}
-                        </ReactMarkdown>
+                        {isFinalSummarizing ? (
+                            <div
+                                className="d-flex justify-content-center align-items-center"
+                                style={{ height: '100%' }}
+                            >
+                                <div className="spinner-border" role="status" />
+                            </div>
+                        ) : (
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{summaryText || ''}</ReactMarkdown>
+                        )}
                     </div>
                 </Modal.Body>
                 <Modal.Footer className="d-flex justify-content-center">
@@ -2432,9 +2445,16 @@ const Meeting = () => {
                         className="w-75"
                         variant="primary"
                         onClick={handleCreateNoteThenGoHome}
-                        disabled={isCreatingNote || !isSummaryReady()}
+                        disabled={isCreatingNote || isFinalSummarizing || !isSummaryReady()}
                     >
-                        메인으로
+                        {isCreatingNote ? (
+                            <div className="d-flex justify-content-center align-items-center gap-2">
+                                <div className="spinner-border" role="status" />
+                                저장 중...
+                            </div>
+                        ) : (
+                            '메인으로'
+                        )}
                     </Button>
                 </Modal.Footer>
             </Modal>
