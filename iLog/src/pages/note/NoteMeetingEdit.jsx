@@ -21,6 +21,7 @@ import {
     getProjectDetails,
     getProjectMembers,
 } from '../../api/note';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 export default function NoteMeetingEdit() {
     // 1. 회의록 본문 State
@@ -258,8 +259,7 @@ export default function NoteMeetingEdit() {
         // ... (로딩 UI) ...
         return (
             <Container className="pt-3 text-center">
-                <Spinner animation="border" role="status" />
-                <h5 className="mt-2">원본 데이터 불러오는 중...</h5>
+                <LoadingSpinner animation="border" role="status" />
             </Container>
         );
     }
