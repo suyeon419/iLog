@@ -40,6 +40,11 @@ export function connectNoteUpdates(meetingId, onUpdated) {
         },
         (error) => {
             console.error('❌ WebSocket 연결 실패', error);
+
+            setTimeout(() => {
+                console.log('🔄 재연결 시도...');
+                connect(meetingId, onUpdated); // 기존 connect 함수 재사용
+            }, reconnectDelay);
         }
     );
 }
