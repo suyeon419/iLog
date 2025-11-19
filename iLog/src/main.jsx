@@ -31,6 +31,10 @@ import NoteHistory from './pages/setting/NoteHistory.jsx';
 import NoteMeetingDetailHistory from './pages/note/NoteMeetingDetailHistory.jsx';
 import NoteMeetingDetailHistoryDetail from './pages/note/NoteMeetingDetailHistoryDetail.jsx';
 
+if (typeof window !== 'undefined') {
+    window.global = window;
+}
+
 createRoot(document.getElementById('root')).render(
     // <React.StrictMode>
     <BrowserRouter>

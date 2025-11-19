@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Row, Col, Alert } from 'react-bootstrap';
-import { PencilSquare, People, CalendarCheck, CalendarPlus, PersonPlus } from 'react-bootstrap-icons';
+import { PencilSquare, People, CalendarCheck, CalendarPlus } from 'react-bootstrap-icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MemberModal from './MemberModal';
 import { createNote, getProjectDetails } from '../../api/note';
@@ -154,20 +154,6 @@ export default function NoteCreate() {
                     >
                         {isSaving ? '저장' : '생성'}
                     </Button>
-                </Col>
-            </Row>
-
-            {/* 참가자 */}
-            <Row className="mb-2 align-items-center text-secondary">
-                <Col>
-                    <div className="d-flex align-items-center">
-                        <People className="me-2" />
-                        <span className="me-2 fw-bold">참가자</span>
-                        <span className="me-2">{currentUserName}</span>
-                    </div>
-                </Col>
-                <Col xs="auto">
-                    <PersonPlus size={20} style={{ cursor: 'pointer' }} onClick={handleShowMemberModal} />
                 </Col>
             </Row>
 

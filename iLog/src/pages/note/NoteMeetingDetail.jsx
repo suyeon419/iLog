@@ -1,16 +1,7 @@
-// NoteMeetingDetail.jsx (회의록 상세 페이지)
+// NoteMeetingDetail.jsx (회의록 상세 페이지 - WebSocket 통신 로직 추가 완료)
 
 import React, { useState, useEffect } from 'react';
-import {
-    Container,
-    Button,
-    Row,
-    Col,
-    Dropdown,
-    Alert,
-    Modal, // [✅ 수정] Modal 컴포넌트 임포트
-    Pagination,
-} from 'react-bootstrap';
+import { Container, Button, Row, Col, Dropdown, Alert, Modal, Pagination } from 'react-bootstrap';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { PencilSquare, People, CalendarCheck, CalendarPlus, ThreeDotsVertical, Trash } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -30,6 +21,9 @@ import {
     getLockStatus,
 } from '../../api/note';
 
+// [✅ 1. WebSocket 서비스 함수 임포트 추가]
+import { connectNoteUpdates, disconnectNoteUpdates } from '../../utils/websocketService'; // 경로 확인 필요!
+
 const ITEMS_PER_PAGE = 1;
 
 export default function NoteMeetingDetail() {
@@ -44,70 +38,83 @@ export default function NoteMeetingDetail() {
 
     const [historyCurrentPage, setHistoryCurrentPage] = useState(1);
 
-    // [✅ 추가] 락 알림 모달 상태
     const [showLockAlertModal, setShowLockAlertModal] = useState(false);
 
     const { meetingId } = useParams();
     const navigate = useNavigate();
 
-    // 1. (API 1) 회의록 본문 정보 로드 (변경 없음)
+    // [✅ 2. 데이터 로드 로직을 함수로 분리 (WebSocket 콜백으로 사용)]
+    const fetchMeetingData = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            // 기존 getNoteDetails, getMeetingMembers 호출 및 데이터 포맷팅 로직 유지
+            const data = await getNoteDetails(meetingId);
+            const membersData = await getMeetingMembers(meetingId);
+
+            const formattedData = {
+                id: data.id,
+                name: data.title || '제목 없음',
+                content: data.content || '',
+                members:
+                    membersData.participants?.length > 0
+                        ? membersData.participants.map((m) => m.participantName).join(', ')
+                        : '참가자 정보 없음',
+                created: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '-',
+                modified: data.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : `-`,
+            };
+
+            setMeeting(formattedData);
+            // 실시간 갱신이 일어났을 때 콘솔에 표시하여 확인 용이
+            console.log('🔄 REST API로 회의록 데이터 갱신 완료 (WebSocket 트리거)');
+        } catch (err) {
+            console.error('Failed to fetch meeting:', err);
+            setError('삭제된 회의록입니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 1. (API 1) 회의록 본문 정보 로드 및 WebSocket 연결/해제 로직 추가
     useEffect(() => {
         window.scrollTo(0, 0);
 
-        const fetchMeeting = async () => {
-            setLoading(true);
-            setError('');
-            try {
-                const data = await getNoteDetails(meetingId);
-                const membersData = await getMeetingMembers(meetingId);
+        // 1. 초기 데이터 로드
+        fetchMeetingData();
 
-                const formattedData = {
-                    id: data.id,
-                    name: data.title || '제목 없음',
-                    content: data.content || '',
-                    members:
-                        membersData.participants?.length > 0
-                            ? membersData.participants.map((m) => m.participantName).join(', ')
-                            : '참가자 정보 없음',
-                    created: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '-',
-                    modified: data.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : `-`,
-                };
+        // [✅ 3. WebSocket 연결 시작]
+        // UPDATED 메시지를 받으면 fetchMeetingData 함수를 실행하여 화면 갱신
+        connectNoteUpdates(meetingId, fetchMeetingData);
 
-                setMeeting(formattedData);
-            } catch (err) {
-                console.error('Failed to fetch meeting:', err);
-                setError('삭제된 회의록입니다.');
-            } finally {
-                setLoading(false);
-            }
+        // [✅ 4. 컴포넌트 언마운트 시 WebSocket 연결 해제]
+        return () => {
+            disconnectNoteUpdates();
         };
+    }, [meetingId]); // meetingId가 변경될 때마다 연결/해제/로드를 다시 수행
 
-        fetchMeeting();
-    }, [meetingId]);
-
-    // [✅ 락_2] '수정' 버튼 클릭 시 락 상태 확인 로직 수정 (alert -> Modal)
+    // [✅ 락_2] '수정' 버튼 클릭 시 락 상태 확인 로직 (기존 로직 유지)
     const handleEdit = async () => {
         try {
             const lockData = await getLockStatus(meetingId);
 
             if (lockData.locked) {
                 // 락이 걸려있으면 alert 대신 모달을 띄웁니다.
-                setShowLockAlertModal(true); // [✅ 수정] 모달 표시
+                setShowLockAlertModal(true);
             } else {
                 navigate(`/notes/meeting/${meetingId}/edit`);
             }
         } catch (error) {
             console.error('락 상태 조회 실패:', error);
-            alert('락 상태를 확인하는 중 오류가 발생했습니다.'); // 이 에러는 기존 alert 유지
+            alert('락 상태를 확인하는 중 오류가 발생했습니다.');
         }
     };
 
-    // 히스토리 목록으로 감 (변경 없음)
+    // 히스토리 목록으로 감 (기존 로직 유지)
     const handleHistroy = () => {
         navigate(`/notes/meeting/${meetingId}/history`);
     };
 
-    // '삭제' 버튼 클릭 (변경 없음)
+    // '삭제' 버튼 클릭 (기존 로직 유지)
     const handleDelete = async () => {
         if (window.confirm('정말로 이 회의록을 삭제하시겠습니까?')) {
             try {
@@ -121,12 +128,12 @@ export default function NoteMeetingDetail() {
         }
     };
 
-    // '목록' 버튼 클릭 (변경 없음)
+    // '목록' 버튼 클릭 (기존 로직 유지)
     const handleGoToList = () => {
         navigate(-1);
     };
 
-    // 'AI 요약' 버튼 클릭 (변경 없음)
+    // 'AI 요약' 버튼 클릭 (기존 로직 유지)
     const handleToggleAiSummary = async () => {
         if (showAiSummary) {
             setShowAiSummary(false);
@@ -150,7 +157,7 @@ export default function NoteMeetingDetail() {
         }
     };
 
-    // 메모 관련 핸들러 (변경 없음)
+    // 메모 관련 핸들러 (기존 로직 유지)
     const handleAddMemo = async (memoContent, startIndex, endIndex, selectedText) => {
         try {
             const payload = {
@@ -205,7 +212,7 @@ export default function NoteMeetingDetail() {
             }
         }
     };
-    // --- 렌더링 로직 ---
+    // --- 렌더링 로직 (기존 로직 유지) ---
 
     if (loading) {
         return (
@@ -257,7 +264,7 @@ export default function NoteMeetingDetail() {
                                 <ThreeDotsVertical size={24} />
                             </Dropdown.Toggle>
                             <Dropdown.Menu style={{ backgroundColor: '#f5f1ec' }}>
-                                {/* [✅ 락_3] 수정된 handleEdit 함수가 여기 연결됩니다. */}
+                                {/* 수정된 handleEdit 함수가 여기 연결됩니다. */}
                                 <Dropdown.Item onClick={handleEdit}>
                                     <PencilSquare className="me-2" /> 수정하기
                                 </Dropdown.Item>
@@ -340,27 +347,27 @@ export default function NoteMeetingDetail() {
             {showChatbot && <ChatbotPanel onClose={() => setShowChatbot(false)} meetingId={meetingId} />}
             <FloatingChatButton onClick={() => setShowChatbot(!showChatbot)} />
 
-            {/* [✅ 추가] 락 알림 모달 컴포넌트 */}
+            {/* 락 알림 모달 컴포넌트 (기존 로직 유지) */}
             <Modal
                 show={showLockAlertModal}
                 onHide={() => setShowLockAlertModal(false)}
                 centered
                 contentClassName="lock-alert-modal-content"
             >
-                {/* [✅ 스타일_2] 헤더 스타일링 */}
+                {/* 헤더 스타일링 */}
                 <Modal.Header closeButton style={{ backgroundColor: '#f5f1ec', borderBottom: 'none' }}>
                     <Modal.Title className="fw-bold" style={{ color: '#b66e03' }}>
                         알림
                     </Modal.Title>
                 </Modal.Header>
-                {/* [✅ 스타일_3] 바디 스타일링 */}
+                {/* 바디 스타일링 */}
                 <Modal.Body className="text-center" style={{ backgroundColor: '#f5f1ec', color: '#333' }}>
                     다른 사용자가 수정 중입니다. 잠시 후 다시 시도해 주세요.
                 </Modal.Body>
-                {/* [✅ 스타일_4] 푸터 스타일링 */}
+                {/* 푸터 스타일링 */}
                 <Modal.Footer style={{ backgroundColor: '#f5f1ec', borderTop: 'none' }}>
                     <Button
-                        // [✅ 스타일_5] 버튼 스타일링
+                        // 버튼 스타일링
                         style={{ backgroundColor: '#b66e03', borderColor: '#b66e03', color: 'white' }}
                         onClick={() => setShowLockAlertModal(false)}
                     >
