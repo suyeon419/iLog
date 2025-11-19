@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Button, Container } from 'react-bootstrap';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
-import { getUserById, getNoteHistory } from '../../api/user';
+import { getUserById } from '../../api/user';
+import { getCalendarMinutes } from '../../api/note';
 import { jwtDecode } from 'jwt-decode';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -14,18 +15,12 @@ export default function Home() {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const [noteHistory, setNoteHistory] = useState([]);
+    const [calendarData, setCalendarData] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedNotes, setSelectedNotes] = useState([]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        if (noteHistory.length > 0) {
-            handleDateClick(new Date());
-        }
-    }, [noteHistory]);
-
-    useEffect(() => {
         const token = localStorage.getItem('accessToken');
         console.log(token);
 
@@ -40,17 +35,13 @@ export default function Home() {
             const decoded = jwtDecode(token);
             const userId = decoded.id;
 
-            Promise.all([getUserById(userId), getNoteHistory()])
-                .then(([userData, noteLogs]) => {
+            getUserById(userId)
+                .then((userData) => {
                     setUser(userData);
-                    setNoteHistory(noteLogs);
                 })
                 .catch(() => {
                     localStorage.removeItem('accessToken');
                     setIsLogin(false);
-                })
-                .finally(() => {
-                    setIsLoading(false);
                 });
         } catch {
             localStorage.removeItem('accessToken');
@@ -59,23 +50,64 @@ export default function Home() {
         }
     }, []);
 
+    useEffect(() => {
+        if (!isLogin) return;
+
+        const loadCalendar = async () => {
+            try {
+                const list = await getCalendarMinutes();
+                const grouped = convertToCalendarMap(list);
+
+                setCalendarData(grouped);
+
+                // 오늘 날짜 자동 표시
+                const today = new Date().toISOString().split('T')[0];
+                const todayData = grouped.find((g) => g.date === today);
+
+                if (todayData) {
+                    setSelectedNotes(todayData.minutes);
+                }
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadCalendar();
+    }, [isLogin]);
+
+    const convertToCalendarMap = (list) => {
+        const map = {};
+
+        list.forEach((item) => {
+            const dateStr = item.createdAt.split('T')[0]; // YYYY-MM-DD
+
+            if (!map[dateStr]) map[dateStr] = [];
+            map[dateStr].push(item);
+        });
+
+        // map을 배열 형태로 변환
+        return Object.entries(map).map(([date, minutes]) => ({
+            date,
+            minutes,
+        }));
+    };
+
     const handleDateClick = (date) => {
         setSelectedDate(date);
+        const dateStr = toLocalDateString(date);
 
-        const logs = noteHistory.filter(
-            (n) => n.status === 'CREATE' && new Date(n.createdAt).toDateString() === date.toDateString()
-        );
+        const target = calendarData.find((d) => d.date === dateStr);
+        if (target) setSelectedNotes(target.minutes);
+        else setSelectedNotes([]);
+    };
 
-        // 제목만 표시
-        const detailed = logs
-            .filter((log) => log.minutesTitle) // null 제외
-            .map((log) => ({
-                id: log.id,
-                title: log.minutesTitle,
-                createdAt: log.createdAt,
-            }));
-
-        setSelectedNotes(detailed);
+    const toLocalDateString = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     };
 
     if (isLoading) {
@@ -107,9 +139,8 @@ export default function Home() {
                                     border: '1px solid #b66e03',
                                 }}
                                 tileContent={({ date }) => {
-                                    const hasNote = noteHistory.some(
-                                        (item) => new Date(item.createdAt).toDateString() === date.toDateString()
-                                    );
+                                    const dateStr = toLocalDateString(date);
+                                    const hasNote = calendarData.some((d) => d.date === dateStr);
 
                                     return (
                                         <div
@@ -171,6 +202,7 @@ export default function Home() {
                                     selectedNotes.map((note) => (
                                         <div
                                             key={note.id}
+                                            onClick={() => navigate(`/notes/meeting/${note.id}`)}
                                             style={{
                                                 background: '#f5f1ec',
                                                 padding: '12px 15px',
@@ -179,6 +211,14 @@ export default function Home() {
                                                 marginBottom: '12px',
                                                 boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                                             }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.12)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.transform = 'none';
+                                                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+                                            }}
                                         >
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <i
@@ -186,7 +226,7 @@ export default function Home() {
                                                     style={{ fontSize: '20px', color: '#b66e03' }}
                                                 ></i>
                                                 <span style={{ fontSize: '14px', color: '#b66e03', fontWeight: 600 }}>
-                                                    회의록
+                                                    {note.folderName}
                                                 </span>
                                             </div>
 
