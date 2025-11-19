@@ -251,10 +251,10 @@ export default function NoteMeetingDetail() {
             <div className="flex-grow-1">
                 <Row className="mb-3 align-items-center">
                     <Col>
-                        <div className="d-flex align-items-center">
-                            <PencilSquare size={30} className="me-2" />
-                            <div className="noteForm py-2">{meeting.name}</div>
-                        </div>
+                        <h1 className="d-flex align-items-center">
+                            <i class="bi bi-pen me-2"></i>
+                            {meeting.name}
+                        </h1>
                     </Col>
                     <Col xs="auto" className="d-flex align-items-center">
                         <Button variant="outline-primary" onClick={handleGoToList} className="fw-bold me-1 mini-btn">

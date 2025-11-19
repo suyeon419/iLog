@@ -206,7 +206,7 @@ export default function NoteAISummary({
                 {/* 1. AI 요약 본문 */}
                 <Col md={8} className="ai-summary-content">
                     <h4 className="fw-bold mb-3">
-                        <i className="bi bi-robot me-2"></i>AI 요약 피드백
+                        <i className="bi bi-robot me-2"></i>AI 요약
                     </h4>
 
                     {/* [수정] 
