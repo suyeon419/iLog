@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Container, Row, Col } from 'react-bootstrap';
+import { Button, Container, Row, Col, Modal } from 'react-bootstrap';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { Link, useNavigate } from 'react-router-dom';
 import { deleteUser, getUserById, loginUser } from '../../api/user';
@@ -16,14 +16,18 @@ export default function Settings() {
     const [profileImageUrl, setProfileImageUrl] = useState('');
 
     const [isLoading, setIsLoading] = useState(true);
+    // ✅ [추가] 모달 상태 관리
+    const [showModal, setShowModal] = useState(false);
+    const handleClose = () => setShowModal(false);
+    const handleShow = () => setShowModal(true);
 
     const logout = () => {
         localStorage.removeItem('accessToken');
         loginUser();
         navigate('/');
     };
-
-    const handleDeleteAccount = async () => {
+    const confirmDelete = async () => {
+        handleClose(); // 모달을 닫습니다.
         try {
             const token = localStorage.getItem('accessToken');
             if (!token) {
@@ -37,7 +41,8 @@ export default function Settings() {
             const userId = decoded.id;
             console.log('🧩 추출된 사용자 ID:', userId);
 
-            await deleteUser(userId); // ✅ 여기서 decoded.id 직접 전달
+            // 회원 탈퇴 API 호출 (기존 handleDeleteAccount의 핵심 로직)
+            await deleteUser(userId);
             alert('회원 탈퇴가 완료되었습니다.');
             localStorage.removeItem('accessToken');
             navigate('/');
@@ -45,6 +50,10 @@ export default function Settings() {
             console.error('❌ 회원 탈퇴 실패:', error);
             alert('회원 탈퇴 중 오류가 발생했습니다.');
         }
+    };
+
+    const handleDeleteAccount = () => {
+        handleShow(); // ✅ 기존 로직을 지우고 모달 띄우는 함수로 대체
     };
 
     useEffect(() => {
@@ -189,6 +198,27 @@ export default function Settings() {
                     회원탈퇴
                 </Button>
             </div>
+            <Modal show={showModal} onHide={handleClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title className="text-danger">⚠️ 경고</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>정말로 회원 탈퇴하시겠습니까?</p>
+                    <p className="text-danger">
+                        회원 탈퇴 시 모든 계정 정보 및 활동 기록(회의록, 화상 회의 기록 등)이 영구적으로 삭제되며 복구할
+                        수 없습니다.
+                    </p>
+                    <p className="mt-3">계속 진행하시려면 '회원 탈퇴' 버튼을 눌러주세요.</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClose}>
+                        취소
+                    </Button>
+                    <Button variant="danger" onClick={confirmDelete}>
+                        회원 탈퇴
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }
