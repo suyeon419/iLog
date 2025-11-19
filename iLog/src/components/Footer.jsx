@@ -10,6 +10,9 @@ export default function Footer() {
                 borderTop: '1px solid #e0dcd5',
                 textAlign: 'center',
                 fontFamily: 'Pretendard, sans-serif',
+
+                width: '100vw',
+                marginLeft: 'calc(50% - 50vw)',
             }}
         >
             <div style={{ fontWeight: '600', color: '#b66e03', marginBottom: '4px' }}>

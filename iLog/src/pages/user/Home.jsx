@@ -81,13 +81,11 @@ export default function Home() {
         const map = {};
 
         list.forEach((item) => {
-            const dateStr = item.createdAt.split('T')[0]; // YYYY-MM-DD
-
+            const dateStr = item.createdAt.split('T')[0];
             if (!map[dateStr]) map[dateStr] = [];
             map[dateStr].push(item);
         });
 
-        // map을 배열 형태로 변환
         return Object.entries(map).map(([date, minutes]) => ({
             date,
             minutes,
@@ -128,9 +126,9 @@ export default function Home() {
                 <>
                     <h3 className="fw-bold mb-4">나의 스케줄</h3>
 
-                    <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
+                    <div className="home-flex" style={{ display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
                         {/* 캘린더 */}
-                        <div>
+                        <div className="home-calendar">
                             <Calendar
                                 onClickDay={handleDateClick}
                                 value={selectedDate}
@@ -170,6 +168,7 @@ export default function Home() {
 
                         {/* 오른쪽 박스 */}
                         <div
+                            className="home-right-box"
                             style={{
                                 width: '350px',
                                 background: '#fff',

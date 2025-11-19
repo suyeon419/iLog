@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -7,6 +7,8 @@ export default function AppHeader() {
     const navigate = useNavigate();
 
     const isLoggedIn = !!localStorage.getItem('accessToken');
+
+    const [expanded, setExpanded] = useState(false);
 
     useEffect(() => {
         const publicPaths = ['/', '/login', '/register', '/findPw', '/findEmail', '/findPw/changePw'];
@@ -24,7 +26,7 @@ export default function AppHeader() {
     const isSettingsActive = ['/settings', '/history'].some((path) => location.pathname.startsWith(path));
 
     return (
-        <Navbar expand="lg" fixed="top" style={{ backgroundColor: '#F5F1EC' }}>
+        <Navbar expand="lg" fixed="top" style={{ backgroundColor: '#F5F1EC' }} expanded={expanded}>
             <Container
                 fluid
                 style={{
@@ -46,47 +48,50 @@ export default function AppHeader() {
                     <img src="/images/iLogLogo.png" alt="iLog Logo" style={{ height: '60px' }} />
                 </Navbar.Brand>
 
-                <Navbar.Toggle aria-controls="main-navbar" />
-                <Navbar.Collapse id="main-navbar">
-                    <Nav
-                        className="ms-auto "
-                        variant="tabs"
-                        activeKey={location.pathname}
-                        style={{ marginBottom: '-4px' }}
-                    >
-                        <Nav.Link className={`nav-item ${isHomeActive ? 'active' : ''}`} as={Link} to="/" eventKey="/">
-                            <i className="bi bi-house nav-icon"></i>홈
-                        </Nav.Link>
-                        <Nav.Link
-                            className={`nav-item ${isNotesActive ? 'active' : ''}`}
-                            as={Link}
-                            to="/notes"
-                            eventKey="/notes"
-                        >
-                            <i className="bi bi-journal-text nav-icon"></i>
-                            회의록
-                        </Nav.Link>
-                        <Nav.Link
-                            className={`nav-item ${isMeetingActive ? 'active' : ''}`}
-                            as={Link}
-                            to="/meeting"
-                            eventKey="/meeting"
-                        >
-                            <i className="bi bi-camera-video nav-icon"></i>
-                            화상회의
-                        </Nav.Link>
-                        <Nav.Link
-                            className={`nav-item ${isSettingsActive ? 'active' : ''}`}
-                            as={Link}
-                            to="/settings"
-                            eventKey="/settings"
-                        >
-                            <i className="bi bi-gear nav-icon"></i>
-                            설정
-                        </Nav.Link>
-                    </Nav>
-                </Navbar.Collapse>
+                {/* 햄버거 버튼 */}
+                <Navbar.Toggle aria-controls="main-navbar" onClick={() => setExpanded(!expanded)} />
             </Container>
+
+            <Navbar.Collapse id="main-navbar" in={expanded}>
+                <Nav className="ms-auto" variant="tabs" activeKey={location.pathname} style={{ marginBottom: '-4px' }}>
+                    <Nav.Link
+                        className={`nav-item ${isHomeActive ? 'active' : ''}`}
+                        as={Link}
+                        to="/"
+                        eventKey="/"
+                        onClick={() => setExpanded(false)}
+                    >
+                        <i className="bi bi-house nav-icon"></i>홈
+                    </Nav.Link>
+                    <Nav.Link
+                        className={`nav-item ${isNotesActive ? 'active' : ''}`}
+                        as={Link}
+                        to="/notes"
+                        eventKey="/notes"
+                        onClick={() => setExpanded(false)}
+                    >
+                        <i className="bi bi-journal-text nav-icon"></i>회의록
+                    </Nav.Link>
+                    <Nav.Link
+                        className={`nav-item ${isMeetingActive ? 'active' : ''}`}
+                        as={Link}
+                        to="/meeting"
+                        eventKey="/meeting"
+                        onClick={() => setExpanded(false)}
+                    >
+                        <i className="bi bi-camera-video nav-icon"></i>화상회의
+                    </Nav.Link>
+                    <Nav.Link
+                        className={`nav-item ${isSettingsActive ? 'active' : ''}`}
+                        as={Link}
+                        to="/settings"
+                        eventKey="/settings"
+                        onClick={() => setExpanded(false)}
+                    >
+                        <i className="bi bi-gear nav-icon" onClick={() => setExpanded(false)}></i>설정
+                    </Nav.Link>
+                </Nav>
+            </Navbar.Collapse>
         </Navbar>
     );
 }
