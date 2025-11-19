@@ -62,7 +62,7 @@ export default function NoteMemberModal({
                                     style={{ background: 'transparent', cursor: 'pointer' }}
                                     onClick={() => handleAddFromProject(member)}
                                 >
-                                    <div className="d-flex align-items-center">
+                                    <div className="d-flex align-items-center w-100">
                                         {member.participantProfileImage ? (
                                             <img
                                                 src={`https://webkit-ilo9-api.duckdns.org${member.participantProfileImage}`}
@@ -84,11 +84,14 @@ export default function NoteMemberModal({
                                             />
                                         )}
 
-                                        <div>
-                                            <span className="fw-semibold">{member.participantName}</span>
-                                            {member.leader && <Badge className="ms-2 badge-leader">팀장</Badge>}
-                                            <br />
-                                            <small className="text-muted">{member.participantEmail}</small>
+                                        <div className="w-100 d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span className="fw-semibold">{member.participantName}</span>
+                                                {member.leader && <Badge className="ms-2 badge-leader">팀장</Badge>}
+                                                <br />
+                                                <small className="text-muted">{member.participantEmail}</small>
+                                            </div>
+                                            <i class="bi bi-arrow-down h4"></i>
                                         </div>
                                     </div>
 
@@ -113,7 +116,7 @@ export default function NoteMemberModal({
                                 style={{ background: 'transparent', cursor: 'pointer' }}
                                 onClick={() => handleRemoveFromMeeting(member)}
                             >
-                                <div className="d-flex align-items-center">
+                                <div className="d-flex align-items-center w-100">
                                     {member.participantProfileImage ? (
                                         <img
                                             src={`https://webkit-ilo9-api.duckdns.org${member.participantProfileImage}`}
@@ -135,11 +138,14 @@ export default function NoteMemberModal({
                                         />
                                     )}
 
-                                    <div>
-                                        <span className="fw-semibold">{member.participantName}</span>
-                                        {member.leader && <Badge className="ms-2 badge-leader">팀장</Badge>}
-                                        <br />
-                                        <small className="text-muted">{member.participantEmail}</small>
+                                    <div className="w-100 d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span className="fw-semibold">{member.participantName}</span>
+                                            {member.order && <Badge className="ms-2 badge-leader">팀장</Badge>}
+                                            <br />
+                                            <small className="text-muted">{member.participantEmail}</small>
+                                        </div>
+                                        <i class="bi bi-arrow-up h4"></i>
                                     </div>
                                 </div>
 
