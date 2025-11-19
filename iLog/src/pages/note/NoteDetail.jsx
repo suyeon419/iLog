@@ -29,6 +29,8 @@ export default function NoteDetail() {
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 7;
 
+    const [members, setMembers] = useState();
+
     // const fetchProjectDetails = async (projectId) => {
     //     setLoading(true);
     //     setError('');
@@ -65,6 +67,20 @@ export default function NoteDetail() {
     //         setLoading(false);
     //     }
     // };
+    useEffect(() => {
+        if (!project?.id) return;
+
+        const loadMembers = async () => {
+            try {
+                const res = await getProjectMembers(project.id);
+                setMembers(res.participants || []);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        loadMembers();
+    }, [project]);
 
     const fetchProjectDetails = async (projectId) => {
         setLoading(true);
@@ -234,12 +250,14 @@ export default function NoteDetail() {
         <Container fluid className="pt-3 container-left">
             <div className="flex-grow-1">
                 <Row className="mb-3 mt-3 align-items-center">
-                    <Col xs="auto" style={{ visibility: 'hidden' }}>
-                        <PersonPlus size={24} />
-                    </Col>
-
-                    <Col className="text-center">
-                        <h2 className="fw-bold m-0">{project ? project.name : ''}</h2>
+                    <Col className="d-flex align-items-end">
+                        <h1 className="fw-bold">
+                            <i class="bi bi-pen me-2"></i>
+                            {project ? project.name : ''}
+                        </h1>
+                        <h6 className="ms-3">
+                            {members.length > 0 ? members.map((m) => m.participantName).join(', ') : ' '}
+                        </h6>
                     </Col>
 
                     <Col xs="auto">
