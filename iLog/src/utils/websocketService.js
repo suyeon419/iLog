@@ -1,7 +1,7 @@
 // src/utils/websocketService.js (업데이트된 버전)
 
 import SockJS from 'sockjs-client';
-import Stomp from 'stompjs';
+import { Stomp } from '@stomp/stompjs';
 
 let stompClient = null;
 
@@ -14,7 +14,9 @@ export function connectNoteUpdates(meetingId, onUpdated) {
     // [✅ 변경] 서버 담당자가 제공한 대로 토큰 없이 연결
     const socketUrl = 'https://webkit-ilo9-api.duckdns.org/ws'; // FIXME: 실제 백엔드 도메인 및 경로로 교체 필요
 
-    const socket = new SockJS(socketUrl);
+    const socket = new SockJS(socketUrl, null, {
+        transports: ['websocket'],
+    });
     stompClient = Stomp.over(socket);
 
     // 디버그 출력을 억제합니다.
@@ -46,7 +48,7 @@ export function connectNoteUpdates(meetingId, onUpdated) {
  * WebSocket 연결을 해제합니다.
  */
 export function disconnectNoteUpdates() {
-    if (stompClient) {
+    if (stompClient && stompClient.connected) {
         stompClient.disconnect(() => {
             console.log('🔴 WebSocket 연결 해제됨');
         });
