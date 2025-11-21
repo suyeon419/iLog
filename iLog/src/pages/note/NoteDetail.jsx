@@ -31,42 +31,6 @@ export default function NoteDetail() {
 
     const [members, setMembers] = useState();
 
-    // const fetchProjectDetails = async (projectId) => {
-    //     setLoading(true);
-    //     setError('');
-
-    //     try {
-    //         const data = await getProjectDetails(projectId);
-    //         setProject({ id: data.folderId, name: data.folderName });
-
-    //         // [수정] 1. 원본 목록을 approachedAt (최종 접근/수정일) 기준으로 내림차순 정렬 (최신순)
-    //         const sortedMinutes = (data.minutesList || []).sort((a, b) => {
-    //             // b가 최신(값이 큼)이면 앞으로 오도록 (b - a)
-    //             // 날짜가 없는 경우 0으로 처리하여 오류 방지
-    //             return (
-    //                 (b.approachedAt ? new Date(b.approachedAt).getTime() : 0) -
-    //                 (a.approachedAt ? new Date(a.approachedAt).getTime() : 0)
-    //             );
-    //         });
-
-    //         // [수정] 2. 정렬된 목록(sortedMinutes)을 기반으로 매핑
-    //         const meetings = sortedMinutes.map((minute) => ({
-    //             id: minute.id,
-    //             name: minute.name || '제목 없음',
-    //             members: minute.members || '-',
-    //             created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '날짜 없음',
-    //             // API 응답의 'approachedAt'을 'modified'로 사용
-    //             modified: minute.approachedAt ? new Date(minute.approachedAt).toLocaleDateString() : '날짜 없음',
-    //         }));
-
-    //         setSubMeetings(meetings);
-    //         setLoading(false);
-    //     } catch (err) {
-    //         console.error('Failed to fetch details:', err);
-    //         setError('회의록을 불러오는 데 실패했습니다.');
-    //         setLoading(false);
-    //     }
-    // };
     useEffect(() => {
         if (!project?.id) return;
 
@@ -116,10 +80,8 @@ export default function NoteDetail() {
                             id: minute.id,
                             name: minute.name || '제목 없음',
                             members: memberNames, // ✅ 실제 참가자 이름 표시
-                            created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '날짜 없음',
-                            modified: minute.approachedAt
-                                ? new Date(minute.approachedAt).toLocaleDateString()
-                                : '날짜 없음',
+                            created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '',
+                            modified: minute.approachedAt ? new Date(minute.approachedAt).toLocaleDateString() : '',
                         };
                     } catch (err) {
                         console.error(`❌ 회의(${minute.id}) 참가자 로드 실패:`, err);
@@ -127,10 +89,8 @@ export default function NoteDetail() {
                             id: minute.id,
                             name: minute.name || '제목 없음',
                             members: '-', // 실패 시 기본값
-                            created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '날짜 없음',
-                            modified: minute.approachedAt
-                                ? new Date(minute.approachedAt).toLocaleDateString()
-                                : '날짜 없음',
+                            created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '',
+                            modified: minute.approachedAt ? new Date(minute.approachedAt).toLocaleDateString() : '',
                         };
                     }
                 })

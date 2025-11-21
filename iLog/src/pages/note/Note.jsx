@@ -476,7 +476,13 @@ export default function Note() {
                                 )}
                                 {/* --- 이름 수정 UI 끝 --- */}
 
-                                <div className="mt-3 flex-grow-1">
+                                <div
+                                    className="mt-3 flex-grow-1"
+                                    style={{
+                                        height: '110px',
+                                        overflowY: 'auto',
+                                    }}
+                                >
                                     {/* [수정] 참가자 렌더링 로직 (이제 '참가자 없음' 또는 실제 이름이 표시됨) */}
                                     {item.members && item.members !== '...' && item.members !== '참가자 없음' ? (
                                         item.members.split(' ').map((member, index) => (
