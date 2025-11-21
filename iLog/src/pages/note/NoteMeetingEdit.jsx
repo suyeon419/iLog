@@ -307,10 +307,16 @@ export default function NoteMeetingEdit() {
                         variant="primary mini-btn"
                         onClick={handleSave}
                         className="fw-bold"
-                        // [✅ 락_12] 읽기 전용일 때 버튼 비활성화
+                        // [✅ 락_12] 읽기 전용이거나 저장 중일 때 버튼 비활성화
                         disabled={isSaving || isReadOnly}
                     >
-                        {isSaving ? '저장' : '완료'}
+                        {isSaving ? (
+                            // 저장 중일 때: 스피너 표시
+                            <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                        ) : (
+                            // 평소 상태: '완료' 텍스트 표시
+                            '완료'
+                        )}
                     </Button>
                 </Col>
             </Row>
