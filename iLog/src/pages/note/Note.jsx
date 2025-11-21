@@ -479,7 +479,7 @@ export default function Note() {
                                 <div
                                     className="mt-3 flex-grow-1"
                                     style={{
-                                        height: '110px',
+                                        height: '115px',
                                         overflowY: 'auto',
                                     }}
                                 >
