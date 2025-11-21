@@ -3,6 +3,7 @@
 import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import { Row, Col, Card, Button, Form } from 'react-bootstrap';
 import { marked } from 'marked';
+import { getUserById } from '../../api/user';
 
 export default function NoteAISummary({
     summaryText,
@@ -17,13 +18,30 @@ export default function NoteAISummary({
     const [newMemoContent, setNewMemoContent] = useState('');
     const [editingMemoId, setEditingMemoId] = useState(null);
     const [editingMemoContent, setEditingMemoContent] = useState('');
+    const [myName, setMyName] = useState('참석자');
 
     // AI 요약본문 <div>에 연결할 ref
     const summaryContainerRef = useRef(null);
-
     useEffect(() => {
         window.scrollTo(0, 0);
-    });
+        const fetchMyInfo = async () => {
+            try {
+                // getUserById()는 내부적으로 /members를 호출하여 내 정보를 가져옴
+                const userData = await getUserById();
+                console.log('내 정보 로드 성공:', userData);
+
+                // 이름 필드가 'name', 'username', 'memberName' 중 무엇인지 서버 응답에 맞춰 사용
+                if (userData.name) {
+                    setMyName(userData.name);
+                }
+            } catch (error) {
+                console.error('내 정보 로드 실패:', error);
+                // 에러 시 기본값 '참석자' 유지
+            }
+        };
+        fetchMyInfo();
+    }, []);
+
     /**
      * [수정] 텍스트 선택(드래그)시 호출되는 핸들러
      * 복잡한 HTML 구조 안에서도 정확한 텍스트 인덱스를 계산합니다.
@@ -57,7 +75,7 @@ export default function NoteAISummary({
                 endIndex: endIndex,
                 positionContent: selectedText,
             });
-            // [요청사항] 드래그 시 메모 내용은 빈 칸으로 설정
+
             setNewMemoContent('');
 
             selection.removeAllRanges();
@@ -198,8 +216,6 @@ export default function NoteAISummary({
         return a.startIndex - b.startIndex;
     });
 
-    // --- (이하 JSX 렌더링 부분) ---
-
     return (
         <>
             <Row>
@@ -209,11 +225,6 @@ export default function NoteAISummary({
                         <i className="bi bi-robot me-2"></i>AI 요약
                     </h4>
 
-                    {/* [수정] 
-                        - ref 추가
-                        - onMouseUp 이벤트 핸들러 연결
-                        - renderSummaryWithHighlights() 호출 제거 (useLayoutEffect가 처리)
-                    */}
                     <div
                         ref={summaryContainerRef} // DOM 조작을 위한 ref 연결
                         className="ai-summary-box note-box"
@@ -223,14 +234,9 @@ export default function NoteAISummary({
                             wordWrap: 'break-word',
                         }}
                         onMouseUp={handleTextSelection} // 수정된 핸들러 연결
-                    >
-                        {/* 이곳의 내용은 useLayoutEffect가 
-                          summaryText를 기반으로 동적으로 채워넣습니다. 
-                        */}
-                    </div>
+                    ></div>
                 </Col>
 
-                {/* 2. 메모 목록 표시 영역 (변경 없음) */}
                 <Col md={4} style={{ backgroundColor: '#f5f1ec' }}>
                     <h4 className="fw-bold mb-3 mt-2">
                         <i className="bi bi-card-text me-2"></i>메모 목록
@@ -239,7 +245,14 @@ export default function NoteAISummary({
                     {pendingMemo && (
                         <Card className="mb-3 memo-card">
                             <Card.Header className="bg-transparent border-bottom-0">
-                                <h5 className="cardHeader-memo">새 메모 추가</h5>
+                                <h5 className="cardHeader-memo">
+                                    {myName} |{' '}
+                                    <small>
+                                        {pendingMemo.positionContent.length > 20
+                                            ? pendingMemo.positionContent.substring(0, 20) + '...'
+                                            : pendingMemo.positionContent}
+                                    </small>
+                                </h5>
                             </Card.Header>
                             <Card.Body className="pt-2 px-3 pb-3">
                                 <Form.Control
@@ -248,6 +261,7 @@ export default function NoteAISummary({
                                     value={newMemoContent}
                                     onChange={(e) => setNewMemoContent(e.target.value)}
                                     autoFocus
+                                    placeholder="이 내용에 대한 메모를 입력하세요"
                                     className="w-100"
                                 />
                                 <div className="d-flex justify-content-end gap-2 mt-2">
@@ -267,9 +281,21 @@ export default function NoteAISummary({
                             {sortedMemoList.map((memo) =>
                                 editingMemoId === memo.id ? (
                                     <Card key={memo.id} className="mb-2 memo-card">
-                                        {/* (수정 폼 렌더링) */}
+                                        {/* [수정] 수정 모드: 헤더에 인용구 표시 */}
                                         <Card.Header className="bg-transparent border-bottom-0">
-                                            <h5 className="cardHeader-memo">{memo.name || '참석자'}</h5>
+                                            <h5 className="cardHeader-memo">
+                                                {memo.name || '참석자'}
+                                                {memo.positionContent && (
+                                                    <>
+                                                        {' | '}
+                                                        <small>
+                                                            {memo.positionContent.length > 20
+                                                                ? memo.positionContent.substring(0, 20) + '...'
+                                                                : memo.positionContent}
+                                                        </small>
+                                                    </>
+                                                )}
+                                            </h5>
                                         </Card.Header>
                                         <Card.Body className="pt-2 px-3 pb-3">
                                             <Form.Control
@@ -301,9 +327,21 @@ export default function NoteAISummary({
                                         onMouseEnter={() => setHoveredMemoId(memo.id)}
                                         onMouseLeave={() => setHoveredMemoId(null)}
                                     >
-                                        {/* (일반 메모 카드 렌더링) */}
+                                        {/* [수정] 일반 모드: 헤더에 인용구 표시 */}
                                         <Card.Header className="bg-transparent border-bottom-0">
-                                            <h5 className="cardHeader-memo">{memo.name || '참석자'}</h5>
+                                            <h5 className="cardHeader-memo">
+                                                {memo.name || '참석자'}
+                                                {memo.positionContent && (
+                                                    <>
+                                                        {' | '}
+                                                        <small>
+                                                            {memo.positionContent.length > 20
+                                                                ? memo.positionContent.substring(0, 20) + '...'
+                                                                : memo.positionContent}
+                                                        </small>
+                                                    </>
+                                                )}
+                                            </h5>
                                         </Card.Header>
                                         <Card.Body className="pt-0">
                                             <Card.Text>{memo.content}</Card.Text>

@@ -141,7 +141,7 @@ export default function NoteMemberModal({
                                     <div className="w-100 d-flex justify-content-between align-items-center">
                                         <div>
                                             <span className="fw-semibold">{member.participantName}</span>
-                                            {member.order && <Badge className="ms-2 badge-leader">팀장</Badge>}
+                                            {member.leader && <Badge className="ms-2 badge-leader">팀장</Badge>}
                                             <br />
                                             <small className="text-muted">{member.participantEmail}</small>
                                         </div>
