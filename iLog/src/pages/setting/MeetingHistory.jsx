@@ -10,10 +10,6 @@ import { getMeetingHistory } from '../../api/user';
 export default function MeetingHistory() {
     const navigate = useNavigate();
 
-    const handleRowClick = (meetingId) => {
-        console.log('Clicked meeting:', meetingId);
-    };
-
     const [groupedMeetings, setGroupedMeetings] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -91,11 +87,7 @@ export default function MeetingHistory() {
 
                             {groupedMeetings[date].map((item) => (
                                 <div key={item.id} className="timeline-item">
-                                    <div
-                                        className="timeline-card"
-                                        onClick={() => handleRowClick(item.id)}
-                                        style={{ cursor: 'pointer' }}
-                                    >
+                                    <div className="timeline-card">
                                         <div className="card-title">
                                             회의 ID: {item.id} (상태: {item.status})
                                         </div>

@@ -106,7 +106,7 @@ export default function NoteMemberModal({
                 <hr className="brownHr my-2" />
 
                 {/* 회의 참석자 */}
-                <h6 className="fw-bold mb-2">회의 참석자</h6>
+                <h6 className="fw-bold mb-2">회의 참가자</h6>
                 <ListGroup variant="flush">
                     {meetingMembers.map((member) => (
                         <React.Fragment key={member.participantId}>
