@@ -54,8 +54,6 @@ export default function NoteDetail() {
             const data = await getProjectDetails(projectId);
             setProject({ id: data.folderId, name: data.folderName });
 
-            console.log('✅ [NoteDetail] getProjectDetails 응답 (원본 데이터):', data);
-
             // [1] 회의 목록을 최신순으로 정렬
             const sortedMinutes = (data.minutesList || []).sort((a, b) => {
                 return (
@@ -64,40 +62,24 @@ export default function NoteDetail() {
                 );
             });
 
-            // [2] 각 회의록별 참가자 목록 불러오기
-            const meetings = await Promise.all(
-                sortedMinutes.map(async (minute) => {
-                    try {
-                        const memberRes = await getMeetingMembers(minute.id); // ✅ 회의록 참가자 API 호출
-                        console.log(`✅ [NoteDetail] 회의록 ID [${minute.id}]의 참가자 정보:`, memberRes);
-                        const memberNames =
-                            (memberRes.participants || [])
-                                .map((p) => p.participantName)
-                                .filter(Boolean)
-                                .join(', ') || '-';
+            // [2] 별도 API 호출 없이 바로 매핑 (수정된 부분)
+            const meetings = sortedMinutes.map((minute) => {
+                // API 응답 이미지에 있는 'minutesParticipants' 필드를 직접 사용
+                const memberNames =
+                    (minute.minutesParticipants || [])
+                        .map((p) => p.participantName)
+                        .filter(Boolean)
+                        .join(', ') || '-';
 
-                        return {
-                            id: minute.id,
-                            name: minute.name || '제목 없음',
-                            members: memberNames, // ✅ 실제 참가자 이름 표시
-                            created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '',
-                            modified: minute.approachedAt ? new Date(minute.approachedAt).toLocaleDateString() : '',
-                        };
-                    } catch (err) {
-                        console.error(`❌ 회의(${minute.id}) 참가자 로드 실패:`, err);
-                        return {
-                            id: minute.id,
-                            name: minute.name || '제목 없음',
-                            members: '-', // 실패 시 기본값
-                            created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '',
-                            modified: minute.approachedAt ? new Date(minute.approachedAt).toLocaleDateString() : '',
-                        };
-                    }
-                })
-            );
+                return {
+                    id: minute.id,
+                    name: minute.name || '제목 없음',
+                    members: memberNames, // 바로 추출한 참가자 이름
+                    created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '날짜 없음',
+                    modified: minute.approachedAt ? new Date(minute.approachedAt).toLocaleDateString() : '날짜 없음',
+                };
+            });
 
-            console.log('✅ [NoteDetail] 최종 가공된 회의록 목록 (subMeetings에 저장될 값):', meetings);
-            // [3] 상태 업데이트
             setSubMeetings(meetings);
             setLoading(false);
         } catch (err) {
