@@ -76,7 +76,7 @@ export default function NoteDetail() {
                     name: minute.name || '제목 없음',
                     members: memberNames, // 바로 추출한 참가자 이름
                     created: minute.createdAt ? new Date(minute.createdAt).toLocaleDateString() : '날짜 없음',
-                    modified: minute.approachedAt ? new Date(minute.approachedAt).toLocaleDateString() : '날짜 없음',
+                    modified: minute.updatedAt ? new Date(minute.approachedAt).toLocaleDateString() : '날짜 없음',
                 };
             });
 
@@ -242,7 +242,7 @@ export default function NoteDetail() {
                                     <td>{meeting.name}</td>
                                     <td>{meeting.members}</td>
                                     <td>{meeting.created}</td>
-                                    <td>{meeting.updated}</td>
+                                    <td>{meeting.modified}</td>
                                 </tr>
                             ))
                         )}
