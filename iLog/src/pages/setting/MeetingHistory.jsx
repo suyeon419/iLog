@@ -53,6 +53,34 @@ export default function MeetingHistory() {
         fetchHistory();
     }, []);
 
+    const renderPagination = () => {
+        if (totalPages <= 1) {
+            return null;
+        }
+
+        const pageItems = [];
+        for (let number = 1; number <= totalPages; number++) {
+            pageItems.push(
+                <Pagination.Item key={number} active={number === currentPage} onClick={() => handlePageClick(number)}>
+                    {number}
+                </Pagination.Item>
+            );
+        }
+
+        return (
+            <nav className="mt-3 pagination-nav">
+                <Pagination className="justify-content-center">
+                    <Pagination.Prev disabled={currentPage === 1} onClick={() => handlePageClick(currentPage - 1)} />
+                    {pageItems}
+                    <Pagination.Next
+                        disabled={currentPage === totalPages}
+                        onClick={() => handlePageClick(currentPage + 1)}
+                    />
+                </Pagination>
+            </nav>
+        );
+    };
+
     if (loading) {
         return (
             <Container className="pt-3 text-center">
