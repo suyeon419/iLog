@@ -242,7 +242,7 @@ export default function NoteDetail() {
                                     <td>{meeting.name}</td>
                                     <td>{meeting.members}</td>
                                     <td>{meeting.created}</td>
-                                    <td>{meeting.modified}</td>
+                                    <td>{meeting.updated}</td>
                                 </tr>
                             ))
                         )}
